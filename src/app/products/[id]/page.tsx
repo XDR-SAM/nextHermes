@@ -14,7 +14,6 @@ import {
   Truck,
   RotateCcw,
   Shield,
-  Star,
   ShoppingCart,
   Zap,
   X,
@@ -23,35 +22,49 @@ import {
 import { ProductCard } from "@/components/product-card";
 import { useCartStore } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
-import { supabase } from "@/lib/supabase-client";
 import { cn } from "@/lib/utils";
 
 // Types
+interface ProductImage {
+  id: string;
+  url: string;
+  alt_text?: string;
+  is_primary?: boolean;
+}
+
+interface ProductVariant {
+  id: string;
+  name: string;
+  sku: string;
+  price: number;
+  stock_quantity: number;
+  attributes?: Record<string, string>;
+}
+
+interface ProductReview {
+  id: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  author?: { id: string; full_name: string; avatar_url?: string };
+}
+
 interface Product {
   id: string;
   name: string;
   slug: string;
   description?: string;
   price: number;
-  original_price?: number;
-  images: string[];
-  rating?: number;
-  review_count?: number;
-  category?: string;
-  category_id?: string;
-  colors?: string[];
-  sizes?: string[];
-  stock?: number;
-  shipping_info?: string;
-}
-
-interface Review {
-  id: string;
-  author: string;
-  avatar?: string;
-  rating: number;
-  date: string;
-  text: string;
+  compare_at_price?: number;
+  primary_image?: string;
+  avg_rating?: number;
+  stock_quantity?: number;
+  is_active: boolean;
+  category?: { id: string; name: string; slug: string };
+  brand?: { id: string; name: string };
+  images?: ProductImage[];
+  variants?: ProductVariant[];
+  reviews?: ProductReview[];
 }
 
 // Accordion Component
@@ -71,12 +84,12 @@ function AccordionItem({
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-4 text-left group"
       >
-        <span className="text-sm font-medium text-white group-hover:text-white/80 transition-colors">
+        <span className="text-sm font-medium text-[var(--text)] group-hover:text-[var(--text-secondary)] transition-colors">
           {title}
         </span>
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-white/40 transition-transform duration-300",
+            "w-4 h-4 text-[var(--text-secondary)] transition-transform duration-300",
             open && "rotate-180"
           )}
         />
@@ -90,7 +103,7 @@ function AccordionItem({
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="pb-5 text-sm text-white/50 leading-relaxed">
+            <div className="pb-5 text-sm text-[var(--text-secondary)] leading-relaxed">
               {children}
             </div>
           </motion.div>
@@ -126,7 +139,7 @@ function StarRating({
         </svg>
       ))}
       {showCount && (
-        <span className="text-xs text-white/40 ml-1">({count})</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-1">({count})</span>
       )}
     </div>
   );
@@ -209,7 +222,6 @@ function Lightbox({
         {images.map((_, i) => (
           <button
             key={i}
-            onClick={() => {}}
             className={cn(
               "w-2 h-2 rounded-full transition-colors",
               i === currentIndex ? "bg-white" : "bg-white/30"
@@ -228,13 +240,11 @@ export default function ProductDetailPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -244,63 +254,73 @@ export default function ProductDetailPage() {
 
   const inWishlist = product ? isInWishlist(product.id) : false;
 
-  // Fetch product data
+  // Build gallery images
+  const galleryImages = (() => {
+    if (!product) return [];
+    const images: string[] = [];
+    if (product.primary_image) images.push(product.primary_image);
+    if (product.images) {
+      product.images.forEach((img) => {
+        if (img.url && !images.includes(img.url)) images.push(img.url);
+      });
+    }
+    return images.length > 0 ? images : ["https://picsum.photos/800"];
+  })();
+
+  // Extract color/size options from variants
+  const colorOptions = (() => {
+    if (!product?.variants) return [];
+    const colors = new Set<string>();
+    product.variants.forEach((v) => {
+      if (v.attributes?.color) colors.add(v.attributes.color);
+    });
+    return Array.from(colors);
+  })();
+
+  const sizeOptions = (() => {
+    if (!product?.variants) return [];
+    const sizes = new Set<string>();
+    product.variants.forEach((v) => {
+      if (v.attributes?.size) sizes.add(v.attributes.size);
+    });
+    return Array.from(sizes);
+  })();
+
+  // Fetch product data from API route
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Fetch product by ID
-        const { data: productData, error: productError } = await supabase
-          .from("products")
-          .select("*, categories(name, slug)")
-          .eq("id", productId)
-          .single();
+        const res = await fetch(`/api/products/${productId}`);
+        const data = await res.json();
 
-        if (productError) throw productError;
-
-        const transformedProduct: Product = {
-          ...productData,
-          images: productData.images || [],
-          category: productData.categories?.name,
-          category_id: productData.categories?.id,
-        };
-
-        setProduct(transformedProduct);
-        setSelectedColor(transformedProduct.colors?.[0] || null);
-        setSelectedSize(transformedProduct.sizes?.[0] || null);
-
-        // Fetch related products from same category
-        if (transformedProduct.category_id) {
-          const { data: relatedData } = await supabase
-            .from("products")
-            .select("*, categories(name)")
-            .eq("category_id", transformedProduct.category_id)
-            .neq("id", productId)
-            .eq("is_active", true)
-            .limit(4);
-
-          const transformedRelated = (relatedData || []).map((p: any) => ({
-            ...p,
-            images: p.images || [],
-            category: p.categories?.name,
-          }));
-
-          setRelatedProducts(transformedRelated);
+        if (!res.ok) {
+          setError(data.error || "Failed to load product");
+          return;
         }
 
-        // Fetch reviews
-        const { data: reviewsData } = await supabase
-          .from("reviews")
-          .select("*")
-          .eq("product_id", productId)
-          .order("created_at", { ascending: false });
+        setProduct(data.product);
 
-        setReviews(reviewsData || []);
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("Failed to load product. Please try again.");
+        // Try fetching related products from same category
+        const categorySlug = data.product.category?.slug;
+        if (categorySlug) {
+          try {
+            const relatedRes = await fetch(
+              `/api/products?category_slug=${categorySlug}&limit=4`
+            );
+            const relatedData = await relatedRes.json();
+            const related = (relatedData.products || []).filter(
+              (p: Product) => p.id !== productId
+            );
+            setRelatedProducts(related);
+          } catch {
+            // Silently fail for related products
+          }
+        }
+      } catch {
+        setError("Network error. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -315,14 +335,21 @@ export default function ProductDetailPage() {
   const handleAddToCart = () => {
     if (!product) return;
 
+    const price = selectedVariant?.price ?? product.price;
+    const variantName = selectedVariant
+      ? [selectedVariant.attributes?.color, selectedVariant.attributes?.size]
+          .filter(Boolean)
+          .join(" / ")
+      : undefined;
+
     addItem({
-      id: product.id,
+      id: selectedVariant?.id || product.id,
       name: product.name,
-      price: product.price,
-      image: product.images?.[0] || "",
+      price,
+      image: product.primary_image || "https://picsum.photos/400",
       quantity,
-      size: selectedSize || undefined,
-      color: selectedColor || undefined,
+      color: selectedVariant?.attributes?.color,
+      size: selectedVariant?.attributes?.size,
     });
 
     setAddedToCart(true);
@@ -337,19 +364,15 @@ export default function ProductDetailPage() {
 
   // Image navigation
   const handlePrevImage = () => {
-    if (product?.images) {
-      setSelectedImage((prev) =>
-        prev === 0 ? product.images.length - 1 : prev - 1
-      );
-    }
+    setSelectedImage((prev) =>
+      prev === 0 ? galleryImages.length - 1 : prev - 1
+    );
   };
 
   const handleNextImage = () => {
-    if (product?.images) {
-      setSelectedImage((prev) =>
-        prev === product.images.length - 1 ? 0 : prev + 1
-      );
-    }
+    setSelectedImage((prev) =>
+      prev === galleryImages.length - 1 ? 0 : prev + 1
+    );
   };
 
   if (loading) {
@@ -388,14 +411,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images.length > 0
-    ? product.images
-    : ["https://picsum.photos/800"];
-
-  const discount = product.original_price
-    ? Math.round(
-        ((product.original_price - product.price) / product.original_price) * 100
-      )
+  const currentPrice = selectedVariant?.price ?? product.price;
+  const discount = product.compare_at_price
+    ? Math.round(((product.compare_at_price - currentPrice) / product.compare_at_price) * 100)
     : 0;
 
   return (
@@ -404,7 +422,7 @@ export default function ProductDetailPage() {
       <AnimatePresence>
         {lightboxOpen && (
           <Lightbox
-            images={images}
+            images={galleryImages}
             currentIndex={selectedImage}
             onClose={() => setLightboxOpen(false)}
             onNext={handleNextImage}
@@ -432,12 +450,11 @@ export default function ProductDetailPage() {
           <div className="space-y-4">
             {/* Main Image */}
             <motion.div
-              layoutId="main-image"
-              className="relative aspect-square bg-[var(--bg-card)] dark:bg-[#111] rounded-2xl overflow-hidden cursor-zoom-in"
+              className="relative aspect-square bg-[var(--bg-card)] rounded-2xl overflow-hidden cursor-zoom-in border border-[var(--border)]"
               onClick={() => setLightboxOpen(true)}
             >
               <Image
-                src={images[selectedImage]}
+                src={galleryImages[selectedImage]}
                 alt={product.name}
                 fill
                 className="object-cover"
@@ -455,9 +472,9 @@ export default function ProductDetailPage() {
             </motion.div>
 
             {/* Thumbnails */}
-            {images.length > 1 && (
+            {galleryImages.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {images.map((image, index) => (
+                {galleryImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -483,12 +500,22 @@ export default function ProductDetailPage() {
 
           {/* RIGHT: Product Info */}
           <div className="space-y-6">
-            {/* Category */}
-            {product.category && (
-              <p className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">
-                {product.category}
-              </p>
-            )}
+            {/* Category & Brand */}
+            <div className="flex items-center gap-3">
+              {product.category && (
+                <p className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+                  {product.category.name}
+                </p>
+              )}
+              {product.category && product.brand && (
+                <span className="text-[var(--border)]">·</span>
+              )}
+              {product.brand && (
+                <p className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">
+                  {product.brand.name}
+                </p>
+              )}
+            </div>
 
             {/* Name */}
             <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text)] leading-tight">
@@ -496,11 +523,11 @@ export default function ProductDetailPage() {
             </h1>
 
             {/* Rating */}
-            {product.rating && (
+            {product.avg_rating && (
               <div className="flex items-center gap-3">
-                <StarRating rating={product.rating} size="md" />
+                <StarRating rating={product.avg_rating} size="md" />
                 <span className="text-sm text-[var(--text-secondary)]">
-                  {product.rating} ({product.review_count || 0} reviews)
+                  {product.avg_rating.toFixed(1)} ({product.reviews?.length || 0} reviews)
                 </span>
               </div>
             )}
@@ -508,63 +535,106 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-baseline gap-4">
               <span className="text-4xl font-bold text-[var(--text)]">
-                ${product.price.toFixed(2)}
+                ${currentPrice.toFixed(2)}
               </span>
-              {product.original_price && product.original_price > product.price && (
+              {product.compare_at_price && product.compare_at_price > currentPrice && (
                 <span className="text-xl text-[var(--text-secondary)] line-through">
-                  ${product.original_price.toFixed(2)}
+                  ${product.compare_at_price.toFixed(2)}
                 </span>
               )}
             </div>
 
             {/* Color Selector */}
-            {product.colors && product.colors.length > 0 && (
+            {colorOptions.length > 0 && (
               <div>
                 <p className="text-sm text-[var(--text-secondary)] mb-3">
-                  Color: {selectedColor && <span className="text-[var(--text)]">{selectedColor}</span>}
+                  Color:{" "}
+                  <span className="text-[var(--text)]">
+                    {selectedVariant?.attributes?.color || "Select a color"}
+                  </span>
                 </p>
                 <div className="flex gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "w-10 h-10 rounded-full border-2 transition-all",
-                        selectedColor === color
-                          ? "border-[var(--accent)] scale-110"
-                          : "border-transparent hover:border-[var(--accent)]/50"
-                      )}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
+                  {colorOptions.map((color) => {
+                    const matchingVariant = product.variants?.find(
+                      (v) => v.attributes?.color === color
+                    );
+                    const isSelected = selectedVariant?.attributes?.color === color;
+                    return (
+                      <button
+                        key={color}
+                        onClick={() => {
+                          if (selectedVariant?.attributes?.size) {
+                            const newVariant = product.variants?.find(
+                              (v) =>
+                                v.attributes?.color === color &&
+                                v.attributes?.size === selectedVariant.attributes?.size
+                            );
+                            setSelectedVariant(newVariant || null);
+                          } else {
+                            setSelectedVariant(matchingVariant || null);
+                          }
+                        }}
+                        className={cn(
+                          "min-w-[48px] px-4 py-2.5 rounded-xl border transition-all text-sm font-medium",
+                          isSelected
+                            ? "bg-[var(--accent)] text-[var(--bg)] border-[var(--accent)]"
+                            : "bg-transparent text-[var(--text)] border-[var(--border)] hover:border-[var(--text-secondary)]"
+                        )}
+                      >
+                        {color}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Size Selector */}
-            {product.sizes && product.sizes.length > 0 && (
+            {sizeOptions.length > 0 && (
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-[var(--text-secondary)]">
-                    Size: {selectedSize && <span className="text-[var(--text)]">{selectedSize}</span>}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={cn(
-                        "min-w-[48px] px-4 py-2.5 rounded-xl border transition-all text-sm font-medium",
-                        selectedSize === size
-                          ? "bg-[var(--accent)] text-[var(--bg)] border-[var(--accent)]"
-                          : "bg-transparent text-[var(--text)] border-[var(--border)] hover:border-[var(--text-secondary)]"
-                      )}
-                    >
-                      {size}
-                    </button>
-                  ))}
+                <p className="text-sm text-[var(--text-secondary)] mb-3">
+                  Size:{" "}
+                  <span className="text-[var(--text)]">
+                    {selectedVariant?.attributes?.size || "Select a size"}
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {sizeOptions.map((size) => {
+                    const matchingVariant = product.variants?.find(
+                      (v) => v.attributes?.size === size
+                    );
+                    const isSelected = selectedVariant?.attributes?.size === size;
+                    const outOfStock =
+                      matchingVariant && matchingVariant.stock_quantity <= 0;
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => {
+                          if (selectedVariant?.attributes?.color) {
+                            const newVariant = product.variants?.find(
+                              (v) =>
+                                v.attributes?.size === size &&
+                                v.attributes?.color === selectedVariant.attributes?.color
+                            );
+                            setSelectedVariant(newVariant || null);
+                          } else {
+                            setSelectedVariant(matchingVariant || null);
+                          }
+                        }}
+                        disabled={outOfStock}
+                        className={cn(
+                          "min-w-[48px] px-4 py-2.5 rounded-xl border transition-all text-sm font-medium",
+                          isSelected
+                            ? "bg-[var(--accent)] text-[var(--bg)] border-[var(--accent)]"
+                            : outOfStock
+                            ? "bg-transparent text-[var(--text-secondary)] border-[var(--border)] opacity-40 cursor-not-allowed"
+                            : "bg-transparent text-[var(--text)] border-[var(--border)] hover:border-[var(--text-secondary)]"
+                        )}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -590,8 +660,10 @@ export default function ProductDetailPage() {
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                {product.stock !== undefined && product.stock <= 10 && (
-                  <p className="text-sm text-amber-400">Only {product.stock} left!</p>
+                {product.stock_quantity !== undefined && product.stock_quantity <= 10 && (
+                  <p className="text-sm text-amber-400">
+                    Only {product.stock_quantity} left!
+                  </p>
                 )}
               </div>
             </div>
@@ -669,7 +741,7 @@ export default function ProductDetailPage() {
               </AccordionItem>
 
               <AccordionItem title="Shipping & Returns">
-                {product.shipping_info || "Free standard shipping on all orders. Express shipping available at checkout. Returns accepted within 30 days of delivery. Items must be unused and in original packaging."}
+                Free standard shipping on all orders. Express shipping available at checkout. Returns accepted within 30 days of delivery. Items must be unused and in original packaging.
               </AccordionItem>
 
               <AccordionItem title="Care Instructions">
@@ -680,34 +752,57 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Reviews Section */}
-        {reviews.length > 0 && (
+        {product.reviews && product.reviews.length > 0 && (
           <div className="mt-20 pt-12 border-t border-white/5">
-            <h2 className="text-2xl font-bold text-white mb-8">Customer Reviews</h2>
+            <h2 className="text-2xl font-bold text-[var(--text)] mb-8">
+              Customer Reviews ({product.reviews.length})
+            </h2>
             <div className="space-y-6">
-              {reviews.map((review) => (
+              {product.reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="bg-zinc-900/50 border border-white/5 rounded-2xl p-6"
+                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center overflow-hidden">
-                        {review.avatar ? (
-                          <Image src={review.avatar} alt={review.author} width={40} height={40} className="w-full h-full object-cover" />
+                        {review.author?.avatar_url ? (
+                          <Image
+                            src={review.author.avatar_url}
+                            alt={review.author.full_name}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
-                          <span className="text-sm font-semibold text-white">
-                            {review.author.split(" ").map((n) => n[0]).join("")}
+                          <span className="text-sm font-semibold text-[var(--text)]">
+                            {(review.author?.full_name || "User")
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </span>
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-white">{review.author}</p>
-                        <p className="text-xs text-white/40">{review.date}</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">
+                          {review.author?.full_name || "Anonymous"}
+                        </p>
+                        <p className="text-xs text-[var(--text-secondary)]">
+                          {new Date(review.created_at).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </p>
                       </div>
                     </div>
                     <StarRating rating={review.rating} />
                   </div>
-                  <p className="text-white/70 leading-relaxed">{review.text}</p>
+                  {review.comment && (
+                    <p className="text-[var(--text-secondary)] leading-relaxed">
+                      {review.comment}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -717,7 +812,7 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-20 pt-12 border-t border-white/5">
-            <h2 className="text-2xl font-bold text-white mb-8">You May Also Like</h2>
+            <h2 className="text-2xl font-bold text-[var(--text)] mb-8">You May Also Like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {relatedProducts.map((relatedProduct) => (
                 <ProductCard
@@ -725,11 +820,10 @@ export default function ProductDetailPage() {
                   id={relatedProduct.id}
                   name={relatedProduct.name}
                   price={relatedProduct.price}
-                  originalPrice={relatedProduct.original_price}
-                  image={relatedProduct.images?.[0] || "https://picsum.photos/400"}
-                  rating={relatedProduct.rating}
-                  reviewCount={relatedProduct.review_count}
-                  category={relatedProduct.category}
+                  originalPrice={relatedProduct.compare_at_price}
+                  image={relatedProduct.primary_image || "https://picsum.photos/400"}
+                  rating={relatedProduct.avg_rating}
+                  category={relatedProduct.category?.name}
                 />
               ))}
             </div>
