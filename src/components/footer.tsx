@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { X, Camera, CircleUser, ArrowRight, Instagram, Facebook, Twitter } from "lucide-react";
+import { ArrowRight, Globe, Camera, CircleUser } from "lucide-react";
 import { useThemeStore } from "@/store/theme-store";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,9 @@ const SUPPORT_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { icon: Instagram, label: "Instagram", href: "https://instagram.com" },
-  { icon: Facebook, label: "Facebook", href: "https://facebook.com" },
-  { icon: X, label: "X (Twitter)", href: "https://twitter.com" },
+  { icon: Globe, label: "Website", href: "https://hermes.com" },
+  { icon: Camera, label: "Camera", href: "https://instagram.com" },
+  { icon: CircleUser, label: "Profile", href: "https://facebook.com" },
 ];
 
 export function Footer() {
