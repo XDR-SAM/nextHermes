@@ -68,12 +68,12 @@ export default function LoginPage() {
 
       // Store user data and token in localStorage
       if (data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("hermes_token", data.access_token);
       }
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("hermes_user", JSON.stringify(data.user));
 
       const redirectPath = getRedirectPath(data.user?.role);
-      router.push(redirectPath);
+      window.location.href = redirectPath;
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
