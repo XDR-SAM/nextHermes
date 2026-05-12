@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Filter, X, ChevronDown, SlidersHorizontal, Star } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
-import { supabase } from "@/lib/supabase-client";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -12,37 +11,42 @@ interface Product {
   id: string;
   name: string;
   slug: string;
+  description?: string;
   price: number;
-  original_price?: number;
-  images: string[];
-  rating?: number;
-  review_count?: number;
-  category?: string;
-  category_id?: string;
+  compare_at_price?: number;
+  primary_image?: string;
+  avg_rating?: number;
+  stock_quantity?: number;
   is_active: boolean;
+  created_at: string;
+  category?: { id: string; name: string; slug: string };
+  brand?: { id: string; name: string };
 }
 
 interface Category {
   id: string;
   name: string;
   slug: string;
+  product_count?: number;
 }
 
 // Filter and sort types
-type SortOption = "newest" | "price-asc" | "price-desc" | "rating";
+type SortOption = "newest" | "price_asc" | "price_desc" | "rating";
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "newest", label: "Newest" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
   { value: "rating", label: "Highest Rated" },
 ];
+
+const ITEMS_PER_PAGE = 12;
 
 // Skeleton loader
 function ProductSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-white/5 rounded-2xl overflow-hidden">
+      <div className="bg-[var(--bg-card)] rounded-2xl overflow-hidden border border-[var(--border)]">
         <div className="aspect-square bg-white/5" />
         <div className="p-4 space-y-3">
           <div className="h-3 bg-white/5 rounded w-3/4" />
@@ -60,10 +64,8 @@ function FilterSidebar({
   selectedCategories,
   minPrice,
   maxPrice,
-  selectedRating,
   onCategoryChange,
   onPriceChange,
-  onRatingChange,
   onReset,
   isOpen,
   onClose,
@@ -72,10 +74,8 @@ function FilterSidebar({
   selectedCategories: string[];
   minPrice: string;
   maxPrice: string;
-  selectedRating: number | null;
   onCategoryChange: (category: string) => void;
   onPriceChange: (min: string, max: string) => void;
-  onRatingChange: (rating: number | null) => void;
   onReset: () => void;
   isOpen: boolean;
   onClose: () => void;
@@ -115,24 +115,33 @@ function FilterSidebar({
             <div>
               <h4 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">Category</h4>
               <div className="space-y-2">
-                {categories.map((cat) => (
-                  <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(cat.slug)}
-                        onChange={() => onCategoryChange(cat.slug)}
-                        className="peer sr-only"
-                      />
-                      <div className="w-5 h-5 border border-white/20 rounded flex items-center justify-center peer-checked:bg-white peer-checked:border-white transition-colors">
-                        <svg className="w-3 h-3 text-black opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                {categories.length === 0 ? (
+                  <p className="text-sm text-[var(--text-secondary)]">Loading categories...</p>
+                ) : (
+                  categories.map((cat) => (
+                    <label key={cat.id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div className="relative flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(cat.slug)}
+                          onChange={() => onCategoryChange(cat.slug)}
+                          className="peer sr-only"
+                        />
+                        <div className="w-5 h-5 border border-white/20 rounded flex items-center justify-center peer-checked:bg-white peer-checked:border-white transition-colors">
+                          <svg className="w-3 h-3 text-black opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text)] transition-colors">{cat.name}</span>
-                  </label>
-                ))}
+                      <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text)] transition-colors">
+                        {cat.name}
+                        {cat.product_count !== undefined && (
+                          <span className="ml-1 text-xs opacity-50">({cat.product_count})</span>
+                        )}
+                      </span>
+                    </label>
+                  ))
+                )}
               </div>
             </div>
 
@@ -162,38 +171,6 @@ function FilterSidebar({
               </div>
             </div>
 
-            {/* Rating */}
-            <div>
-              <h4 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-widest mb-3">Rating</h4>
-              <div className="space-y-2">
-                {[4, 3, 2, 1].map((rating) => (
-                  <label key={rating} className="flex items-center gap-2.5 cursor-pointer group">
-                    <div className="relative flex items-center">
-                      <input
-                        type="radio"
-                        name="rating"
-                        checked={selectedRating === rating}
-                        onChange={() => onRatingChange(selectedRating === rating ? null : rating)}
-                        className="peer sr-only"
-                      />
-                      <div className="w-5 h-5 border border-white/20 rounded-full flex items-center justify-center peer-checked:bg-white peer-checked:border-white transition-colors">
-                        <div className="w-2 h-2 bg-black rounded-full opacity-0 peer-checked:opacity-100" />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={cn("w-3 h-3", i < rating ? "text-yellow-400 fill-yellow-400" : "text-white/20")}
-                        />
-                      ))}
-                      <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text)] transition-colors ml-1">& Up</span>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-
             {/* Reset */}
             <button
               onClick={onReset}
@@ -214,119 +191,128 @@ export default function ProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
 
-  // Fetch data
+  // Pagination
+  const [page, setPage] = useState(1);
+
+  // Build URL params from filters
+  const buildParams = useCallback((pageNum: number) => {
+    const params = new URLSearchParams();
+    params.set("limit", String(ITEMS_PER_PAGE));
+    params.set("offset", String((pageNum - 1) * ITEMS_PER_PAGE));
+    params.set("sort", sortBy);
+    if (minPrice) params.set("min_price", minPrice);
+    if (maxPrice) params.set("max_price", maxPrice);
+    if (selectedCategories.length === 1) params.set("category_slug", selectedCategories[0]);
+    return params;
+  }, [sortBy, minPrice, maxPrice, selectedCategories]);
+
+  // Sync URL search params to state on mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("category");
+    const search = params.get("search");
+    const sort = params.get("sort") as SortOption | null;
+    const min = params.get("min_price") || "";
+    const max = params.get("max_price") || "";
+    const pageParam = params.get("page");
+
+    if (cat) setSelectedCategories([cat]);
+    if (sort && SORT_OPTIONS.some(o => o.value === sort)) setSortBy(sort);
+    if (min) setMinPrice(min);
+    if (max) setMaxPrice(max);
+    if (pageParam) setPage(parseInt(pageParam, 10) || 1);
+  }, []);
+
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategories.length === 1) params.set("category", selectedCategories[0]);
+    if (minPrice) params.set("min_price", minPrice);
+    if (maxPrice) params.set("max_price", maxPrice);
+    if (sortBy !== "newest") params.set("sort", sortBy);
+    if (page > 1) params.set("page", String(page));
+
+    const query = params.toString();
+    const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState({}, "", newUrl);
+  }, [selectedCategories, minPrice, maxPrice, sortBy, page]);
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
       try {
-        // Fetch categories
-        const { data: categoriesData } = await supabase
-          .from("categories")
-          .select("id, name, slug")
-          .order("name");
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        if (data.categories) setCategories(data.categories);
+      } catch {
+        // Silently fail, categories are optional
+      }
+    };
+    fetchCategories();
+  }, []);
 
-        // Fetch products
-        const { data: productsData } = await supabase
-          .from("products")
-          .select("*, categories(name, slug)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false });
+  // Fetch products from API route
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params = buildParams(page);
+        const res = await fetch(`/api/products?${params.toString()}`);
+        const data = await res.json();
 
-        const transformedProducts = (productsData || []).map((p: any) => ({
-          ...p,
-          images: p.images || [],
-          category: p.categories?.name,
-          category_id: p.categories?.id,
-        }));
+        if (!res.ok) {
+          setError(data.error || "Failed to load products");
+          return;
+        }
 
-        setCategories(categoriesData || []);
-        setProducts(transformedProducts);
-      } catch (error) {
-        console.error("Error fetching products:", error);
+        setProducts(data.products || []);
+      } catch {
+        setError("Network error. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
+    fetchProducts();
+  }, [buildParams, page]);
 
   // Filter handlers
   const handleCategoryChange = (slug: string) => {
     setSelectedCategories((prev) =>
       prev.includes(slug) ? prev.filter((c) => c !== slug) : [...prev, slug]
     );
+    setPage(1);
   };
 
   const handlePriceChange = (min: string, max: string) => {
     setMinPrice(min);
     setMaxPrice(max);
+    setPage(1);
   };
 
-  const handleRatingChange = (rating: number | null) => {
-    setSelectedRating(rating);
+  const handleSortChange = (sort: SortOption) => {
+    setSortBy(sort);
+    setPage(1);
   };
 
   const handleReset = () => {
     setSelectedCategories([]);
     setMinPrice("");
     setMaxPrice("");
-    setSelectedRating(null);
     setSortBy("newest");
+    setPage(1);
   };
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    // Category filter
-    if (selectedCategories.length > 0) {
-      result = result.filter((p) => {
-        const catSlug = (p as any).categories?.slug;
-        return selectedCategories.includes(catSlug);
-      });
-    }
-
-    // Price filter
-    if (minPrice) {
-      result = result.filter((p) => p.price >= parseFloat(minPrice));
-    }
-    if (maxPrice) {
-      result = result.filter((p) => p.price <= parseFloat(maxPrice));
-    }
-
-    // Rating filter
-    if (selectedRating) {
-      result = result.filter((p) => (p.rating || 0) >= selectedRating);
-    }
-
-    // Sort
-    switch (sortBy) {
-      case "price-asc":
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-        break;
-      case "newest":
-      default:
-        // Already sorted by created_at desc from Supabase
-        break;
-    }
-
-    return result;
-  }, [products, selectedCategories, minPrice, maxPrice, selectedRating, sortBy]);
+  const totalPages = Math.ceil((products.length || 0) / ITEMS_PER_PAGE);
 
   return (
     <main className="min-h-screen bg-[var(--bg)]">
@@ -335,7 +321,7 @@ export default function ProductsPage() {
         <div className="container mx-auto px-6 py-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-2">All Products</h1>
           <p className="text-[var(--text-secondary)]">
-            {loading ? "Loading..." : `${filteredProducts.length} products found`}
+            {loading ? "Loading..." : `${products.length} products found`}
           </p>
         </div>
       </div>
@@ -349,10 +335,8 @@ export default function ProductsPage() {
             selectedCategories={selectedCategories}
             minPrice={minPrice}
             maxPrice={maxPrice}
-            selectedRating={selectedRating}
             onCategoryChange={handleCategoryChange}
             onPriceChange={handlePriceChange}
-            onRatingChange={handleRatingChange}
             onReset={handleReset}
             isOpen={filterOpen}
             onClose={() => setFilterOpen(false)}
@@ -369,22 +353,22 @@ export default function ProductsPage() {
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 Filters
-                {(selectedCategories.length > 0 || minPrice || maxPrice || selectedRating) && (
+                {(selectedCategories.length > 0 || minPrice || maxPrice) && (
                   <span className="w-5 h-5 bg-[var(--accent)] text-[var(--bg)] rounded-full text-xs flex items-center justify-center">
-                    {selectedCategories.length + (minPrice ? 1 : 0) + (maxPrice ? 1 : 0) + (selectedRating ? 1 : 0)}
+                    {selectedCategories.length + (minPrice ? 1 : 0) + (maxPrice ? 1 : 0)}
                   </span>
                 )}
               </button>
 
               <div className="hidden lg:block text-sm text-[var(--text-secondary)]">
-                Showing {filteredProducts.length} products
+                {loading ? "" : `Showing ${products.length} products`}
               </div>
 
               {/* Sort */}
               <div className="relative">
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  onChange={(e) => handleSortChange(e.target.value as SortOption)}
                   className="appearance-none bg-white/5 border border-[var(--border)] rounded-full px-4 py-2 pr-10 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--text-secondary)] cursor-pointer hover:bg-white/10 transition-colors"
                 >
                   {SORT_OPTIONS.map((option) => (
@@ -416,6 +400,19 @@ export default function ProductsPage() {
               </div>
             )}
 
+            {/* Error State */}
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-[var(--text-secondary)] mb-4">{error}</p>
+                <button
+                  onClick={() => setPage(page)}
+                  className="text-[var(--text)] underline underline-offset-2 hover:text-[var(--text-secondary)] transition-colors"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+
             {/* Product Grid */}
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -423,7 +420,7 @@ export default function ProductsPage() {
                   <ProductSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredProducts.length === 0 ? (
+            ) : !error && products.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-[var(--text-secondary)] mb-4">No products found matching your criteria.</p>
                 <button
@@ -434,34 +431,78 @@ export default function ProductsPage() {
                 </button>
               </div>
             ) : (
-              <motion.div
-                layout
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
-              >
-                <AnimatePresence mode="popLayout">
-                  {filteredProducts.map((product) => (
-                    <motion.div
-                      key={product.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
+              <>
+                <motion.div
+                  layout
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+                >
+                  <AnimatePresence mode="popLayout">
+                    {products.map((product) => (
+                      <motion.div
+                        key={product.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ProductCard
+                          id={product.id}
+                          name={product.name}
+                          price={product.price}
+                          originalPrice={product.compare_at_price}
+                          image={product.primary_image || "https://picsum.photos/400"}
+                          rating={product.avg_rating}
+                          category={product.category?.name}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
                     >
-                      <ProductCard
-                        id={product.id}
-                        name={product.name}
-                        price={product.price}
-                        originalPrice={product.original_price}
-                        image={product.images?.[0] || "https://picsum.photos/400"}
-                        rating={product.rating}
-                        reviewCount={product.review_count}
-                        category={product.category}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={cn(
+                            "w-10 h-10 rounded-full text-sm font-medium transition-colors",
+                            page === pageNum
+                              ? "bg-[var(--accent)] text-[var(--bg)]"
+                              : "border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]"
+                          )}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="w-10 h-10 rounded-full border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)] hover:border-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
