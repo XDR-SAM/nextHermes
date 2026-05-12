@@ -30,9 +30,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         user: {
-          id: user.id,
-          email: user.email,
           ...profile,
+          email: user.email,
         },
       },
       { status: 200 }
