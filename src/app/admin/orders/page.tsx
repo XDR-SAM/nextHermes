@@ -1,0 +1,443 @@
+"use client";
+import { useEffect, useState, useCallback } from "react";
+import { createClient } from "@/utils/supabase/client";
+
+interface OrderItem {
+  id: string;
+  product_id: string;
+  quantity: number;
+  price: number;
+  products: { name: string; image_url: string | null } | null;
+}
+
+interface Order {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  total: number;
+  status: string;
+  shipping_address: string | null;
+  billing_address: string | null;
+  notes: string | null;
+  profiles: { full_name: string | null; email: string } | null;
+  order_items: OrderItem[] | null;
+}
+
+const STATUS_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
+
+const STATUS_STYLES: Record<string, { bg: string; color: string; border: string }> = {
+  pending: { bg: "rgba(234, 179, 8, 0.1)", color: "#eab308", border: "rgba(234, 179, 8, 0.3)" },
+  processing: { bg: "rgba(59, 130, 246, 0.1)", color: "#3b82f6", border: "rgba(59, 130, 246, 0.3)" },
+  shipped: { bg: "rgba(168, 85, 247, 0.1)", color: "#a855f7", border: "rgba(168, 85, 247, 0.3)" },
+  delivered: { bg: "rgba(34, 197, 94, 0.1)", color: "#22c55e", border: "rgba(34, 197, 94, 0.3)" },
+  cancelled: { bg: "rgba(239, 68, 68, 0.1)", color: "#ef4444", border: "rgba(239, 68, 68, 0.3)" },
+};
+
+export default function OrdersPage() {
+  const supabase = createClient();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    let query = supabase
+      .from("orders")
+      .select("*, profiles(full_name, email)")
+      .order("created_at", { ascending: false });
+
+    if (statusFilter !== "all") {
+      query = query.eq("status", statusFilter);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      showToast(`Failed to load orders: ${error.message}`, "error");
+    } else {
+      setOrders((data || []) as Order[]);
+    }
+    setLoading(false);
+  }, [supabase, statusFilter]);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const formatDate = (d: string) => new Date(d).toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
+  });
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+
+  const viewOrderDetails = async (order: Order) => {
+    const { data } = await supabase
+      .from("order_items")
+      .select("*, products(name, image_url)")
+      .eq("order_id", order.id);
+    setSelectedOrder({ ...order, order_items: (data || []) as OrderItem[] });
+  };
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    setUpdatingStatus(true);
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .eq("id", orderId);
+
+    setUpdatingStatus(false);
+
+    if (error) {
+      showToast(`Failed to update status: ${error.message}`, "error");
+    } else {
+      showToast(`Order status updated to ${newStatus}!`, "success");
+      loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
+      }
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Orders</h1>
+          <p style={{ color: "var(--text-secondary)", margin: 0 }}>{orders.length} orders</p>
+        </div>
+      </div>
+
+      {/* Status Filters */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
+        <button
+          onClick={() => setStatusFilter("all")}
+          style={{
+            padding: "8px 16px", borderRadius: "8px", border: "1px solid",
+            borderColor: statusFilter === "all" ? "#3b82f6" : "var(--border)",
+            background: statusFilter === "all" ? "rgba(59,130,246,0.1)" : "transparent",
+            color: statusFilter === "all" ? "#3b82f6" : "var(--text-secondary)",
+            fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s ease"
+          }}
+        >
+          All Orders
+        </button>
+        {STATUS_OPTIONS.map(status => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            style={{
+              padding: "8px 16px", borderRadius: "8px", border: "1px solid",
+              borderColor: statusFilter === status ? STATUS_STYLES[status].color : "var(--border)",
+              background: statusFilter === status ? STATUS_STYLES[status].bg : "transparent",
+              color: statusFilter === status ? STATUS_STYLES[status].color : "var(--text-secondary)",
+              fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s ease",
+              textTransform: "capitalize"
+            }}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div style={{
+        background: "var(--bg-card)", border: "1px solid var(--border)",
+        borderRadius: "12px", overflow: "hidden"
+      }}>
+        {loading ? (
+          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+            Loading orders...
+          </div>
+        ) : orders.length === 0 ? (
+          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+            No orders found
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                  {["Order ID", "Customer", "Date", "Total", "Status", "Actions"].map(h => (
+                    <th key={h} style={{
+                      padding: "14px 16px", textAlign: "left", fontSize: "12px",
+                      color: "var(--text-secondary)", fontWeight: "600",
+                      textTransform: "uppercase", letterSpacing: "0.5px"
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(order => {
+                  const statusStyle = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
+                  return (
+                    <tr key={order.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                      <td style={{ padding: "14px 16px" }}>
+                        <span style={{
+                          fontSize: "13px", fontFamily: "monospace", color: "var(--text)",
+                          background: "var(--bg-secondary)", padding: "4px 8px",
+                          borderRadius: "4px"
+                        }}>
+                          #{order.id.slice(0, 8).toUpperCase()}
+                        </span>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                          {order.profiles?.full_name || "Guest"}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                          {order.profiles?.email || "—"}
+                        </div>
+                      </td>
+                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                        {formatDate(order.created_at)}
+                      </td>
+                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                        {formatCurrency(order.total)}
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <select
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          disabled={updatingStatus}
+                          style={{
+                            padding: "6px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600",
+                            border: "1px solid", borderColor: statusStyle.border,
+                            background: statusStyle.bg, color: statusStyle.color,
+                            cursor: updatingStatus ? "not-allowed" : "pointer",
+                            outline: "none", textTransform: "capitalize", appearance: "auto"
+                          }}
+                        >
+                          {STATUS_OPTIONS.map(s => (
+                            <option key={s} value={s} style={{ background: "var(--bg)" }}>{s}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        <button onClick={() => viewOrderDetails(order)} style={{
+                          padding: "6px 12px", borderRadius: "6px", border: "1px solid var(--border)",
+                          background: "transparent", color: "var(--text)", fontSize: "12px",
+                          cursor: "pointer", transition: "all 0.15s ease"
+                        }}>
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 100, padding: "20px"
+        }}
+        onClick={(e) => e.target === e.currentTarget && setSelectedOrder(null)}>
+          <div style={{
+            background: "var(--bg-card)", border: "1px solid var(--border)",
+            borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh",
+            overflow: "auto"
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: "20px 24px", borderBottom: "1px solid var(--border)",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              position: "sticky", top: 0, background: "var(--bg-card)", zIndex: 10
+            }}>
+              <div>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>
+                  Order #{selectedOrder.id.slice(0, 8).toUpperCase()}
+                </h2>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
+                  {formatDate(selectedOrder.created_at)}
+                </p>
+              </div>
+              <button onClick={() => setSelectedOrder(null)} style={{
+                padding: "8px", border: "none", background: "transparent",
+                color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px"
+              }}>✕</button>
+            </div>
+
+            <div style={{ padding: "24px" }}>
+              {/* Status & Summary */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "24px" }}>
+                <div style={{
+                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                }}>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px", fontWeight: "600" }}>
+                    STATUS
+                  </div>
+                  <select
+                    value={selectedOrder.status}
+                    onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
+                    disabled={updatingStatus}
+                    style={{
+                      width: "100%", padding: "8px 12px", borderRadius: "6px", fontSize: "14px", fontWeight: "600",
+                      border: "1px solid", background: STATUS_STYLES[selectedOrder.status]?.bg || "transparent",
+                      borderColor: STATUS_STYLES[selectedOrder.status]?.border || "var(--border)",
+                      color: STATUS_STYLES[selectedOrder.status]?.color || "var(--text)",
+                      cursor: updatingStatus ? "not-allowed" : "pointer", outline: "none", textTransform: "capitalize"
+                    }}
+                  >
+                    {STATUS_OPTIONS.map(s => (
+                      <option key={s} value={s} style={{ background: "var(--bg)" }}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{
+                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                }}>
+                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px", fontWeight: "600" }}>
+                    ORDER TOTAL
+                  </div>
+                  <div style={{ fontSize: "24px", fontWeight: "700", color: "var(--text)" }}>
+                    {formatCurrency(selectedOrder.total)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Info */}
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 12px" }}>
+                  Customer Information
+                </h3>
+                <div style={{
+                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                }}>
+                  <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                    {selectedOrder.profiles?.full_name || "Guest"}
+                  </div>
+                  <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                    {selectedOrder.profiles?.email || "—"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div style={{ marginBottom: "24px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 12px" }}>
+                  Order Items
+                </h3>
+                {selectedOrder.order_items && selectedOrder.order_items.length > 0 ? (
+                  <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                    {selectedOrder.order_items.map((item, index) => (
+                      <div key={item.id} style={{
+                        padding: "14px 16px",
+                        display: "flex", alignItems: "center", gap: "12px",
+                        borderBottom: index < selectedOrder.order_items!.length - 1 ? "1px solid var(--border)" : "none"
+                      }}>
+                        {item.products?.image_url ? (
+                          <img src={item.products.image_url} alt={item.products.name}
+                            style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "6px" }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: "48px", height: "48px", borderRadius: "6px",
+                            background: "var(--bg-secondary)", display: "flex",
+                            alignItems: "center", justifyContent: "center", fontSize: "18px"
+                          }}>📦</div>
+                        )}
+                        <div style={{ flex: "1" }}>
+                          <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                            {item.products?.name || "Unknown Product"}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                            Qty: {item.quantity} × {formatCurrency(item.price)}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                          {formatCurrency(item.quantity * item.price)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{
+                    padding: "24px", textAlign: "center", color: "var(--text-secondary)",
+                    background: "var(--bg-secondary)", borderRadius: "8px"
+                  }}>
+                    No items found for this order
+                  </div>
+                )}
+              </div>
+
+              {/* Addresses */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                {[
+                  { label: "Shipping Address", value: selectedOrder.shipping_address },
+                  { label: "Billing Address", value: selectedOrder.billing_address },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 8px" }}>
+                      {label}
+                    </h3>
+                    <div style={{
+                      padding: "12px", background: "var(--bg-secondary)", borderRadius: "8px",
+                      fontSize: "13px", color: "var(--text-secondary)", minHeight: "60px"
+                    }}>
+                      {value || "Not provided"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Notes */}
+              {selectedOrder.notes && (
+                <div style={{ marginTop: "16px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 8px" }}>
+                    Order Notes
+                  </h3>
+                  <div style={{
+                    padding: "12px", background: "var(--bg-secondary)", borderRadius: "8px",
+                    fontSize: "13px", color: "var(--text-secondary)"
+                  }}>
+                    {selectedOrder.notes}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: "24px", right: "24px",
+          padding: "14px 20px", borderRadius: "8px",
+          background: toast.type === "success" ? "#22c55e" : "#ef4444",
+          color: "#fff", fontSize: "14px", fontWeight: "500",
+          zIndex: 200, animation: "slideIn 0.3s ease"
+        }}>
+          {toast.message}
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 640px) {
+          div[style*="gridTemplateColumns: 1fr 1fr"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
