@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { signUp } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -24,7 +22,6 @@ const EyeIcon = ({ open }: { open: boolean }) => (
 );
 
 export default function SignupPage() {
-  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,12 +37,12 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
     if (!agreed) {
@@ -54,10 +51,27 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-    const { error } = await signUp(email, password, fullName);
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    setEmailSent(true);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, fullName }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to create account. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      setEmailSent(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Success state
@@ -211,7 +225,7 @@ export default function SignupPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min 6 characters"
+                  placeholder="Min 8 characters"
                   required
                   disabled={loading}
                   className="w-full pr-10"
@@ -220,6 +234,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <EyeIcon open={showPassword} />
                 </button>
@@ -248,6 +263,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                 >
                   <EyeIcon open={showConfirm} />
                 </button>
@@ -269,6 +285,7 @@ export default function SignupPage() {
                   borderColor: agreed ? "transparent" : "rgba(255,255,255,0.2)",
                   background: agreed ? "white" : "transparent",
                 }}
+                aria-label="Toggle terms agreement"
               >
                 {agreed && (
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
