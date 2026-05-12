@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { signIn } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { UserRole } from "@/lib/types";
 
-// SVG icons
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -33,6 +32,12 @@ const EyeIcon = ({ open }: { open: boolean }) => (
   )
 );
 
+function getRedirectPath(role: UserRole | undefined): string {
+  if (role === "super_admin" || role === "admin" || role === "moderator") return "/admin";
+  if (role === "user") return "/dashboard";
+  return "/";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -45,18 +50,40 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const { error } = await signIn(email, password);
-    setLoading(false);
-    if (error) { setError(error.message); return; }
-    router.push("/");
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Invalid email or password.");
+        setLoading(false);
+        return;
+      }
+
+      // Store user data and token in localStorage
+      if (data.access_token) {
+        localStorage.setItem("access_token", data.access_token);
+      }
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      const redirectPath = getRedirectPath(data.user?.role);
+      router.push(redirectPath);
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
-    setError("");
-    setLoading(true);
-    const { error } = await signIn(email, password); // placeholder – Google OAuth handled via Supabase redirect
-    setLoading(false);
-    if (error) setError("Please fill in your credentials or use Google OAuth.");
+    // Google OAuth would be handled via Supabase redirect.
+    // For now, show a friendly message.
+    setError("Please use the Google sign-in button on the auth page.");
   };
 
   return (
@@ -160,6 +187,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <EyeIcon open={showPassword} />
                 </button>
