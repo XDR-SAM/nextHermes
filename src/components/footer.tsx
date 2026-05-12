@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Twitter, Instagram, Facebook, ArrowRight } from "lucide-react";
+import { X, Camera, CircleUser, ArrowRight } from "lucide-react";
 
 const FOOTER_LINKS = {
   "Quick Links": [
@@ -29,9 +29,9 @@ const FOOTER_LINKS = {
 };
 
 const SOCIAL_LINKS = [
-  { icon: Twitter, label: "Twitter / X", href: "https://twitter.com" },
-  { icon: Instagram, label: "Instagram", href: "https://instagram.com" },
-  { icon: Facebook, label: "Facebook", href: "https://facebook.com" },
+  { icon: X, label: "Twitter / X", href: "https://twitter.com" },
+  { icon: Camera, label: "Camera", href: "https://instagram.com" },
+  { icon: CircleUser, label: "CircleUser", href: "https://facebook.com" },
 ];
 
 export function Footer() {

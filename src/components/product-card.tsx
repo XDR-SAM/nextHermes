@@ -100,7 +100,7 @@ export function ProductCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link
-        href={`/product/${id}`}
+        href={`/products/${id}`}
         className="block bg-[#0d0d0d] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-2xl hover:shadow-black/50"
       >
         {/* Image Container */}
