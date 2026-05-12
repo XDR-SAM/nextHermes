@@ -93,22 +93,15 @@ export function Navbar() {
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           isScrolled
-            ? isDark
-              ? "bg-black/90 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.1)]"
-              : "bg-white/90 backdrop-blur-md shadow-[0_1px_0_rgba(0,0,0,0.1)]"
-            : isDark
-            ? "bg-black/80"
-            : "bg-white/80"
+            ? "bg-[var(--bg)]/90 dark:bg-black/90 backdrop-blur-md shadow-[0_1px_0_var(--border)] dark:shadow-[0_1px_0_rgba(255,255,255,0.1)]"
+            : "bg-[var(--bg)]/80 dark:bg-black/80"
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link
             href="/"
-            className={cn(
-              "font-bold text-xl tracking-[0.2em] shrink-0 transition-colors",
-              isDark ? "text-white" : "text-black"
-            )}
+            className="font-bold text-xl tracking-[0.2em] shrink-0 text-[var(--text)] dark:text-white transition-colors"
           >
             HERMES
           </Link>
@@ -116,10 +109,7 @@ export function Navbar() {
           {/* Desktop Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
             <div className="relative w-full">
-              <Search className={cn(
-                "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors",
-                isDark ? "text-gray-400" : "text-gray-500"
-              )} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-secondary)]" />
               <input
                 type="text"
                 placeholder="Search products..."
@@ -127,9 +117,9 @@ export function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
                   "w-full border rounded-full py-2 pl-10 pr-4 text-sm placeholder:transition-colors focus:outline-none transition-all",
-                  isDark
-                    ? "bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-white/10"
-                    : "bg-black/5 border-black/10 text-black placeholder:text-gray-400 focus:border-black/30 focus:bg-black/10"
+                  "bg-[var(--glass-bg)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-secondary)]",
+                  "focus:border-[var(--text-secondary)] dark:focus:border-white/30",
+                  "dark:bg-white/5 dark:border-white/10 dark:placeholder:text-gray-500 dark:focus:bg-white/10"
                 )}
               />
             </div>
@@ -140,12 +130,7 @@ export function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className={cn(
-                "p-2 rounded-full transition-all",
-                isDark
-                  ? "text-white/80 hover:text-white hover:bg-white/10"
-                  : "text-black/60 hover:text-black hover:bg-black/10"
-              )}
+              className="p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
               aria-label="Toggle theme"
             >
               <AnimatePresence mode="wait">
@@ -176,19 +161,11 @@ export function Navbar() {
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className={cn(
-                "relative p-2 rounded-full transition-all",
-                isDark
-                  ? "text-white/80 hover:text-white hover:bg-white/10"
-                  : "text-black/60 hover:text-black hover:bg-black/10"
-              )}
+              className="relative p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
             >
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && (
-                <span className={cn(
-                  "absolute -top-0.5 -right-0.5 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center",
-                  isDark ? "bg-white text-black" : "bg-black text-white"
-                )}>
+                <span className="absolute -top-0.5 -right-0.5 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-[var(--accent)] text-[var(--bg)]">
                   {wishlistCount}
                 </span>
               )}
@@ -197,12 +174,7 @@ export function Navbar() {
             {/* Cart */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className={cn(
-                "relative p-2 rounded-full transition-all",
-                isDark
-                  ? "text-white/80 hover:text-white hover:bg-white/10"
-                  : "text-black/60 hover:text-black hover:bg-black/10"
-              )}
+              className="relative p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
@@ -210,10 +182,7 @@ export function Navbar() {
                   key={cartCount}
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className={cn(
-                    "absolute -top-0.5 -right-0.5 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center",
-                    isDark ? "bg-white text-black" : "bg-black text-white"
-                  )}
+                  className="absolute -top-0.5 -right-0.5 text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-[var(--accent)] text-[var(--bg)]"
                 >
                   {cartCount}
                 </motion.span>
@@ -224,12 +193,7 @@ export function Navbar() {
             <div className="relative ml-1">
               <button
                 onClick={() => setIsUserDropdownOpen((prev) => !prev)}
-                className={cn(
-                  "flex items-center gap-1 p-2 rounded-full transition-all",
-                  isDark
-                    ? "text-white/80 hover:text-white hover:bg-white/10"
-                    : "text-black/60 hover:text-black hover:bg-black/10"
-                )}
+                className="flex items-center gap-1 p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
               >
                 <User className="w-5 h-5" />
                 <ChevronDown className="w-3 h-3" />
@@ -242,25 +206,11 @@ export function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className={cn(
-                      "absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl overflow-hidden border",
-                      isDark
-                        ? "bg-[#111] border-white/10"
-                        : "bg-white border-black/10"
-                    )}
+                    className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl overflow-hidden border bg-[var(--bg-card)] border-[var(--border)]"
                   >
-                    <div className={cn(
-                      "px-4 py-3 border-b",
-                      isDark ? "border-white/5" : "border-black/5"
-                    )}>
-                      <p className={cn(
-                        "text-sm font-medium",
-                        isDark ? "text-white" : "text-black"
-                      )}>John Doe</p>
-                      <p className={cn(
-                        "text-xs",
-                        isDark ? "text-gray-500" : "text-gray-400"
-                      )}>john@example.com</p>
+                    <div className="px-4 py-3 border-b border-[var(--border)]">
+                      <p className="text-sm font-medium text-[var(--text)]">John Doe</p>
+                      <p className="text-xs text-[var(--text-secondary)]">john@example.com</p>
                     </div>
                     <div className="p-1">
                       {[
@@ -272,12 +222,7 @@ export function Navbar() {
                           key={label}
                           href={href}
                           onClick={() => setIsUserDropdownOpen(false)}
-                          className={cn(
-                            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                            isDark
-                              ? "text-white/70 hover:text-white hover:bg-white/10"
-                              : "text-black/70 hover:text-black hover:bg-black/10"
-                          )}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--glass-bg)] dark:text-white/70 dark:hover:text-white dark:hover:bg-white/10"
                         >
                           <Icon className="w-4 h-4" />
                           {label}
@@ -303,18 +248,10 @@ export function Navbar() {
               <Link
                 key={link.label}
                 href={link.href}
-                className={cn(
-                  "text-sm font-medium transition-colors relative group",
-                  isDark
-                    ? "text-white/70 hover:text-white"
-                    : "text-black/70 hover:text-black"
-                )}
+                className="text-sm font-medium transition-colors relative group text-[var(--text-secondary)] dark:text-white/70 hover:text-[var(--text)] dark:hover:text-white"
               >
                 {link.label}
-                <span className={cn(
-                  "absolute -bottom-0.5 left-0 w-0 h-px transition-all duration-300 group-hover:w-full",
-                  isDark ? "bg-white" : "bg-black"
-                )} />
+                <span className="absolute -bottom-0.5 left-0 w-0 h-px transition-all duration-300 group-hover:w-full bg-[var(--text-secondary)] dark:bg-white" />
               </Link>
             ))}
           </nav>
@@ -322,12 +259,7 @@ export function Navbar() {
           {/* Mobile Hamburger */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className={cn(
-              "md:hidden p-2 rounded-full transition-all",
-              isDark
-                ? "text-white/80 hover:text-white hover:bg-white/10"
-                : "text-black/60 hover:text-black hover:bg-black/10"
-            )}
+            className="md:hidden p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -342,49 +274,29 @@ export function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className={cn(
-              "fixed inset-0 z-[60] flex flex-col backdrop-blur-xl",
-              isDark ? "bg-black/95" : "bg-white/95"
-            )}
+            className="fixed inset-0 z-[60] flex flex-col backdrop-blur-xl bg-[var(--bg)] dark:bg-black/95"
           >
             {/* Mobile Menu Header */}
-            <div className={cn(
-              "flex items-center justify-between px-6 h-16 border-b",
-              isDark ? "border-white/10" : "border-black/10"
-            )}>
+            <div className="flex items-center justify-between px-6 h-16 border-b border-[var(--border)] dark:border-white/10">
               <Link
                 href="/"
-                className={cn(
-                  "font-bold text-xl tracking-[0.2em]",
-                  isDark ? "text-white" : "text-black"
-                )}
+                className="font-bold text-xl tracking-[0.2em] text-[var(--text)] dark:text-white"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 HERMES
               </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "p-2 rounded-full transition-all",
-                  isDark
-                    ? "text-white/80 hover:text-white hover:bg-white/10"
-                    : "text-black/60 hover:text-black hover:bg-black/10"
-                )}
+                className="p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Mobile Search */}
-            <div className={cn(
-              "px-6 py-4 border-b",
-              isDark ? "border-white/5" : "border-black/5"
-            )}>
+            <div className="px-6 py-4 border-b border-[var(--border)] dark:border-white/5">
               <div className="relative">
-                <Search className={cn(
-                  "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none",
-                  isDark ? "text-gray-400" : "text-gray-500"
-                )} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-secondary)]" />
                 <input
                   type="text"
                   placeholder="Search products..."
@@ -392,9 +304,8 @@ export function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={cn(
                     "w-full border rounded-full py-2.5 pl-10 pr-4 text-sm placeholder:transition-colors focus:outline-none transition-all",
-                    isDark
-                      ? "bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30"
-                      : "bg-black/5 border-black/10 text-black placeholder:text-gray-400 focus:border-black/30"
+                    "bg-[var(--glass-bg)] border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-secondary)]",
+                    "dark:bg-white/5 dark:border-white/10 dark:placeholder:text-gray-500 dark:focus:border-white/30"
                   )}
                 />
               </div>
@@ -417,12 +328,7 @@ export function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={cn(
-                        "block py-4 text-2xl font-light border-b transition-colors",
-                        isDark
-                          ? "text-white/80 hover:text-white border-white/5"
-                          : "text-black/80 hover:text-black border-black/5"
-                      )}
+                      className="block py-4 text-2xl font-light border-b text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white border-[var(--border)] dark:border-white/5"
                     >
                       {link.label}
                     </Link>
@@ -432,18 +338,14 @@ export function Navbar() {
             </nav>
 
             {/* Mobile Bottom Actions */}
-            <div className={cn(
-              "px-6 py-6 border-t flex items-center gap-4",
-              isDark ? "border-white/10" : "border-black/10"
-            )}>
+            <div className="px-6 py-6 border-t border-[var(--border)] dark:border-white/10 flex items-center gap-4">
               {/* Theme toggle in mobile */}
               <button
                 onClick={() => { setIsMobileMenuOpen(false); toggleTheme(); }}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
-                  isDark
-                    ? "border-white/20 text-white/80 hover:text-white hover:border-white/40"
-                    : "border-black/20 text-black/80 hover:text-black hover:border-black/40"
+                  "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                  "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
                 )}
               >
                 {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -455,9 +357,8 @@ export function Navbar() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
-                  isDark
-                    ? "border-white/20 text-white/80 hover:text-white hover:border-white/40"
-                    : "border-black/20 text-black/80 hover:text-black hover:border-black/40"
+                  "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                  "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
                 )}
               >
                 <Heart className="w-4 h-4" />
@@ -474,12 +375,7 @@ export function Navbar() {
                   setIsMobileMenuOpen(false);
                   setIsCartOpen(true);
                 }}
-                className={cn(
-                  "w-full flex items-center justify-center gap-2 py-3 rounded-full font-medium text-sm transition-all",
-                  isDark
-                    ? "bg-white text-black hover:bg-white/90"
-                    : "bg-black text-white hover:bg-black/90"
-                )}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-medium text-sm transition-all bg-[var(--accent)] text-[var(--bg)] hover:opacity-90"
               >
                 <ShoppingCart className="w-4 h-4" />
                 Cart {cartCount > 0 && `(${cartCount})`}
