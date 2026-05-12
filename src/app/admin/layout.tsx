@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -7,9 +7,11 @@ import type { Profile } from "@/lib/types";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/types";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
+  { href: "/admin", label: "Overview", icon: "📊" },
+  { href: "/admin/products", label: "Products", icon: "📦" },
+  { href: "/admin/categories", label: "Categories", icon: "🏷️" },
+  { href: "/admin/orders", label: "Orders", icon: "🛒" },
   { href: "/admin/users", label: "Users", icon: "👥" },
-  { href: "/admin/tenants", label: "Tenants", icon: "🏢" },
   { href: "/admin/settings", label: "Settings", icon: "⚙️" },
 ];
 
@@ -19,6 +21,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const supabase = createClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -30,59 +33,226 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setLoading(false);
     };
     checkAuth();
-  }, [pathname]);
+  }, [pathname, router, supabase]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
   };
 
+  const getPageTitle = useCallback(() => {
+    const current = navItems.find(item => item.href === pathname);
+    return current?.label || "Admin";
+  }, [pathname]);
+
   if (loading) return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#171717", color:"#fafafa", fontFamily:"sans-serif" }}>
-      <div style={{ textAlign:"center" }}>
-        <div style={{ fontSize:"32px", marginBottom:"12px" }}>🛒</div>
-        <div style={{ color:"#898989" }}>Loading...</div>
+    <div style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      height: "100vh", background: "var(--bg)", color: "var(--text)",
+      fontFamily: "system-ui, sans-serif"
+    }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: "32px", marginBottom: "12px" }}>🛒</div>
+        <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
       </div>
     </div>
   );
 
   return (
-    <div style={{ display:"flex", minHeight:"100vh", background:"#171717" }}>
-      <aside style={{ width:"240px", background:"#0f0f0f", borderRight:"1px solid #2e2e2e", display:"flex", flexDirection:"column" }}>
-        <div style={{ padding:"24px 20px", borderBottom:"1px solid #2e2e2e" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-            <span style={{ fontSize:"24px" }}>🛒</span>
-            <span style={{ fontSize:"16px", fontWeight:"600", color:"#fafafa" }}>nextHermes</span>
-          </div>
+    <div style={{
+      display: "flex",
+      minHeight: "100vh",
+      background: "var(--bg)",
+    }}>
+      {/* Mobile Overlay */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+            zIndex: 40, display: "none"
+          }}
+          className="mobile-overlay"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside style={{
+        width: "256px",
+        background: "#0a0a0a",
+        borderRight: "1px solid var(--border)",
+        display: "flex",
+        flexDirection: "column",
+        position: "fixed",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 50,
+        transition: "transform 0.3s ease",
+      }} className="sidebar">
+        {/* Logo */}
+        <div style={{
+          padding: "24px 20px",
+          borderBottom: "1px solid var(--border)"
+        }}>
+          <Link href="/admin" style={{
+            display: "flex", alignItems: "center", gap: "10px",
+            textDecoration: "none"
+          }}>
+            <span style={{ fontSize: "24px" }}>🛒</span>
+            <span style={{
+              fontSize: "16px", fontWeight: "700", color: "#fafafa",
+              letterSpacing: "0.5px"
+            }}>HERMES ADMIN</span>
+          </Link>
         </div>
-        <nav style={{ flex:"1", padding:"16px 12px" }}>
-          {navItems.map(item => (
-            <Link key={item.href} href={item.href} style={{
-              display:"flex", alignItems:"center", gap:"12px",
-              padding:"10px 12px", borderRadius:"8px", marginBottom:"4px",
-              textDecoration:"none",
-              color: pathname === item.href ? "#3ecf8e" : "#b4b4b4",
-              background: pathname === item.href ? "rgba(62,207,142,0.08)" : "transparent",
-              fontSize:"14px", fontWeight:"500", transition:"150ms ease",
-            }}>
-              <span>{item.icon}</span> {item.label}
-            </Link>
-          ))}
+
+        {/* Navigation */}
+        <nav style={{ flex: "1", padding: "16px 12px", overflowY: "auto" }}>
+          {navItems.map(item => {
+            const isActive = pathname === item.href ||
+              (item.href !== "/admin" && pathname.startsWith(item.href));
+            return (
+              <Link key={item.href} href={item.href} style={{
+                display: "flex", alignItems: "center", gap: "12px",
+                padding: "12px 14px", borderRadius: "8px", marginBottom: "4px",
+                textDecoration: "none",
+                color: isActive ? "#fafafa" : "#898989",
+                background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                fontSize: "14px", fontWeight: isActive ? "600" : "500",
+                transition: "all 0.15s ease",
+              }}
+              onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>{item.icon}</span> {item.label}
+              </Link>
+            );
+          })}
         </nav>
-        <div style={{ padding:"16px", borderTop:"1px solid #2e2e2e" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"12px" }}>
-            <div style={{ width:"36px", height:"36px", borderRadius:"50%", background:"#363636", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"16px", color:"#fafafa" }}>
+
+        {/* User Section */}
+        <div style={{ padding: "16px", borderTop: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
+            <div style={{
+              width: "36px", height: "36px", borderRadius: "50%",
+              background: "var(--bg-card)", display: "flex",
+              alignItems: "center", justifyContent: "center",
+              fontSize: "16px", color: "#fafafa", fontWeight: "600"
+            }}>
               {profile?.full_name?.[0]?.toUpperCase() || "?"}
             </div>
-            <div style={{ flex:"1", minWidth:"0" }}>
-              <div style={{ fontSize:"13px", fontWeight:"500", color:"#fafafa", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile?.full_name || "User"}</div>
-              <div style={{ fontSize:"11px", color: ROLE_COLORS[profile?.role || "user"], fontWeight:"600", textTransform:"uppercase", letterSpacing:"0.5px" }}>{ROLE_LABELS[profile?.role || "user"]}</div>
+            <div style={{ flex: "1", minWidth: 0 }}>
+              <div style={{
+                fontSize: "13px", fontWeight: "500", color: "#fafafa",
+                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+              }}>{profile?.full_name || "Admin"}</div>
+              <div style={{
+                fontSize: "11px", color: ROLE_COLORS[profile?.role || "user"],
+                fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px"
+              }}>{ROLE_LABELS[profile?.role || "user"]}</div>
             </div>
           </div>
-          <button onClick={handleSignOut} style={{ width:"100%", padding:"8px", borderRadius:"6px", border:"1px solid #363636", background:"transparent", color:"#898989", fontSize:"13px", cursor:"pointer", transition:"150ms ease" }}>Sign Out</button>
+          <button onClick={handleSignOut} style={{
+            width: "100%", padding: "8px", borderRadius: "6px",
+            border: "1px solid var(--border)", background: "transparent",
+            color: "#898989", fontSize: "13px", cursor: "pointer",
+            transition: "all 0.15s ease",
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.borderColor = "#ef4444";
+            e.currentTarget.style.color = "#ef4444";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "#898989";
+          }}>
+            Sign Out
+          </button>
         </div>
       </aside>
-      <main style={{ flex:"1", overflow:"auto" }}>{children}</main>
+
+      {/* Main Content */}
+      <div style={{
+        flex: "1",
+        marginLeft: "256px",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}>
+        {/* Top Bar */}
+        <header style={{
+          height: "64px",
+          background: "var(--bg)",
+          borderBottom: "1px solid var(--border)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          position: "sticky",
+          top: 0,
+          zIndex: 30,
+        }}>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: "none",
+              padding: "8px",
+              border: "none",
+              background: "transparent",
+              color: "var(--text)",
+              cursor: "pointer",
+            }}
+            className="mobile-menu-btn"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+
+          <h1 style={{
+            fontSize: "20px",
+            fontWeight: "600",
+            color: "var(--text)",
+          }}>{getPageTitle()}</h1>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+              {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </span>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main style={{
+          flex: "1",
+          padding: "32px",
+          background: "var(--bg)",
+        }}>
+          {children}
+        </main>
+      </div>
+
+      {/* Mobile Styles */}
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .sidebar {
+            transform: translateX(${mobileMenuOpen ? "0" : "-100%"});
+          }
+          .mobile-overlay {
+            display: block !important;
+          }
+          .mobile-menu-btn {
+            display: block !important;
+          }
+          main, header {
+            margin-left: 0 !important;
+            padding: 16px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
