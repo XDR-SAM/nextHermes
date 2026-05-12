@@ -35,7 +35,7 @@ function StarRating({ rating, count }: { rating: number; count?: number }) {
         </svg>
       ))}
       {count !== undefined && (
-        <span className="text-xs text-white/40 ml-1">({count})</span>
+        <span className="text-xs text-[var(--text-secondary)] ml-1">({count})</span>
       )}
     </div>
   );
@@ -101,7 +101,7 @@ export function ProductCard({
     >
       <Link
         href={`/products/${id}`}
-        className="block bg-[#0d0d0d] border border-white/5 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-2xl hover:shadow-black/50"
+        className="block bg-[var(--bg-card)] dark:bg-[#111] border border-[var(--border)] rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-2xl hover:shadow-black/50"
       >
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-white/5">
@@ -158,13 +158,13 @@ export function ProductCard({
         <div className="p-4 space-y-2">
           {/* Category */}
           {category && (
-            <p className="text-[10px] uppercase tracking-widest text-white/40">
+            <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
               {category}
             </p>
           )}
 
           {/* Name */}
-          <h3 className="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-white/90 transition-colors">
+          <h3 className="text-sm font-medium text-[var(--text)] line-clamp-2 leading-snug group-hover:text-[var(--text)]/90 transition-colors">
             {name}
           </h3>
 
@@ -175,9 +175,9 @@ export function ProductCard({
 
           {/* Price */}
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-sm font-semibold text-white">${price.toFixed(2)}</span>
+            <span className="text-sm font-semibold text-[var(--text)]">${price.toFixed(2)}</span>
             {isDiscounted && originalPrice && (
-              <span className="text-xs text-white/40 line-through">
+              <span className="text-xs text-[var(--text-secondary)] line-through">
                 ${originalPrice.toFixed(2)}
               </span>
             )}
@@ -191,7 +191,7 @@ export function ProductCard({
               "mt-3 w-full py-2.5 rounded-full text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-2",
               addedToCart
                 ? "bg-emerald-500 text-white"
-                : "bg-white text-black hover:bg-white/90 active:scale-[0.98]"
+                : "bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent)]/90 active:scale-[0.98]"
             )}
           >
             {addedToCart ? (
