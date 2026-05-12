@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 interface WishlistState {
   wishlistItems: string[];
   toggleWishlist: (id: string) => void;
+  removeFromWishlist: (id: string) => void;
   isInWishlist: (id: string) => boolean;
 }
 
@@ -23,6 +24,12 @@ export const useWishlistStore = create<WishlistState>()(
               : [...state.wishlistItems, id],
           };
         });
+      },
+
+      removeFromWishlist: (id: string) => {
+        set((state) => ({
+          wishlistItems: state.wishlistItems.filter((item) => item !== id),
+        }));
       },
 
       isInWishlist: (id: string) => {

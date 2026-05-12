@@ -1,5 +1,7 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { Mission, Target, Heart, Users, Award, Globe } from "lucide-react";
+import { Target, Heart, Users, Award, Globe, Sparkles } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -29,7 +31,7 @@ const stats = [
 
 const values = [
   {
-    icon: <Mission className="w-6 h-6" />,
+    icon: <Sparkles className="w-6 h-6" />,
     title: "Our Mission",
     desc: "To make premium quality products accessible to everyone, everywhere, through a seamless and trusted shopping experience.",
   },

@@ -119,7 +119,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // Overview Tab
-function OverviewTab({ profile }: { profile: { full_name?: string | null; email?: string } | null }) {
+function OverviewTab({ profile }: { profile: { id: string; full_name?: string | null; email?: string; avatar_url?: string | null } | null }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -304,7 +304,7 @@ function WishlistTab() {
 }
 
 // Profile Tab
-function ProfileTab({ profile }: { profile: { full_name?: string | null; email?: string; avatar_url?: string | null } | null }) {
+function ProfileTab({ profile }: { profile: { id: string; full_name?: string | null; email?: string; avatar_url?: string | null } | null }) {
   const [fullName, setFullName] = useState(profile?.full_name || "");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
@@ -454,7 +454,7 @@ function SettingsTab() {
 type Tab = "overview" | "orders" | "wishlist" | "profile" | "settings";
 
 // Tab Content Map
-function TabContent({ tab, profile }: { tab: Tab; profile: { full_name?: string | null; email?: string; avatar_url?: string | null } | null }) {
+function TabContent({ tab, profile }: { tab: Tab; profile: { id: string; full_name?: string | null; email?: string; avatar_url?: string | null } | null }) {
   switch (tab) {
     case "overview": return <OverviewTab profile={profile} />;
     case "orders": return <OrdersTab />;
