@@ -240,7 +240,7 @@ export default function CategoriesPage() {
                             style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "8px" }}
                             onError={(e) => {
                               e.currentTarget.style.display = "none";
-                              e.currentTarget.nextElementSibling!.style.display = "flex";
+                              (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = "flex";
                             }}
                           />
                         ) : null}

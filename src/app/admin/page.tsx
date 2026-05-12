@@ -51,7 +51,7 @@ export default function AdminDashboard() {
         totalOrders: ordersRes.count || 0,
         totalUsers: usersRes.count || 0,
       });
-      setRecentOrders((recentOrdersRes.data || []) as RecentOrder[]);
+      setRecentOrders((recentOrdersRes.data || []) as unknown as RecentOrder[]);
       setLoading(false);
     };
     load();

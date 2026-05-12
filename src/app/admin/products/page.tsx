@@ -278,7 +278,7 @@ export default function ProductsPage() {
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px" }}
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
-                            e.currentTarget.nextElementSibling!.style.display = "flex";
+                            (e.currentTarget.nextElementSibling as HTMLElement)!.style.display = "flex";
                           }}
                         />
                       ) : null}
