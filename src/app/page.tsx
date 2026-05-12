@@ -98,10 +98,10 @@ function AnimatedSection({ children, className, delay = 0 }: { children: React.R
 // Error boundary fallback
 function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--bg)] dark:bg-black flex items-center justify-center">
       <div className="text-center p-8">
-        <p className="text-white/60 mb-4">{message}</p>
-        <button onClick={onRetry} className="bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-white/90 transition-colors">
+        <p className="text-[var(--text-secondary)] dark:text-white/60 mb-4">{message}</p>
+        <button onClick={onRetry} className="bg-[var(--accent)] text-[var(--bg)] px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-colors">
           Try Again
         </button>
       </div>
@@ -125,48 +125,48 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
   };
 
   return (
-    <section className="relative min-h-screen bg-black flex items-center overflow-hidden">
+    <section className="relative min-h-screen bg-[var(--bg)] dark:bg-black flex items-center overflow-hidden">
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5" />
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 dark:from-white/5" />
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] dark:bg-white/5" />
+        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-[150px] dark:bg-white/3" />
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
             <motion.div variants={itemVariants}>
-              <span className="inline-block text-xs uppercase tracking-[0.3em] text-white/50 border border-white/20 rounded-full px-4 py-1.5">
+              <span className="inline-block text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] border border-[var(--border)] rounded-full px-4 py-1.5 dark:text-white/50 dark:border-white/20">
                 New Collection 2025
               </span>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[0.9] tracking-tight">
+            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-[var(--text)] dark:text-white leading-[0.9] tracking-tight">
               {settings?.hero_title || "Redefine"}{" "}
               <span className="block mt-2">
                 Your{" "}
                 <span className="relative">
                   Style
-                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-white" />
+                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-[var(--text)] dark:bg-white" />
                 </span>
               </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="text-lg text-white/60 max-w-md leading-relaxed">
+            <motion.p variants={itemVariants} className="text-lg text-[var(--text-secondary)] dark:text-white/60 max-w-md leading-relaxed">
               {settings?.hero_subtitle || "Discover premium products curated for the modern lifestyle. Where timeless design meets contemporary elegance."}
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 pt-4">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 {settings?.hero_cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-300"
+                className="inline-flex items-center gap-2 border border-[var(--border)] dark:border-white/30 text-[var(--text)] dark:text-white px-8 py-4 rounded-full font-semibold hover:bg-[var(--glass-bg)] dark:hover:bg-white/10 transition-all duration-300"
               >
                 Explore Collection
               </Link>
@@ -174,18 +174,18 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
 
             <motion.div variants={itemVariants} className="flex items-center gap-8 pt-6">
               <div>
-                <p className="text-3xl font-bold text-white">50K+</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Happy Customers</p>
+                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">50K+</p>
+                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Happy Customers</p>
               </div>
-              <div className="w-px h-10 bg-white/20" />
+              <div className="w-px h-10 bg-[var(--border)] dark:bg-white/20" />
               <div>
-                <p className="text-3xl font-bold text-white">4.9</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Average Rating</p>
+                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">4.9</p>
+                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Average Rating</p>
               </div>
-              <div className="w-px h-10 bg-white/20" />
+              <div className="w-px h-10 bg-[var(--border)] dark:bg-white/20" />
               <div>
-                <p className="text-3xl font-bold text-white">200+</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Premium Brands</p>
+                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">200+</p>
+                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Premium Brands</p>
               </div>
             </motion.div>
           </motion.div>
@@ -197,31 +197,31 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
             className="relative hidden lg:block"
           >
             <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 dark:from-zinc-800 via-zinc-900 dark:via-zinc-900 to-black" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 dark:to-white/10" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border border-white/10 rounded-full flex items-center justify-center">
-                  <div className="w-32 h-32 border border-white/5 rounded-full flex items-center justify-center">
-                    <span className="text-6xl font-light text-white/20">H</span>
+                <div className="w-48 h-48 border border-white/10 dark:border-white/10 rounded-full flex items-center justify-center">
+                  <div className="w-32 h-32 border border-white/5 dark:border-white/5 rounded-full flex items-center justify-center">
+                    <span className="text-6xl font-light text-white/20 dark:text-white/20">H</span>
                   </div>
                 </div>
               </div>
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 right-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
+                className="absolute top-8 right-8 bg-white/10 dark:bg-white/10 backdrop-blur-sm border border-white/20 dark:border-white/20 rounded-2xl p-4"
               >
-                <p className="text-xs text-white/60">Featured</p>
-                <p className="text-sm font-semibold text-white">Leather Jacket</p>
+                <p className="text-xs text-white/60 dark:text-white/60">Featured</p>
+                <p className="text-sm font-semibold text-white dark:text-white">Leather Jacket</p>
               </motion.div>
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 left-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
+                className="absolute bottom-12 left-8 bg-white/10 dark:bg-white/10 backdrop-blur-sm border border-white/20 dark:border-white/20 rounded-2xl p-4"
               >
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <span className="text-sm font-semibold text-white">4.9</span>
+                  <span className="text-sm font-semibold text-white dark:text-white">4.9</span>
                 </div>
               </motion.div>
             </div>
@@ -235,13 +235,13 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
         transition={{ delay: 1.5 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[10px] uppercase tracking-widest text-white/30">Scroll</span>
+        <span className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] dark:text-white/30">Scroll</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-5 h-8 border border-white/20 rounded-full flex items-start justify-center p-1.5"
+          className="w-5 h-8 border border-[var(--border)] dark:border-white/20 rounded-full flex items-start justify-center p-1.5"
         >
-          <div className="w-1 h-2 bg-white/40 rounded-full" />
+          <div className="w-1 h-2 bg-[var(--text-secondary)] dark:bg-white/40 rounded-full" />
         </motion.div>
       </motion.div>
     </section>
@@ -252,7 +252,7 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
 function CategoriesSection({ categories, loading }: { categories: Category[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-black">
+      <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Skeleton className="h-4 w-24 mx-auto mb-4" />
@@ -269,11 +269,11 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
   }
 
   return (
-    <section className="py-24 bg-black">
+    <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
       <div className="container mx-auto px-6">
         <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-white/40">Browse By</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">Featured Categories</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Browse By</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">Featured Categories</h2>
         </AnimatedSection>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -283,18 +283,18 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
               <AnimatedSection key={category.id} delay={index * 0.1}>
                 <Link
                   href={`/products?category=${category.slug}`}
-                  className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-white/15 hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-black/50"
+                  className="group relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:to-zinc-950 border border-[var(--border)] dark:border-white/5 rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-[var(--text-secondary)] dark:hover:border-white/15 hover:translate-y-[-4px] hover:shadow-2xl dark:hover:shadow-black/50"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-[var(--glass-bg)] dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative z-10">
-                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <Icon className="w-6 h-6 text-white/70" />
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--glass-bg)] dark:bg-white/5 border border-[var(--border)] dark:border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                      <Icon className="w-6 h-6 text-[var(--text-secondary)] dark:text-white/70" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-1">{category.name}</h3>
-                    <p className="text-sm text-white/40">{category.product_count || 0} items</p>
+                    <h3 className="text-lg font-semibold text-[var(--text)] dark:text-white mb-1">{category.name}</h3>
+                    <p className="text-sm text-[var(--text-secondary)] dark:text-white/40">{category.product_count || 0} items</p>
                   </div>
-                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
-                    <ArrowRight className="w-4 h-4 text-white/70" />
+                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-[var(--glass-bg)] dark:bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
+                    <ArrowRight className="w-4 h-4 text-[var(--text-secondary)] dark:text-white/70" />
                   </div>
                 </Link>
               </AnimatedSection>
@@ -310,7 +310,7 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
 function TrendingSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-zinc-950">
+      <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-12">
             <div>
@@ -331,16 +331,16 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-zinc-950">
+    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
       <div className="container mx-auto px-6">
         <AnimatedSection className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-white/40">Hot Right Now</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">Trending Now</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Hot Right Now</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">Trending Now</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors group"
           >
             View All
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -365,7 +365,7 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
         </div>
 
         <AnimatedSection className="mt-10 text-center sm:hidden">
-          <Link href="/products" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors">
+          <Link href="/products" className="inline-flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors">
             View All Products
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -381,7 +381,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
 
   if (loading) {
     return (
-      <section className="py-20 bg-black relative overflow-hidden">
+      <section className="py-20 bg-[var(--bg-secondary)] dark:bg-black relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <Skeleton className="h-64 rounded-3xl" />
         </div>
@@ -392,24 +392,24 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
   if (!activeBanner) return null;
 
   return (
-    <section className="py-20 bg-black relative overflow-hidden">
+    <section className="py-20 bg-[var(--bg-secondary)] dark:bg-black relative overflow-hidden">
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-zinc-900 to-black" />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-[200px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-white/3 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 bg-[var(--bg-secondary)] dark:bg-gradient-to-r dark:from-black dark:via-zinc-900 dark:to-black" />
+        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[var(--glass-bg)] dark:bg-white/5 rounded-full blur-[200px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[var(--glass-bg)] dark:bg-white/3 rounded-full blur-[150px]" />
       </div>
 
       <AnimatedSection className="container mx-auto px-6 relative z-10">
-        <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 border border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        <div className="relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-black border border-[var(--border)] dark:border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 border border-[var(--border)] dark:border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 border border-[var(--border)] dark:border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
           <div className="relative z-10 max-w-2xl">
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="inline-block text-xs uppercase tracking-[0.3em] text-white/50 border border-white/20 rounded-full px-4 py-1.5 mb-6"
+              className="inline-block text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] border border-[var(--border)] rounded-full px-4 py-1.5 mb-6 dark:text-white/50 dark:border-white/20"
             >
               Limited Time Offer
             </motion.span>
@@ -419,7 +419,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight"
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--text)] dark:text-white mb-4 leading-tight"
             >
               {activeBanner.title || "SUMMER SALE"}
             </motion.h2>
@@ -430,7 +430,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="text-lg text-white/50 mb-8"
+                className="text-lg text-[var(--text-secondary)] dark:text-white/50 mb-8"
               >
                 {activeBanner.subtitle}
               </motion.p>
@@ -444,7 +444,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
             >
               <Link
                 href={activeBanner.cta_link || "/products"}
-                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 {activeBanner.cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
@@ -461,7 +461,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
 function NewArrivalsSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-zinc-950">
+      <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-12">
             <Skeleton className="h-4 w-24 mb-4" />
@@ -480,16 +480,16 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-zinc-950">
+    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
       <div className="container mx-auto px-6">
         <AnimatedSection className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-white/40">Just Dropped</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">New Arrivals</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Just Dropped</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">New Arrivals</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors group"
           >
             View All
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -521,7 +521,7 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
 function TestimonialsSection({ testimonials, loading }: { testimonials: Testimonial[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-black">
+      <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Skeleton className="h-4 w-24 mx-auto mb-4" />
@@ -540,18 +540,18 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="py-24 bg-black">
+    <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
       <div className="container mx-auto px-6">
         <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-white/40">Reviews</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">What Our Customers Say</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Reviews</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">What Our Customers Say</h2>
         </AnimatedSection>
 
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.slice(0, 3).map((testimonial, index) => (
             <AnimatedSection key={testimonial.id} delay={index * 0.15}>
-              <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-2xl p-8 h-full hover:border-white/10 transition-colors">
-                <Quote className="w-10 h-10 text-white/10 mb-6" />
+              <div className="relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:to-zinc-950 border border-[var(--border)] dark:border-white/5 rounded-2xl p-8 h-full hover:border-[var(--text-secondary)] dark:hover:border-white/10 transition-colors">
+                <Quote className="w-10 h-10 text-[var(--text-secondary)] dark:text-white/10 mb-6" />
 
                 <div className="flex items-center gap-1 mb-6">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
@@ -559,22 +559,22 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
                   ))}
                 </div>
 
-                <p className="text-white/70 leading-relaxed mb-8 text-sm lg:text-base">
+                <p className="text-[var(--text-secondary)] dark:text-white/70 leading-relaxed mb-8 text-sm lg:text-base">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-[var(--glass-bg)] dark:bg-gradient-to-br dark:from-white/10 dark:to-white/5 flex items-center justify-center overflow-hidden">
                     {testimonial.avatar ? (
                       <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-sm font-semibold text-white">
+                      <span className="text-sm font-semibold text-[var(--text)] dark:text-white">
                         {testimonial.name.split(" ").map((n) => n[0]).join("")}
                       </span>
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white flex items-center gap-2">
+                    <p className="text-sm font-semibold text-[var(--text)] dark:text-white flex items-center gap-2">
                       {testimonial.name}
                       {testimonial.verified && (
                         <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -582,7 +582,7 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-white/40">Verified Customer</p>
+                    <p className="text-xs text-[var(--text-secondary)] dark:text-white/40">Verified Customer</p>
                   </div>
                 </div>
               </div>
@@ -618,14 +618,14 @@ function NewsletterSection() {
   };
 
   return (
-    <section className="py-24 bg-zinc-950">
+    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
       <div className="container mx-auto px-6">
         <AnimatedSection className="max-w-2xl mx-auto text-center">
-          <span className="text-xs uppercase tracking-[0.3em] text-white/40">Stay Updated</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3 mb-4">
+          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Stay Updated</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3 mb-4">
             Join the Hermes Community
           </h2>
-          <p className="text-white/50 mb-10 max-w-md mx-auto">
+          <p className="text-[var(--text-secondary)] dark:text-white/50 mb-10 max-w-md mx-auto">
             Subscribe to receive exclusive offers, early access to new arrivals, and style inspiration delivered to your inbox.
           </p>
 
@@ -637,12 +637,12 @@ function NewsletterSection() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                className="flex-1 bg-[var(--glass-bg)] dark:bg-white/5 border border-[var(--border)] dark:border-white/10 rounded-full px-6 py-4 text-[var(--text)] dark:text-white placeholder:text-[var(--text-secondary)] dark:placeholder:text-white/30 focus:outline-none focus:border-[var(--text-secondary)] dark:focus:border-white/30 transition-colors"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
+                className="bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
               >
                 {loading ? "Subscribing..." : "Subscribe"}
               </button>
@@ -658,7 +658,7 @@ function NewsletterSection() {
             </motion.div>
           )}
 
-          <p className="text-xs text-white/30 mt-6">
+          <p className="text-xs text-[var(--text-secondary)] dark:text-white/30 mt-6">
             By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
           </p>
         </AnimatedSection>
@@ -763,7 +763,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="bg-black min-h-screen">
+    <main className="bg-[var(--bg)] dark:bg-black min-h-screen">
       <HeroSection settings={siteSettings} />
       <CategoriesSection categories={categories} loading={loading} />
       <TrendingSection products={trendingProducts} loading={loading} />
