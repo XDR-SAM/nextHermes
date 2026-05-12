@@ -354,7 +354,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-black">
+      <main className="min-h-screen bg-[var(--bg)]">
         <div className="container mx-auto px-6 py-12">
           <div className="grid lg:grid-cols-2 gap-12">
             <div className="animate-pulse">
@@ -374,12 +374,12 @@ export default function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center">
+      <main className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white/60 mb-4">{error || "Product not found"}</p>
+          <p className="text-[var(--text-secondary)] mb-4">{error || "Product not found"}</p>
           <Link
             href="/products"
-            className="text-white underline underline-offset-2 hover:text-white/70 transition-colors"
+            className="text-[var(--text)] underline underline-offset-2 hover:text-[var(--text-secondary)] transition-colors"
           >
             Back to products
           </Link>
@@ -399,7 +399,7 @@ export default function ProductDetailPage() {
     : 0;
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-[var(--bg)]">
       {/* Lightbox */}
       <AnimatePresence>
         {lightboxOpen && (
@@ -415,16 +415,16 @@ export default function ProductDetailPage() {
 
       <div className="container mx-auto px-6 py-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-white/50 mb-8">
-          <Link href="/" className="hover:text-white transition-colors">
+        <nav className="flex items-center gap-2 text-sm text-[var(--text-secondary)] mb-8">
+          <Link href="/" className="hover:text-[var(--text)] transition-colors">
             Home
           </Link>
           <ChevronLeft className="w-4 h-4 rotate-180" />
-          <Link href="/products" className="hover:text-white transition-colors">
+          <Link href="/products" className="hover:text-[var(--text)] transition-colors">
             Products
           </Link>
           <ChevronLeft className="w-4 h-4 rotate-180" />
-          <span className="text-white">{product.name}</span>
+          <span className="text-[var(--text)]">{product.name}</span>
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-12">
@@ -433,7 +433,7 @@ export default function ProductDetailPage() {
             {/* Main Image */}
             <motion.div
               layoutId="main-image"
-              className="relative aspect-square bg-zinc-900 rounded-2xl overflow-hidden cursor-zoom-in"
+              className="relative aspect-square bg-[var(--bg-card)] dark:bg-[#111] rounded-2xl overflow-hidden cursor-zoom-in"
               onClick={() => setLightboxOpen(true)}
             >
               <Image
@@ -445,7 +445,7 @@ export default function ProductDetailPage() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
               {discount > 0 && (
-                <div className="absolute top-4 left-4 bg-white text-black text-xs font-bold px-3 py-1.5 rounded-full">
+                <div className="absolute top-4 left-4 bg-[var(--accent)] text-[var(--bg)] text-xs font-bold px-3 py-1.5 rounded-full">
                   -{discount}%
                 </div>
               )}
@@ -464,7 +464,7 @@ export default function ProductDetailPage() {
                     className={cn(
                       "relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 transition-all",
                       selectedImage === index
-                        ? "ring-2 ring-white ring-offset-2 ring-offset-black"
+                        ? "ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg)]"
                         : "opacity-60 hover:opacity-100"
                     )}
                   >
@@ -485,13 +485,13 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             {/* Category */}
             {product.category && (
-              <p className="text-xs uppercase tracking-widest text-white/40">
+              <p className="text-xs uppercase tracking-widest text-[var(--text-secondary)]">
                 {product.category}
               </p>
             )}
 
             {/* Name */}
-            <h1 className="text-3xl sm:text-4xl font-bold text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text)] leading-tight">
               {product.name}
             </h1>
 
@@ -499,7 +499,7 @@ export default function ProductDetailPage() {
             {product.rating && (
               <div className="flex items-center gap-3">
                 <StarRating rating={product.rating} size="md" />
-                <span className="text-sm text-white/50">
+                <span className="text-sm text-[var(--text-secondary)]">
                   {product.rating} ({product.review_count || 0} reviews)
                 </span>
               </div>
@@ -507,11 +507,11 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="flex items-baseline gap-4">
-              <span className="text-4xl font-bold text-white">
+              <span className="text-4xl font-bold text-[var(--text)]">
                 ${product.price.toFixed(2)}
               </span>
               {product.original_price && product.original_price > product.price && (
-                <span className="text-xl text-white/40 line-through">
+                <span className="text-xl text-[var(--text-secondary)] line-through">
                   ${product.original_price.toFixed(2)}
                 </span>
               )}
@@ -520,8 +520,8 @@ export default function ProductDetailPage() {
             {/* Color Selector */}
             {product.colors && product.colors.length > 0 && (
               <div>
-                <p className="text-sm text-white/70 mb-3">
-                  Color: {selectedColor && <span className="text-white">{selectedColor}</span>}
+                <p className="text-sm text-[var(--text-secondary)] mb-3">
+                  Color: {selectedColor && <span className="text-[var(--text)]">{selectedColor}</span>}
                 </p>
                 <div className="flex gap-3">
                   {product.colors.map((color) => (
@@ -531,8 +531,8 @@ export default function ProductDetailPage() {
                       className={cn(
                         "w-10 h-10 rounded-full border-2 transition-all",
                         selectedColor === color
-                          ? "border-white scale-110"
-                          : "border-transparent hover:border-white/30"
+                          ? "border-[var(--accent)] scale-110"
+                          : "border-transparent hover:border-[var(--accent)]/50"
                       )}
                       style={{ backgroundColor: color }}
                       title={color}
@@ -546,8 +546,8 @@ export default function ProductDetailPage() {
             {product.sizes && product.sizes.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm text-white/70">
-                    Size: {selectedSize && <span className="text-white">{selectedSize}</span>}
+                  <p className="text-sm text-[var(--text-secondary)]">
+                    Size: {selectedSize && <span className="text-[var(--text)]">{selectedSize}</span>}
                   </p>
                 </div>
                 <div className="flex gap-3">
@@ -558,8 +558,8 @@ export default function ProductDetailPage() {
                       className={cn(
                         "min-w-[48px] px-4 py-2.5 rounded-xl border transition-all text-sm font-medium",
                         selectedSize === size
-                          ? "bg-white text-black border-white"
-                          : "bg-transparent text-white border-white/20 hover:border-white/50"
+                          ? "bg-[var(--accent)] text-[var(--bg)] border-[var(--accent)]"
+                          : "bg-transparent text-[var(--text)] border-[var(--border)] hover:border-[var(--text-secondary)]"
                       )}
                     >
                       {size}
@@ -571,21 +571,21 @@ export default function ProductDetailPage() {
 
             {/* Quantity */}
             <div>
-              <p className="text-sm text-white/70 mb-3">Quantity</p>
+              <p className="text-sm text-[var(--text-secondary)] mb-3">Quantity</p>
               <div className="flex items-center gap-4">
-                <div className="flex items-center bg-white/5 border border-white/10 rounded-xl">
+                <div className="flex items-center bg-white/5 border border-[var(--border)] rounded-xl">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="p-3 text-white/70 hover:text-white transition-colors"
+                    className="p-3 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-12 text-center text-white font-medium">
+                  <span className="w-12 text-center text-[var(--text)] font-medium">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity((q) => q + 1)}
-                    className="p-3 text-white/70 hover:text-white transition-colors"
+                    className="p-3 text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -605,7 +605,7 @@ export default function ProductDetailPage() {
                   "flex-1 flex items-center justify-center gap-2 py-4 rounded-full font-semibold transition-all",
                   addedToCart
                     ? "bg-emerald-500 text-white"
-                    : "bg-white text-black hover:bg-white/90"
+                    : "bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent)]/90"
                 )}
               >
                 {addedToCart ? (
@@ -629,7 +629,7 @@ export default function ProductDetailPage() {
                   "w-14 h-14 rounded-full flex items-center justify-center border transition-all",
                   inWishlist
                     ? "bg-red-500 border-red-500 text-white"
-                    : "bg-transparent border-white/20 text-white hover:border-white/50"
+                    : "bg-transparent border-[var(--border)] text-[var(--text)] hover:border-[var(--text-secondary)]"
                 )}
                 style={inWishlist ? { backgroundColor: "#ef4444", borderColor: "#ef4444" } : {}}
               >
@@ -639,25 +639,25 @@ export default function ProductDetailPage() {
 
             <button
               onClick={handleBuyNow}
-              className="w-full py-4 rounded-full font-semibold bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-full font-semibold bg-white/10 border border-[var(--border)] text-[var(--text)] hover:bg-white/20 transition-all flex items-center justify-center gap-2"
             >
               <Zap className="w-5 h-5" />
               Buy Now
             </button>
 
             {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-white/5">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[var(--border)]">
               <div className="text-center">
-                <Truck className="w-5 h-5 mx-auto mb-2 text-white/50" />
-                <p className="text-xs text-white/50">Free Shipping</p>
+                <Truck className="w-5 h-5 mx-auto mb-2 text-[var(--text-secondary)]" />
+                <p className="text-xs text-[var(--text-secondary)]">Free Shipping</p>
               </div>
               <div className="text-center">
-                <RotateCcw className="w-5 h-5 mx-auto mb-2 text-white/50" />
-                <p className="text-xs text-white/50">30-Day Returns</p>
+                <RotateCcw className="w-5 h-5 mx-auto mb-2 text-[var(--text-secondary)]" />
+                <p className="text-xs text-[var(--text-secondary)]">30-Day Returns</p>
               </div>
               <div className="text-center">
-                <Shield className="w-5 h-5 mx-auto mb-2 text-white/50" />
-                <p className="text-xs text-white/50">Secure Payment</p>
+                <Shield className="w-5 h-5 mx-auto mb-2 text-[var(--text-secondary)]" />
+                <p className="text-xs text-[var(--text-secondary)]">Secure Payment</p>
               </div>
             </div>
 
