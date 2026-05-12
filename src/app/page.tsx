@@ -1,51 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import { Shirt, Gem, Watch, Smartphone, Star, ArrowRight, Check, Quote } from "lucide-react";
+import { ArrowRight, Star, Check, Quote, Shirt, Gem, Watch, Smartphone } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { supabase } from "@/lib/supabase-client";
 import { cn } from "@/lib/utils";
 
-// =====================
-// MOCK DATA
-// =====================
+// Types
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  product_count?: number;
+}
 
-const trendingProducts = [
-  { id: "1", name: "Premium Leather Jacket", price: 299, originalPrice: 449, image: "https://picsum.photos/seed/prod1/400/400", rating: 4.8, reviewCount: 124, category: "Men" },
-  { id: "2", name: "Minimalist Watch Pro", price: 189, originalPrice: 249, image: "https://picsum.photos/seed/prod2/400/400", rating: 4.9, reviewCount: 89, category: "Accessories" },
-  { id: "3", name: "Cashmere Blend Sweater", price: 159, originalPrice: 219, image: "https://picsum.photos/seed/prod3/400/400", rating: 4.7, reviewCount: 56, category: "Women" },
-  { id: "4", name: "Wireless Earbuds Elite", price: 199, originalPrice: 279, image: "https://picsum.photos/seed/prod4/400/400", rating: 4.6, reviewCount: 203, category: "Electronics" },
-  { id: "5", name: "Designer Sunglasses", price: 129, originalPrice: 179, image: "https://picsum.photos/seed/prod5/400/400", rating: 4.5, reviewCount: 67, category: "Accessories" },
-  { id: "6", name: "Smart Fitness Band", price: 99, originalPrice: 149, image: "https://picsum.photos/seed/prod6/400/400", rating: 4.4, reviewCount: 312, category: "Electronics" },
-];
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  original_price?: number;
+  images: string[];
+  rating?: number;
+  review_count?: number;
+  category?: string;
+  category_id?: string;
+  is_trending?: boolean;
+  is_featured?: boolean;
+}
 
-const newArrivals = [
-  { id: "7", name: "Organic Cotton Tee", price: 59, image: "https://picsum.photos/seed/new1/400/400", rating: 4.3, reviewCount: 12, category: "Men" },
-  { id: "8", name: "Silk Scarf Collection", price: 89, image: "https://picsum.photos/seed/new2/400/400", rating: 4.6, reviewCount: 8, category: "Women" },
-  { id: "9", name: "Titanium Ring Set", price: 149, image: "https://picsum.photos/seed/new3/400/400", rating: 4.8, reviewCount: 15, category: "Accessories" },
-  { id: "10", name: "Portable Charger 20K", price: 79, image: "https://picsum.photos/seed/new4/400/400", rating: 4.5, reviewCount: 28, category: "Electronics" },
-];
+interface Testimonial {
+  id: string;
+  name: string;
+  quote: string;
+  rating: number;
+  verified: boolean;
+  avatar?: string;
+}
 
-const categories = [
-  { name: "Men", count: 342, icon: Shirt },
-  { name: "Women", count: 456, icon: Gem },
-  { name: "Accessories", count: 218, icon: Watch },
-  { name: "Electronics", count: 167, icon: Smartphone },
-];
+interface PromoBanner {
+  id: string;
+  title: string;
+  subtitle?: string;
+  cta_text?: string;
+  cta_link?: string;
+  background_image?: string;
+  is_active: boolean;
+  sort_order: number;
+}
 
-const testimonials = [
-  { name: "Alexandra Chen", quote: "The quality exceeded my expectations. Every piece I've purchased feels luxury, yet remains practical for everyday wear.", rating: 5, verified: true },
-  { name: "Marcus Thompson", quote: "Fast shipping, impeccable packaging, and the products themselves are stunning. Hermes has become my go-to for premium fashion.", rating: 5, verified: true },
-  { name: "Sofia Rodriguez", quote: "I've recommended Hermes to everyone I know. The attention to detail is remarkable, and customer service is exceptional.", rating: 5, verified: true },
-];
+interface SiteSettings {
+  hero_title?: string;
+  hero_subtitle?: string;
+  hero_cta_text?: string;
+  hero_cta_link?: string;
+}
 
-// =====================
-// ANIMATED SECTION WRAPPER
-// =====================
+// Category icon mapping
+const getCategoryIcon = (name: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes("men") || lower.includes("clothing")) return Shirt;
+  if (lower.includes("women") || lower.includes("fashion")) return Gem;
+  if (lower.includes("watch") || lower.includes("accessories")) return Watch;
+  if (lower.includes("phone") || lower.includes("electronics")) return Smartphone;
+  return Gem;
+};
 
+// Skeleton loader
+function Skeleton({ className }: { className?: string }) {
+  return (
+    <div className={cn("animate-pulse bg-white/5 rounded-lg", className)} />
+  );
+}
+
+// Animated section wrapper
 function AnimatedSection({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -63,11 +95,22 @@ function AnimatedSection({ children, className, delay = 0 }: { children: React.R
   );
 }
 
-// =====================
-// SECTION 1: HERO
-// =====================
+// Error boundary fallback
+function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="text-center p-8">
+        <p className="text-white/60 mb-4">{message}</p>
+        <button onClick={onRetry} className="bg-white text-black px-6 py-3 rounded-full font-semibold hover:bg-white/90 transition-colors">
+          Try Again
+        </button>
+      </div>
+    </div>
+  );
+}
 
-function HeroSection() {
+// HERO SECTION
+function HeroSection({ settings }: { settings: SiteSettings | null }) {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -83,7 +126,6 @@ function HeroSection() {
 
   return (
     <section className="relative min-h-screen bg-black flex items-center overflow-hidden">
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5" />
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px]" />
@@ -92,13 +134,7 @@ function HeroSection() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
-          {/* Left Content */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="space-y-8"
-          >
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
             <motion.div variants={itemVariants}>
               <span className="inline-block text-xs uppercase tracking-[0.3em] text-white/50 border border-white/20 rounded-full px-4 py-1.5">
                 New Collection 2025
@@ -106,7 +142,7 @@ function HeroSection() {
             </motion.div>
 
             <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[0.9] tracking-tight">
-              Redefine{" "}
+              {settings?.hero_title || "Redefine"}{" "}
               <span className="block mt-2">
                 Your{" "}
                 <span className="relative">
@@ -117,19 +153,19 @@ function HeroSection() {
             </motion.h1>
 
             <motion.p variants={itemVariants} className="text-lg text-white/60 max-w-md leading-relaxed">
-              Discover premium products curated for the modern lifestyle. Where timeless design meets contemporary elegance.
+              {settings?.hero_subtitle || "Discover premium products curated for the modern lifestyle. Where timeless design meets contemporary elegance."}
             </motion.p>
 
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 pt-4">
               <Link
-                href="/shop"
+                href="/products"
                 className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                Shop Now
+                {settings?.hero_cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/collection"
+                href="/products"
                 className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-300"
               >
                 Explore Collection
@@ -154,7 +190,6 @@ function HeroSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right - Hero Image Placeholder */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -171,7 +206,6 @@ function HeroSection() {
                   </div>
                 </div>
               </div>
-              {/* Floating Elements */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -195,7 +229,6 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -215,11 +248,26 @@ function HeroSection() {
   );
 }
 
-// =====================
-// SECTION 2: FEATURED CATEGORIES
-// =====================
+// FEATURED CATEGORIES
+function CategoriesSection({ categories, loading }: { categories: Category[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <section className="py-24 bg-black">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <Skeleton className="h-4 w-24 mx-auto mb-4" />
+            <Skeleton className="h-12 w-64 mx-auto" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-function CategoriesSection() {
   return (
     <section className="py-24 bg-black">
       <div className="container mx-auto px-6">
@@ -229,40 +277,59 @@ function CategoriesSection() {
         </AnimatedSection>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {categories.map((category, index) => (
-            <AnimatedSection key={category.name} delay={index * 0.1}>
-              <Link
-                href={`/category/${category.name.toLowerCase()}`}
-                className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-white/15 hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-black/50"
-              >
-                {/* Hover Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                    <category.icon className="w-6 h-6 text-white/70" />
+          {categories.slice(0, 4).map((category, index) => {
+            const Icon = getCategoryIcon(category.name);
+            return (
+              <AnimatedSection key={category.id} delay={index * 0.1}>
+                <Link
+                  href={`/products?category=${category.slug}`}
+                  className="group relative bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-white/15 hover:translate-y-[-4px] hover:shadow-2xl hover:shadow-black/50"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                      <Icon className="w-6 h-6 text-white/70" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white mb-1">{category.name}</h3>
+                    <p className="text-sm text-white/40">{category.product_count || 0} items</p>
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{category.name}</h3>
-                  <p className="text-sm text-white/40">{category.count} items</p>
-                </div>
-
-                <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
-                  <ArrowRight className="w-4 h-4 text-white/70" />
-                </div>
-              </Link>
-            </AnimatedSection>
-          ))}
+                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
+                    <ArrowRight className="w-4 h-4 text-white/70" />
+                  </div>
+                </Link>
+              </AnimatedSection>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
-// =====================
-// SECTION 3: TRENDING PRODUCTS
-// =====================
+// TRENDING PRODUCTS
+function TrendingSection({ products, loading }: { products: Product[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <section className="py-24 bg-zinc-950">
+        <div className="container mx-auto px-6">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <Skeleton className="h-4 w-24 mb-4" />
+              <Skeleton className="h-12 w-48" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-80 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-function TrendingSection() {
+  if (products.length === 0) return null;
+
   return (
     <section className="py-24 bg-zinc-950">
       <div className="container mx-auto px-6">
@@ -272,7 +339,7 @@ function TrendingSection() {
             <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">Trending Now</h2>
           </div>
           <Link
-            href="/shop"
+            href="/products"
             className="hidden sm:flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
           >
             View All
@@ -281,18 +348,24 @@ function TrendingSection() {
         </AnimatedSection>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-          {trendingProducts.map((product, index) => (
+          {products.slice(0, 6).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.08}>
-              <ProductCard {...product} />
+              <ProductCard
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.original_price}
+                image={product.images?.[0] || "https://picsum.photos/400"}
+                rating={product.rating}
+                reviewCount={product.review_count}
+                category={product.category}
+              />
             </AnimatedSection>
           ))}
         </div>
 
         <AnimatedSection className="mt-10 text-center sm:hidden">
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-          >
+          <Link href="/products" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors">
             View All Products
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -302,14 +375,24 @@ function TrendingSection() {
   );
 }
 
-// =====================
-// SECTION 4: PROMO BANNER
-// =====================
+// PROMO BANNER
+function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: boolean }) {
+  const activeBanner = banners.find((b) => b.is_active) || banners[0];
 
-function PromoBanner() {
+  if (loading) {
+    return (
+      <section className="py-20 bg-black relative overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <Skeleton className="h-64 rounded-3xl" />
+        </div>
+      </section>
+    );
+  }
+
+  if (!activeBanner) return null;
+
   return (
     <section className="py-20 bg-black relative overflow-hidden">
-      {/* Gradient Overlay */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-black via-zinc-900 to-black" />
         <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-white/5 rounded-full blur-[200px]" />
@@ -318,10 +401,9 @@ function PromoBanner() {
 
       <AnimatedSection className="container mx-auto px-6 relative z-10">
         <div className="relative bg-gradient-to-br from-zinc-900 via-zinc-950 to-black border border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden">
-          {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 border border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-          
+
           <div className="relative z-10 max-w-2xl">
             <motion.span
               initial={{ opacity: 0, y: 20 }}
@@ -339,23 +421,20 @@ function PromoBanner() {
               transition={{ delay: 0.1 }}
               className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight"
             >
-              SUMMER
-              <br />
-              <span className="text-white/80">SALE</span>
+              {activeBanner.title || "SUMMER SALE"}
             </motion.h2>
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="mb-8"
-            >
-              <span className="text-8xl lg:text-9xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/60">
-                40%
-              </span>
-              <p className="text-lg text-white/50 mt-2">Off on all premium items</p>
-            </motion.div>
+            {activeBanner.subtitle && (
+              <motion.p
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="text-lg text-white/50 mb-8"
+              >
+                {activeBanner.subtitle}
+              </motion.p>
+            )}
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -364,10 +443,10 @@ function PromoBanner() {
               transition={{ delay: 0.3 }}
             >
               <Link
-                href="/sale"
+                href={activeBanner.cta_link || "/products"}
                 className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                Shop Now
+                {activeBanner.cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
@@ -378,11 +457,28 @@ function PromoBanner() {
   );
 }
 
-// =====================
-// SECTION 5: NEW ARRIVALS
-// =====================
+// NEW ARRIVALS
+function NewArrivalsSection({ products, loading }: { products: Product[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <section className="py-24 bg-zinc-950">
+        <div className="container mx-auto px-6">
+          <div className="flex items-end justify-between mb-12">
+            <Skeleton className="h-4 w-24 mb-4" />
+            <Skeleton className="h-12 w-48" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-80 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-function NewArrivalsSection() {
+  if (products.length === 0) return null;
+
   return (
     <section className="py-24 bg-zinc-950">
       <div className="container mx-auto px-6">
@@ -392,7 +488,7 @@ function NewArrivalsSection() {
             <h2 className="text-4xl sm:text-5xl font-bold text-white mt-3">New Arrivals</h2>
           </div>
           <Link
-            href="/new"
+            href="/products"
             className="hidden sm:flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
           >
             View All
@@ -401,9 +497,18 @@ function NewArrivalsSection() {
         </AnimatedSection>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          {newArrivals.map((product, index) => (
+          {products.slice(0, 4).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.1}>
-              <ProductCard {...product} />
+              <ProductCard
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.original_price}
+                image={product.images?.[0] || "https://picsum.photos/400"}
+                rating={product.rating}
+                reviewCount={product.review_count}
+                category={product.category}
+              />
             </AnimatedSection>
           ))}
         </div>
@@ -412,11 +517,28 @@ function NewArrivalsSection() {
   );
 }
 
-// =====================
-// SECTION 6: TESTIMONIALS
-// =====================
+// TESTIMONIALS
+function TestimonialsSection({ testimonials, loading }: { testimonials: Testimonial[]; loading: boolean }) {
+  if (loading) {
+    return (
+      <section className="py-24 bg-black">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <Skeleton className="h-4 w-24 mx-auto mb-4" />
+            <Skeleton className="h-12 w-64 mx-auto" />
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-64 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-function TestimonialsSection() {
+  if (testimonials.length === 0) return null;
+
   return (
     <section className="py-24 bg-black">
       <div className="container mx-auto px-6">
@@ -426,30 +548,30 @@ function TestimonialsSection() {
         </AnimatedSection>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
-            <AnimatedSection key={testimonial.name} delay={index * 0.15}>
+          {testimonials.slice(0, 3).map((testimonial, index) => (
+            <AnimatedSection key={testimonial.id} delay={index * 0.15}>
               <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/5 rounded-2xl p-8 h-full hover:border-white/10 transition-colors">
-                {/* Quote Icon */}
                 <Quote className="w-10 h-10 text-white/10 mb-6" />
 
-                {/* Stars */}
                 <div className="flex items-center gap-1 mb-6">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
                     <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
 
-                {/* Quote */}
                 <p className="text-white/70 leading-relaxed mb-8 text-sm lg:text-base">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
 
-                {/* Author */}
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-white">
-                      {testimonial.name.split(" ").map((n) => n[0]).join("")}
-                    </span>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center overflow-hidden">
+                    {testimonial.avatar ? (
+                      <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm font-semibold text-white">
+                        {testimonial.name.split(" ").map((n) => n[0]).join("")}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white flex items-center gap-2">
@@ -472,19 +594,26 @@ function TestimonialsSection() {
   );
 }
 
-// =====================
-// SECTION 7: NEWSLETTER
-// =====================
-
+// NEWSLETTER
 function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    setLoading(true);
+    try {
+      // In a real app, you would save this to Supabase
+      // await supabase.from('newsletter_subscribers').insert({ email });
       setSubmitted(true);
       setEmail("");
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -512,9 +641,10 @@ function NewsletterSection() {
               />
               <button
                 type="submit"
-                className="bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 whitespace-nowrap"
+                disabled={loading}
+                className="bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-white/90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
               >
-                Subscribe
+                {loading ? "Subscribing..." : "Subscribe"}
               </button>
             </form>
           ) : (
@@ -537,19 +667,109 @@ function NewsletterSection() {
   );
 }
 
-// =====================
 // MAIN PAGE
-// =====================
-
 export default function HomePage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [promoBanners, setPromoBanners] = useState<PromoBanner[]>([]);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch categories
+      const { data: categoriesData } = await supabase
+        .from("categories")
+        .select("*")
+        .order("name");
+
+      // Fetch trending products
+      const { data: trendingData } = await supabase
+        .from("products")
+        .select("*, categories(name)")
+        .eq("is_trending", true)
+        .eq("is_active", true)
+        .limit(6);
+
+      // Fetch featured products (new arrivals)
+      const { data: featuredData } = await supabase
+        .from("products")
+        .select("*, categories(name)")
+        .eq("is_featured", true)
+        .eq("is_active", true)
+        .limit(4);
+
+      // Fetch testimonials
+      const { data: testimonialsData } = await supabase
+        .from("testimonials")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      // Fetch promo banners
+      const { data: bannersData } = await supabase
+        .from("promo_banners")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order")
+        .limit(1);
+
+      // Fetch site settings
+      const { data: settingsData } = await supabase
+        .from("site_settings")
+        .select("*")
+        .single();
+
+      // Transform data
+      const transformedTrending = (trendingData || []).map((p: any) => ({
+        ...p,
+        images: p.images || [],
+        category: p.categories?.name,
+      }));
+
+      const transformedFeatured = (featuredData || []).map((p: any) => ({
+        ...p,
+        images: p.images || [],
+        category: p.categories?.name,
+      }));
+
+      setCategories(categoriesData || []);
+      setTrendingProducts(transformedTrending);
+      setFeaturedProducts(transformedFeatured);
+      setTestimonials(testimonialsData || []);
+      setPromoBanners(bannersData || []);
+      setSiteSettings(settingsData);
+    } catch (err) {
+      console.error("Error fetching homepage data:", err);
+      setError("Failed to load content. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (error) {
+    return <ErrorFallback message={error} onRetry={fetchData} />;
+  }
+
   return (
     <main className="bg-black min-h-screen">
-      <HeroSection />
-      <CategoriesSection />
-      <TrendingSection />
-      <PromoBanner />
-      <NewArrivalsSection />
-      <TestimonialsSection />
+      <HeroSection settings={siteSettings} />
+      <CategoriesSection categories={categories} loading={loading} />
+      <TrendingSection products={trendingProducts} loading={loading} />
+      <PromoBanner banners={promoBanners} loading={loading} />
+      <NewArrivalsSection products={featuredProducts} loading={loading} />
+      <TestimonialsSection testimonials={testimonials} loading={loading} />
       <NewsletterSection />
     </main>
   );
