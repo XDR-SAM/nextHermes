@@ -1,24 +1,31 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import OrderInvoice from "@/components/admin/OrderInvoice";
 
 interface OrderItem {
   id: string;
   product_id: string;
   quantity: number;
   price: number;
-  products: { name: string; image_url: string | null } | null;
+  product_name?: string | null;
+  product?: { name: string | null; metadata: Record<string, unknown> | null } | null;
 }
 
 interface Order {
   id: string;
   created_at: string;
   updated_at: string;
-  total: number;
+  total: number | null;
+  subtotal: number | null;
+  tax: number | null;
+  shipping_cost: number | null;
   status: string;
+  payment_status: string | null;
   shipping_address: string | null;
   billing_address: string | null;
   notes: string | null;
+  user_id: string;
   profiles: { full_name: string | null; email: string } | null;
   order_items: OrderItem[] | null;
 }
@@ -41,6 +48,8 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -75,15 +84,40 @@ export default function OrdersPage() {
     month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
   });
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  const formatCurrency = (amount: number | null) =>
+    amount == null ? "$0.00" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
 
   const viewOrderDetails = async (order: Order) => {
-    const { data } = await supabase
+    // Fetch order items without FK join (schema cache issue on Vercel)
+    const { data: items } = await supabase
       .from("order_items")
-      .select("*, products(name, image_url)")
+      .select("id, product_id, quantity, price")
       .eq("order_id", order.id);
-    setSelectedOrder({ ...order, order_items: (data || []) as OrderItem[] });
+
+    // Fetch product names separately
+    if (items && items.length > 0) {
+      const productIds = items.map((i) => i.product_id);
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name")
+        .in("id", productIds);
+
+      const productMap: Record<string, string> = {};
+      if (products) {
+        for (const p of products) {
+          productMap[p.id] = p.name || "Unknown";
+        }
+      }
+
+      const enrichedItems = items.map((item) => ({
+        ...item,
+        product_name: productMap[item.product_id] || "Unknown",
+      }));
+
+      setSelectedOrder({ ...order, order_items: enrichedItems as OrderItem[] });
+    } else {
+      setSelectedOrder({ ...order, order_items: [] });
+    }
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -105,6 +139,90 @@ export default function OrdersPage() {
       }
     }
   };
+
+  interface InvoiceData {
+    invoiceNumber: string;
+    issueDate: string;
+    dueDate: string;
+    paymentStatus: string;
+    customerName: string;
+    customerEmail: string;
+    billingAddress: string | null;
+    shippingAddress: string | null;
+    subtotal: number;
+    tax: number;
+    shippingCost: number;
+    total: number;
+    lineItems: { index: number; description: string; sku: string; quantity: number; unitPrice: string; total: string }[];
+    businessName: string;
+    businessAddress: string;
+    businessEmail: string;
+    businessPhone: string;
+  }
+
+  const openInvoice = async (order: Order) => {
+    setInvoiceLoading(true);
+    setShowInvoice(true);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/invoice`);
+      if (!res.ok) {
+        showToast("Failed to load invoice", "error");
+        setShowInvoice(false);
+        return;
+      }
+      // The API returns HTML — for the modal component, fetch structured data
+      // We fetch from the API and parse the HTML to extract invoice data
+      const html = await res.text();
+      // Parse invoice number from HTML
+      const invMatch = html.match(/# <strong>([^<]+)<\/strong>/);
+      const issueMatch = html.match(/Issue Date: <strong>([^<]+)<\/strong>/);
+      const dueMatch = html.match(/Due Date: <strong>([^<]+)<\/strong>/);
+      const statusMatch = html.match(/class="payment-badge">([^<]+)<\/div>/);
+      const invoiceNumber = invMatch ? invMatch[1] : `INV-${order.id.slice(0, 8).toUpperCase()}`;
+      const issueDate = issueMatch ? issueMatch[1] : formatDate(order.created_at);
+      const dueDate = dueMatch ? dueMatch[1] : formatDate(new Date(Date.now() + 30 * 86400000).toISOString());
+      const paymentStatus = statusMatch ? statusMatch[1].toLowerCase() : order.status;
+      const lineItemMatches = html.matchAll(/<tr>[\s\S]*?<td>(\d+)<\/td>[\s\S]*?<div class="item-desc">([^<]+)<\/div>[\s\S]*?<td>([^<]*)<\/td>[\s\S]*?<td>(\d+)<\/td>[\s\S]*?<td>([^<]+)<\/td>[\s\S]*?<td>([^<]+)<\/td>[\s\S]*?<\/tr>/g);
+      const lineItems: InvoiceData["lineItems"] = [];
+      for (const m of lineItemMatches) {
+        lineItems.push({
+          index: parseInt(m[1]),
+          description: m[2],
+          sku: m[3] || "—",
+          quantity: parseInt(m[4]),
+          unitPrice: m[5].trim(),
+          total: m[6].trim(),
+        });
+      }
+      const profile = order.profiles;
+      const invoiceData: InvoiceData = {
+        invoiceNumber,
+        issueDate,
+        dueDate,
+        paymentStatus,
+        customerName: profile?.full_name || "Customer",
+        customerEmail: profile?.email || "",
+        billingAddress: order.billing_address,
+        shippingAddress: order.shipping_address,
+        subtotal: order.subtotal || 0,
+        tax: order.tax || 0,
+        shippingCost: order.shipping_cost || 0,
+        total: order.total || 0,
+        lineItems,
+        businessName: "HERMES",
+        businessAddress: "123 Commerce Street, Suite 100, New York, NY 10001",
+        businessEmail: "billing@hermes.com",
+        businessPhone: "+1 (555) 123-4567",
+      };
+      setInvoiceData(invoiceData);
+    } catch {
+      showToast("Failed to load invoice", "error");
+      setShowInvoice(false);
+    }
+    setInvoiceLoading(false);
+  };
+
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
@@ -266,10 +384,19 @@ export default function OrdersPage() {
                   {formatDate(selectedOrder.created_at)}
                 </p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} style={{
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button onClick={() => openInvoice(selectedOrder)} style={{
+                  padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)",
+                  background: "transparent", color: "var(--text)", fontSize: "12px",
+                  cursor: "pointer", transition: "all 0.15s ease"
+                }}>
+                  📄 Invoice
+                </button>
+                <button onClick={() => setSelectedOrder(null)} style={{
                 padding: "8px", border: "none", background: "transparent",
                 color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px"
               }}>✕</button>
+              </div>
             </div>
 
             <div style={{ padding: "24px" }}>
@@ -340,20 +467,14 @@ export default function OrdersPage() {
                         display: "flex", alignItems: "center", gap: "12px",
                         borderBottom: index < selectedOrder.order_items!.length - 1 ? "1px solid var(--border)" : "none"
                       }}>
-                        {item.products?.image_url ? (
-                          <img src={item.products.image_url} alt={item.products.name}
-                            style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "6px" }}
-                          />
-                        ) : (
-                          <div style={{
-                            width: "48px", height: "48px", borderRadius: "6px",
-                            background: "var(--bg-secondary)", display: "flex",
-                            alignItems: "center", justifyContent: "center", fontSize: "18px"
-                          }}>📦</div>
-                        )}
+                        <div style={{
+                          width: "48px", height: "48px", borderRadius: "6px",
+                          background: "var(--bg-secondary)", display: "flex",
+                          alignItems: "center", justifyContent: "center", fontSize: "18px"
+                        }}>📦</div>
                         <div style={{ flex: "1" }}>
                           <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
-                            {item.products?.name || "Unknown Product"}
+                            {item.product_name || "Unknown Product"}
                           </div>
                           <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
                             Qty: {item.quantity} × {formatCurrency(item.price)}
@@ -412,6 +533,28 @@ export default function OrdersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Invoice Modal */}
+      {showInvoice && (
+        invoiceLoading || !invoiceData ? (
+          <div style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
+          }}>
+            <div style={{
+              background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px",
+              padding: "48px", textAlign: "center", color: "var(--text-secondary)"
+            }}>
+              Loading invoice...
+            </div>
+          </div>
+        ) : (
+          <OrderInvoice
+            data={invoiceData}
+            onClose={() => { setShowInvoice(false); setInvoiceData(null); }}
+          />
+        )
       )}
 
       {/* Toast */}

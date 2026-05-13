@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Filter, X, ChevronDown, SlidersHorizontal, Star } from "lucide-react";
+import { Filter, X, ChevronDown, SlidersHorizontal, Star, Search } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { cn } from "@/lib/utils";
 
@@ -194,6 +194,7 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -208,22 +209,24 @@ export default function ProductsPage() {
     params.set("limit", String(ITEMS_PER_PAGE));
     params.set("offset", String((pageNum - 1) * ITEMS_PER_PAGE));
     params.set("sort", sortBy);
+    if (searchQuery) params.set("search", searchQuery);
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
     if (selectedCategories.length === 1) params.set("category_slug", selectedCategories[0]);
     return params;
-  }, [sortBy, minPrice, maxPrice, selectedCategories]);
+  }, [sortBy, searchQuery, minPrice, maxPrice, selectedCategories]);
 
   // Sync URL search params to state on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("category");
-    const search = params.get("search");
+    const search = params.get("search") || params.get("q") || "";
     const sort = params.get("sort") as SortOption | null;
     const min = params.get("min_price") || "";
     const max = params.get("max_price") || "";
     const pageParam = params.get("page");
 
+    if (search) setSearchQuery(search);
     if (cat) setSelectedCategories([cat]);
     if (sort && SORT_OPTIONS.some(o => o.value === sort)) setSortBy(sort);
     if (min) setMinPrice(min);
@@ -234,6 +237,7 @@ export default function ProductsPage() {
   // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams();
+    if (searchQuery) params.set("q", searchQuery);
     if (selectedCategories.length === 1) params.set("category", selectedCategories[0]);
     if (minPrice) params.set("min_price", minPrice);
     if (maxPrice) params.set("max_price", maxPrice);
@@ -243,7 +247,7 @@ export default function ProductsPage() {
     const query = params.toString();
     const newUrl = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState({}, "", newUrl);
-  }, [selectedCategories, minPrice, maxPrice, sortBy, page]);
+  }, [searchQuery, selectedCategories, minPrice, maxPrice, sortBy, page]);
 
   // Fetch categories
   useEffect(() => {
@@ -318,9 +322,36 @@ export default function ProductsPage() {
     <main className="min-h-screen bg-[var(--bg)]">
       {/* Header */}
       <div className="bg-[var(--bg-card)] border-b border-[var(--border)]">
-        <div className="container mx-auto px-6 py-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-2">All Products</h1>
-          <p className="text-[var(--text-secondary)]">
+        <div className="container mx-auto px-6 py-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-4">All Products</h1>
+          
+          {/* Search Bar */}
+          <div className="relative max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className="w-full bg-white/5 border border-[var(--border)] rounded-full pl-12 pr-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setPage(1);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          
+          <p className="text-[var(--text-secondary)] mt-3">
             {loading ? "Loading..." : `${products.length} products found`}
           </p>
         </div>

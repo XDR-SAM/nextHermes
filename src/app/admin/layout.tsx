@@ -8,6 +8,7 @@ import { ROLE_LABELS, ROLE_COLORS } from "@/lib/types";
 
 const navItems = [
   { href: "/admin", label: "Overview", icon: "📊" },
+  { href: "/admin/analytics", label: "Analytics", icon: "📈" },
   { href: "/admin/products", label: "Products", icon: "📦" },
   { href: "/admin/categories", label: "Categories", icon: "🏷️" },
   { href: "/admin/orders", label: "Orders", icon: "🛒" },

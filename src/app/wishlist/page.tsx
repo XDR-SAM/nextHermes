@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, ShoppingBag, ArrowRight } from "lucide-react";
+import { Heart, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { useWishlistStore } from "@/store/wishlist-store";
+import { useCartStore } from "@/store/cart-store";
+import { supabase } from "@/lib/supabase-client";
 import { cn } from "@/lib/utils";
 
 interface Product {
@@ -41,8 +43,61 @@ function WishlistSkeleton() {
 
 export default function WishlistPage() {
   const { wishlistItems, removeFromWishlist } = useWishlistStore();
+  const { addItem } = useCartStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
+
+  // Sync wishlist with Supabase
+  const syncWithSupabase = useCallback(async () => {
+    if (!userId) return;
+    
+    setSyncing(true);
+    try {
+      // Get current wishlist items from Supabase
+      const { data: supabaseWishlist } = await supabase
+        .from("wishlists")
+        .select("product_id")
+        .eq("user_id", userId);
+      
+      const supabaseProductIds = new Set((supabaseWishlist || []).map((w: { product_id: string }) => w.product_id));
+      
+      // Items in local store but not in Supabase - add them
+      for (const productId of wishlistItems) {
+        if (!supabaseProductIds.has(productId)) {
+          await supabase.from("wishlists").insert({
+            user_id: userId,
+            product_id: productId,
+          });
+        }
+      }
+      
+      // Items in Supabase but not in local store - remove them
+      for (const productId of supabaseProductIds) {
+        if (!wishlistItems.includes(productId)) {
+          await supabase
+            .from("wishlists")
+            .delete()
+            .eq("user_id", userId)
+            .eq("product_id", productId);
+        }
+      }
+    } catch (error) {
+      console.error("Error syncing wishlist:", error);
+    } finally {
+      setSyncing(false);
+    }
+  }, [userId, wishlistItems]);
 
   // Fetch products from API and filter by wishlist IDs
   useEffect(() => {
@@ -67,14 +122,48 @@ export default function WishlistPage() {
       }
     };
 
-    fetchWishlistProducts();
+    if (wishlistItems.length > 0) {
+      fetchWishlistProducts();
+    } else {
+      setProducts([]);
+      setLoading(false);
+    }
   }, [wishlistItems]);
 
+  // Sync with Supabase when wishlist changes and user is logged in
+  useEffect(() => {
+    if (userId && wishlistItems.length > 0) {
+      syncWithSupabase();
+    }
+  }, [userId, wishlistItems, syncWithSupabase]);
+
   const handleRemove = useCallback(
-    (id: string) => {
+    async (id: string) => {
       removeFromWishlist(id);
+      
+      // Also remove from Supabase if user is logged in
+      if (userId) {
+        await supabase
+          .from("wishlists")
+          .delete()
+          .eq("user_id", userId)
+          .eq("product_id", id);
+      }
     },
-    [removeFromWishlist]
+    [removeFromWishlist, userId]
+  );
+
+  const handleAddToCart = useCallback(
+    (product: Product) => {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.primary_image || "https://picsum.photos/400",
+        quantity: 1,
+      });
+    },
+    [addItem]
   );
 
   const isEmpty = wishlistItems.length === 0;
@@ -93,6 +182,10 @@ export default function WishlistPage() {
             {isLoading
               ? "Loading..."
               : `${wishlistItems.length} item${wishlistItems.length !== 1 ? "s" : ""} saved`}
+            {syncing && <span className="ml-2 text-xs">(Syncing...)</span>}
+            {!userId && wishlistItems.length > 0 && (
+              <span className="ml-2 text-xs text-amber-400">(Sign in to sync across devices)</span>
+            )}
           </p>
         </div>
       </div>
@@ -149,6 +242,7 @@ export default function WishlistPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05, duration: 0.3 }}
+                    className="relative"
                   >
                     <ProductCard
                       id={product.id}
@@ -159,6 +253,15 @@ export default function WishlistPage() {
                       rating={product.avg_rating}
                       category={product.category?.name}
                     />
+                    
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemove(product.id)}
+                      className="absolute top-3 left-3 w-9 h-9 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white/70 hover:text-red-500 hover:bg-black/80 transition-colors z-10"
+                      title="Remove from wishlist"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </motion.div>
                 ))}
               </motion.div>
