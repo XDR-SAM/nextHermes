@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Heart,
@@ -16,6 +18,8 @@ import {
   Package,
   Sun,
   Moon,
+  ShoppingBag,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
@@ -40,11 +44,18 @@ export function toggleCartDrawer() {
 }
 
 export function Navbar() {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Auth state
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name?: string; email?: string } | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
 
   const theme = useThemeStore((s) => s.theme);
   const cartItems = useCartStore((s) => s.items);
@@ -53,6 +64,67 @@ export function Navbar() {
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlistItems.length;
   const isDark = theme === "dark";
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch user session
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabaseRef = useRef<SupabaseClient | null>(null);
+  useEffect(() => {
+    let subscription: import("@supabase/supabase-js").Subscription | null = null;
+
+    async function init() {
+      const { createClient: mk } = await import("@/utils/supabase/client");
+      supabaseRef.current = mk();
+      const supabase = supabaseRef.current;
+
+      const { data: { user: u } } = await supabase.auth.getUser();
+
+      if (u) {
+        setUser(u);
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", u.id)
+          .single();
+        setProfile(profileData || { email: u.email });
+      }
+      setAuthLoading(false);
+
+      // Listen for auth changes
+      subscription = supabase.auth.onAuthStateChange((_event: string, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", session.user.id)
+            .single()
+            .then(({ data }) => setProfile(data || { email: session.user.email }));
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      }).data.subscription;
+    }
+
+    init();
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsUserDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Track scroll for glassmorphism effect
   useEffect(() => {
@@ -87,6 +159,35 @@ export function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobileMenuOpen]);
 
+  // Handle search submit
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+    }
+  };
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    setIsUserDropdownOpen(false);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+      setProfile(null);
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      console.error("Sign out error:", err);
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const displayEmail = profile?.email || user?.email || "";
+
   return (
     <>
       <motion.header
@@ -107,7 +208,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md mx-4">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-secondary)]" />
               <input
@@ -123,7 +224,7 @@ export function Navbar() {
                 )}
               />
             </div>
-          </div>
+          </form>
 
           {/* Desktop Nav Icons */}
           <div className="hidden md:flex items-center gap-1">
@@ -189,57 +290,75 @@ export function Navbar() {
               )}
             </button>
 
-            {/* User Avatar / Dropdown */}
-            <div className="relative ml-1">
-              <button
-                onClick={() => setIsUserDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-1 p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
-              >
-                <User className="w-5 h-5" />
-                <ChevronDown className="w-3 h-3" />
-              </button>
+            {/* User — Logged In */}
+            {!authLoading && user ? (
+              <div className="relative ml-1" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsUserDropdownOpen((prev) => !prev)}
+                  className="flex items-center gap-1 p-2 rounded-full transition-all text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:bg-[var(--glass-bg)] dark:hover:bg-white/10"
+                  aria-label="User menu"
+                >
+                  {profile?.full_name ? (
+                    <div className="w-6 h-6 rounded-full bg-[var(--accent)] text-[var(--bg)] flex items-center justify-center text-xs font-bold">
+                      {profile.full_name.charAt(0).toUpperCase()}
+                    </div>
+                  ) : (
+                    <User className="w-5 h-5" />
+                  )}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
 
-              <AnimatePresence>
-                {isUserDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl overflow-hidden border bg-[var(--bg-card)] border-[var(--border)]"
-                  >
-                    <div className="px-4 py-3 border-b border-[var(--border)]">
-                      <p className="text-sm font-medium text-[var(--text)]">John Doe</p>
-                      <p className="text-xs text-[var(--text-secondary)]">john@example.com</p>
-                    </div>
-                    <div className="p-1">
-                      {[
-                        { icon: User, label: "Profile", href: "/profile" },
-                        { icon: Package, label: "Orders", href: "/orders" },
-                        { icon: Settings, label: "Settings", href: "/settings" },
-                      ].map(({ icon: Icon, label, href }) => (
-                        <Link
-                          key={label}
-                          href={href}
-                          onClick={() => setIsUserDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--glass-bg)] dark:text-white/70 dark:hover:text-white dark:hover:bg-white/10"
+                <AnimatePresence>
+                  {isUserDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-2xl overflow-hidden border bg-[var(--bg-card)] border-[var(--border)]"
+                    >
+                      <div className="px-4 py-3 border-b border-[var(--border)]">
+                        <p className="text-sm font-medium text-[var(--text)] truncate">{displayName}</p>
+                        <p className="text-xs text-[var(--text-secondary)] truncate">{displayEmail}</p>
+                      </div>
+                      <div className="p-1">
+                        {[
+                          { icon: User, label: "Profile", href: "/profile" },
+                          { icon: Package, label: "Orders", href: "/orders" },
+                          { icon: Settings, label: "Settings", href: "/settings" },
+                        ].map(({ icon: Icon, label, href }) => (
+                          <Link
+                            key={label}
+                            href={href}
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-[var(--glass-bg)] dark:text-white/70 dark:hover:text-white dark:hover:bg-white/10"
+                          >
+                            <Icon className="w-4 h-4" />
+                            {label}
+                          </Link>
+                        ))}
+                        <button
+                          onClick={handleSignOut}
+                          disabled={signingOut}
+                          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all w-full disabled:opacity-50"
                         >
-                          <Icon className="w-4 h-4" />
-                          {label}
-                        </Link>
-                      ))}
-                      <button
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all w-full"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                          <LogOut className="w-4 h-4" />
+                          {signingOut ? "Signing out..." : "Sign Out"}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : !authLoading ? (
+              /* User — Logged Out */
+              <Link
+                href="/login"
+                className="ml-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all border border-[var(--text-secondary)] dark:border-white/30 text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white hover:border-[var(--text)] dark:hover:border-white"
+              >
+                Login
+              </Link>
+            ) : null}
           </div>
 
           {/* Desktop Nav Links */}
@@ -294,7 +413,7 @@ export function Navbar() {
             </div>
 
             {/* Mobile Search */}
-            <div className="px-6 py-4 border-b border-[var(--border)] dark:border-white/5">
+            <form onSubmit={handleSearch} className="px-6 py-4 border-b border-[var(--border)] dark:border-white/5">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--text-secondary)]" />
                 <input
@@ -309,10 +428,10 @@ export function Navbar() {
                   )}
                 />
               </div>
-            </div>
+            </form>
 
             {/* Mobile Nav Links */}
-            <nav className="flex-1 px-6 py-6">
+            <nav className="flex-1 px-6 py-6 overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -334,52 +453,143 @@ export function Navbar() {
                     </Link>
                   </motion.div>
                 ))}
+
+                {/* Auth Links */}
+                {!authLoading && user && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <div className="pt-4 pb-2">
+                        <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Account</p>
+                      </div>
+                    </motion.div>
+                    {[
+                      { label: "Profile", href: "/profile" },
+                      { label: "Orders", href: "/orders" },
+                      { label: "Settings", href: "/settings" },
+                    ].map((link, i) => (
+                      <motion.div
+                        key={link.label}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.35 + i * 0.05 }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block py-4 text-xl font-light border-b text-[var(--text-secondary)] dark:text-white/80 hover:text-[var(--text)] dark:hover:text-white border-[var(--border)] dark:border-white/5"
+                        >
+                          {link.label}
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </>
+                )}
               </motion.div>
             </nav>
 
             {/* Mobile Bottom Actions */}
-            <div className="px-6 py-6 border-t border-[var(--border)] dark:border-white/10 flex items-center gap-4">
-              {/* Theme toggle in mobile */}
-              <button
-                onClick={() => { setIsMobileMenuOpen(false); toggleTheme(); }}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
-                  "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
-                  "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
-                )}
-              >
-                {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                <span className="text-sm font-medium">{isDark ? "Dark Mode" : "Light Mode"}</span>
-              </button>
+            <div className="px-6 py-6 border-t border-[var(--border)] dark:border-white/10">
+              {!authLoading && user ? (
+                <>
+                  {/* Logged in: theme toggle, wishlist, sign out */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <button
+                      onClick={() => { setIsMobileMenuOpen(false); toggleTheme(); }}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
+                        "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                        "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
+                      )}
+                    >
+                      {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                      <span className="text-sm font-medium">{isDark ? "Dark Mode" : "Light Mode"}</span>
+                    </button>
 
-              <Link
-                href="/wishlist"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
-                  "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
-                  "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
-                )}
-              >
-                <Heart className="w-4 h-4" />
-                <span className="text-sm font-medium">
-                  Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-                </span>
-              </Link>
-            </div>
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
+                        "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                        "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
+                      )}
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span className="text-sm font-medium">Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</span>
+                    </Link>
+                  </div>
 
-            {/* Cart button */}
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setIsCartOpen(true);
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-medium text-sm transition-all bg-[var(--accent)] text-[var(--bg)] hover:opacity-90"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                Cart {cartCount > 0 && `(${cartCount})`}
-              </button>
+                  {/* Cart */}
+                  <div className="mb-4">
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsCartOpen(true);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-medium text-sm transition-all bg-[var(--accent)] text-[var(--bg)] hover:opacity-90"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      Cart {cartCount > 0 && `(${cartCount})`}
+                    </button>
+                  </div>
+
+                  {/* Sign out */}
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    disabled={signingOut}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-red-500/30 text-red-400 font-medium text-sm hover:border-red-500/60 hover:text-red-300 transition-all disabled:opacity-50"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {signingOut ? "Signing out..." : "Sign Out"}
+                  </button>
+                </>
+              ) : !authLoading ? (
+                <>
+                  {/* Logged out: login link, theme, wishlist */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <button
+                      onClick={() => { setIsMobileMenuOpen(false); toggleTheme(); }}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
+                        "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                        "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
+                      )}
+                    >
+                      {isDark ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                      <span className="text-sm font-medium">{isDark ? "Dark Mode" : "Light Mode"}</span>
+                    </button>
+
+                    <Link
+                      href="/wishlist"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-3 rounded-full border transition-all",
+                        "text-[var(--text-secondary)] border-[var(--border)] hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                        "dark:text-white/80 dark:border-white/20 dark:hover:text-white dark:hover:border-white/40"
+                      )}
+                    >
+                      <Heart className="w-4 h-4" />
+                      <span className="text-sm font-medium">Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</span>
+                    </Link>
+                  </div>
+
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full font-medium text-sm transition-all bg-[var(--accent)] text-[var(--bg)] hover:opacity-90"
+                  >
+                    <User className="w-4 h-4" />
+                    Login / Sign Up
+                  </Link>
+                </>
+              ) : null}
             </div>
           </motion.div>
         )}

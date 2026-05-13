@@ -250,7 +250,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
         Looks like you haven&apos;t added any items yet. Start exploring our collection.
       </p>
       <Link
-        href="/shop"
+        href="/products"
         onClick={onClose}
         className="flex items-center gap-2 px-8 py-3 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
       >
