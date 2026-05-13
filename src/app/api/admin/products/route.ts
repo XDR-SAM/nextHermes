@@ -39,11 +39,7 @@ export async function GET(request: NextRequest) {
       .from("products")
       .select(
         `id, name, slug, description, price, compare_at_price, stock_quantity, is_active, created_at, updated_at,
-        category(id, name, slug),
-        brand(id, name),
-        primary_image,
-        avg_rating,
-        images(id, url, alt_text)`
+        primary_image, avg_rating, category_id, brand_id, images(id, url, alt_text)`
       )
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);

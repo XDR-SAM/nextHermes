@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("products")
       .select(
-        `id, name, slug, description, price, compare_at_price, stock_quantity, is_active, created_at, primary_image, avg_rating,
-        category(id, name, slug)`
+        `id, name, slug, description, price, compare_at_price, stock_quantity, is_active, created_at, primary_image, avg_rating, category_id`
       )
       .eq("is_active", true);
 

@@ -22,10 +22,7 @@ export async function GET(request: NextRequest) {
       .from("orders")
       .select(
         `id, status, total, subtotal, tax, shipping_cost, order_number, shipping_address, created_at, updated_at,
-        items:order_items(
-          id, quantity, unit_price,
-          product:products(id, name, slug, primary_image)
-        )`
+        items:order_items(id, quantity, unit_price, product:products(id, name, slug, primary_image))`
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })

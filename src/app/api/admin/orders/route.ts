@@ -49,9 +49,8 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("orders")
       .select(
-        `id, status, total, subtotal, tax, shipping_cost, created_at, updated_at,
-        user:profiles(id, email, full_name),
-        items:order_items(id, quantity, unit_price, product:products(id, name, primary_image))`
+        `id, status, total, subtotal, tax, shipping_cost, order_number, user_id, shipping_address, created_at, updated_at,
+        items:order_items(id, quantity, unit_price, product:products(id, name, slug, primary_image))`
       )
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
