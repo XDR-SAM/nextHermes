@@ -71,8 +71,8 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle password change (static)
-  const handleChangePassword = () => {
+  // Handle password change (calls real API)
+  const handleChangePassword = async () => {
     setPasswordError(null);
     setPasswordSaved(false);
 
@@ -91,12 +91,28 @@ export default function ProfilePage() {
       return;
     }
 
-    // Static implementation — in production this would call the API
-    setPasswordSaved(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setTimeout(() => setPasswordSaved(false), 3000);
+    try {
+      const res = await fetch("/api/auth/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPasswordError(data.error || "Failed to update password. Please try again.");
+        return;
+      }
+
+      setPasswordSaved(true);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordSaved(false), 3000);
+    } catch {
+      setPasswordError("Something went wrong. Please try again.");
+    }
   };
 
   if (authLoading) {
