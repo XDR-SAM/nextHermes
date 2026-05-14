@@ -18,26 +18,28 @@ const FIELD_MAP_TO_DB = {
 };
 
 // GET — public, returns active promo_banners
+// Uses service role key internally so RLS doesn't block reads
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const position = searchParams.get("position"); // hero | promo | hero,promo | all
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !anonKey) {
+  if (!supabaseUrl || !serviceKey) {
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
   }
 
-  let query = `${supabaseUrl}/rest/v1/promo_banners?is_active=eq.true&select=*&order=sort_order.asc`;
-
-  const res = await fetch(query, {
-    headers: {
-      apikey: anonKey,
-      Authorization: `Bearer ${anonKey}`,
-    },
-    next: { revalidate: 60 },
-  });
+  // Service role bypasses RLS — safe for public read
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/promo_banners?is_active=eq.true&select=*&order=sort_order.asc`,
+    {
+      headers: {
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      next: { revalidate: 60 },
+    }
+  );
 
   if (!res.ok) {
     return NextResponse.json({ error: "Failed to fetch banners" }, { status: 502 });

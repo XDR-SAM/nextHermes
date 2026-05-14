@@ -743,30 +743,19 @@ export default function HomePage() {
         .order("created_at", { ascending: false })
         .limit(3);
 
-      // Fetch banners from promo_banners table
-      const { data: bannersData } = await supabase
-        .from("promo_banners")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true });
+      // Fetch banners via API route (uses service role key, bypasses RLS)
+      let bannersData: any[] = [];
+      try {
+        const bannersRes = await fetch("/api/banners", { cache: "no-store" });
+        if (bannersRes.ok) {
+          const bannersJson = await bannersRes.json();
+          bannersData = bannersJson.banners || [];
+        }
+      } catch {
+        bannersData = [];
+      }
 
-      // Map promo_banners columns → Banner interface
-      const mappedBanners: Banner[] = (bannersData || []).map((b: any) => ({
-        id: b.id,
-        title: b.title,
-        subtitle: b.subtitle || "",
-        description: b.subtitle || "",
-        cta_text: b.link_text || "Shop Now",
-        cta_link: b.link || "/products",
-        background_image: b.background_image,
-        background_color: b.background_color,
-        text_color: b.text_color,
-        sort_order: b.sort_order ?? 0,
-        is_active: b.is_active ?? false,
-        created_at: b.created_at,
-      }));
-
-      // Fetch site settings
+      // Transform data
       const { data: settingsData } = await supabase
         .from("site_settings")
         .select("*")
@@ -787,7 +776,7 @@ export default function HomePage() {
       setTrendingProducts(transformedTrending);
       setFeaturedProducts(transformedFeatured);
       setTestimonials(testimonialsData || []);
-      setBanners(mappedBanners);
+      setBanners(bannersData);
       setSiteSettings(settingsData);
     } catch (err) {
       console.error("Error fetching homepage data:", err);
