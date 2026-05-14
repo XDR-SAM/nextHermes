@@ -36,7 +36,6 @@ export async function POST() {
       price: 249,
       stock_quantity: 45,
       is_active: true,
-      avg_rating: 4.8,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
     {
@@ -46,7 +45,6 @@ export async function POST() {
       price: 1299,
       stock_quantity: 20,
       is_active: true,
-      avg_rating: 4.9,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
     {
@@ -56,7 +54,6 @@ export async function POST() {
       price: 1199,
       stock_quantity: 35,
       is_active: true,
-      avg_rating: 4.9,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
     {
@@ -66,7 +63,6 @@ export async function POST() {
       price: 1099,
       stock_quantity: 28,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
     {
@@ -76,7 +72,6 @@ export async function POST() {
       price: 399,
       stock_quantity: 40,
       is_active: true,
-      avg_rating: 4.8,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
     {
@@ -86,7 +81,6 @@ export async function POST() {
       price: 849,
       stock_quantity: 18,
       is_active: true,
-      avg_rating: 4.9,
       category_id: catMap["electronics"] || categories[0]?.id || null,
     },
 
@@ -98,7 +92,6 @@ export async function POST() {
       price: 128,
       stock_quantity: 60,
       is_active: true,
-      avg_rating: 4.6,
       category_id: catMap["clothing"] || categories[0]?.id || null,
     },
     {
@@ -108,7 +101,6 @@ export async function POST() {
       price: 89,
       stock_quantity: 80,
       is_active: true,
-      avg_rating: 4.5,
       category_id: catMap["clothing"] || categories[0]?.id || null,
     },
     {
@@ -118,7 +110,6 @@ export async function POST() {
       price: 595,
       stock_quantity: 15,
       is_active: true,
-      avg_rating: 4.8,
       category_id: catMap["clothing"] || categories[0]?.id || null,
     },
     {
@@ -128,7 +119,6 @@ export async function POST() {
       price: 75,
       stock_quantity: 90,
       is_active: true,
-      avg_rating: 4.4,
       category_id: catMap["clothing"] || categories[0]?.id || null,
     },
     {
@@ -138,7 +128,6 @@ export async function POST() {
       price: 110,
       stock_quantity: 55,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["clothing"] || categories[0]?.id || null,
     },
 
@@ -146,11 +135,10 @@ export async function POST() {
     {
       name: "Suede Chelsea Boot",
       slug: "suede-chelsea-boot",
-      description: "Italian suede upper with an弹性 gore side panel and rubber lug sole. Goodyear welted construction for resoleability. Available in cognac, midnight, and olive.",
+      description: "Italian suede upper with an elastic gore side panel and rubber lug sole. Goodyear welted construction for resoleability. Available in cognac, midnight, and olive.",
       price: 245,
       stock_quantity: 35,
       is_active: true,
-      avg_rating: 4.6,
       category_id: catMap["footwear"] || categories[0]?.id || null,
     },
     {
@@ -160,7 +148,6 @@ export async function POST() {
       price: 320,
       stock_quantity: 25,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["footwear"] || categories[0]?.id || null,
     },
     {
@@ -170,7 +157,6 @@ export async function POST() {
       price: 68,
       stock_quantity: 100,
       is_active: true,
-      avg_rating: 4.5,
       category_id: catMap["footwear"] || categories[0]?.id || null,
     },
     {
@@ -180,7 +166,6 @@ export async function POST() {
       price: 95,
       stock_quantity: 70,
       is_active: true,
-      avg_rating: 4.4,
       category_id: catMap["footwear"] || categories[0]?.id || null,
     },
 
@@ -192,7 +177,6 @@ export async function POST() {
       price: 85,
       stock_quantity: 50,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["accessories"] || categories[0]?.id || null,
     },
     {
@@ -202,7 +186,6 @@ export async function POST() {
       price: 195,
       stock_quantity: 40,
       is_active: true,
-      avg_rating: 4.8,
       category_id: catMap["accessories"] || categories[0]?.id || null,
     },
     {
@@ -212,7 +195,6 @@ export async function POST() {
       price: 485,
       stock_quantity: 12,
       is_active: true,
-      avg_rating: 4.9,
       category_id: catMap["accessories"] || categories[0]?.id || null,
     },
     {
@@ -222,7 +204,6 @@ export async function POST() {
       price: 245,
       stock_quantity: 30,
       is_active: true,
-      avg_rating: 4.6,
       category_id: catMap["accessories"] || categories[0]?.id || null,
     },
 
@@ -234,7 +215,6 @@ export async function POST() {
       price: 185,
       stock_quantity: 40,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["home & living"] || categories[0]?.id || null,
     },
     {
@@ -244,7 +224,6 @@ export async function POST() {
       price: 42,
       stock_quantity: 75,
       is_active: true,
-      avg_rating: 4.5,
       category_id: catMap["home & living"] || categories[0]?.id || null,
     },
     {
@@ -254,7 +233,6 @@ export async function POST() {
       price: 145,
       stock_quantity: 30,
       is_active: true,
-      avg_rating: 4.6,
       category_id: catMap["home & living"] || categories[0]?.id || null,
     },
     {
@@ -264,7 +242,6 @@ export async function POST() {
       price: 38,
       stock_quantity: 120,
       is_active: true,
-      avg_rating: 4.6,
       category_id: catMap["home & living"] || categories[0]?.id || null,
     },
 
@@ -276,7 +253,6 @@ export async function POST() {
       price: 85,
       stock_quantity: 45,
       is_active: true,
-      avg_rating: 4.7,
       category_id: catMap["sports"] || categories[0]?.id || null,
     },
     {
@@ -286,7 +262,6 @@ export async function POST() {
       price: 35,
       stock_quantity: 95,
       is_active: true,
-      avg_rating: 4.4,
       category_id: catMap["sports"] || categories[0]?.id || null,
     },
     {
@@ -296,7 +271,6 @@ export async function POST() {
       price: 78,
       stock_quantity: 50,
       is_active: true,
-      avg_rating: 4.5,
       category_id: catMap["sports"] || categories[0]?.id || null,
     },
   ];
