@@ -10,6 +10,25 @@ import { supabase } from "@/lib/supabase-client";
 import { cn } from "@/lib/utils";
 
 // Types
+interface Banner {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  cta_text?: string;
+  cta_link?: string;
+  background_image?: string;
+  text_color?: string;
+  button_style?: string;
+  position?: string;
+  sort_order?: number;
+  is_active?: boolean;
+  show_from?: string;
+  show_until?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -40,17 +59,6 @@ interface Testimonial {
   rating: number;
   verified: boolean;
   avatar?: string;
-}
-
-interface PromoBanner {
-  id: string;
-  title: string;
-  subtitle?: string;
-  cta_text?: string;
-  cta_link?: string;
-  background_image?: string;
-  is_active: boolean;
-  sort_order: number;
 }
 
 interface SiteSettings {
@@ -110,7 +118,9 @@ function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => v
 }
 
 // HERO SECTION
-function HeroSection({ settings }: { settings: SiteSettings | null }) {
+function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null; heroBanners: Banner[] }) {
+  const activeHero = heroBanners.find((b) => b.is_active) || heroBanners[0];
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -125,48 +135,54 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
   };
 
   return (
-    <section className="relative min-h-screen bg-[var(--bg)] dark:bg-black flex items-center overflow-hidden">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/5 dark:from-white/5" />
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] dark:bg-white/5" />
-        <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-white/3 rounded-full blur-[150px] dark:bg-white/3" />
-      </div>
+    <section
+      className="relative min-h-screen flex items-center overflow-hidden"
+      style={activeHero?.background_image ? {
+        backgroundImage: `url(${activeHero.background_image})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      } : undefined}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
             <motion.div variants={itemVariants}>
-              <span className="inline-block text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] border border-[var(--border)] rounded-full px-4 py-1.5 dark:text-white/50 dark:border-white/20">
-                New Collection 2025
+              <span className="inline-block text-xs uppercase tracking-[0.3em] text-white/70 border border-white/20 rounded-full px-4 py-1.5">
+                {activeHero?.subtitle || "New Collection 2025"}
               </span>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-[var(--text)] dark:text-white leading-[0.9] tracking-tight">
-              {settings?.hero_title || "Redefine"}{" "}
+            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[0.9] tracking-tight">
+              {activeHero?.title || settings?.hero_title || "Redefine"}{" "}
               <span className="block mt-2">
                 Your{" "}
                 <span className="relative">
                   Style
-                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-[var(--text)] dark:bg-white" />
+                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-white" />
                 </span>
               </span>
             </motion.h1>
 
-            <motion.p variants={itemVariants} className="text-lg text-[var(--text-secondary)] dark:text-white/60 max-w-md leading-relaxed">
-              {settings?.hero_subtitle || "Discover premium products curated for the modern lifestyle. Where timeless design meets contemporary elegance."}
-            </motion.p>
+            {activeHero?.description && (
+              <motion.p variants={itemVariants} className="text-lg text-white/70 max-w-md leading-relaxed">
+                {activeHero.description}
+              </motion.p>
+            )}
 
             <motion.div variants={itemVariants} className="flex flex-wrap gap-4 pt-4">
               <Link
-                href="/products"
-                className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
+                href={activeHero?.cta_link || settings?.hero_cta_link || "/products"}
+                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                {settings?.hero_cta_text || "Shop Now"}
+                {activeHero?.cta_text || settings?.hero_cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 border border-[var(--border)] dark:border-white/30 text-[var(--text)] dark:text-white px-8 py-4 rounded-full font-semibold hover:bg-[var(--glass-bg)] dark:hover:bg-white/10 transition-all duration-300"
+                className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-300"
               >
                 Explore Collection
               </Link>
@@ -174,18 +190,18 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
 
             <motion.div variants={itemVariants} className="flex items-center gap-8 pt-6">
               <div>
-                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">50K+</p>
-                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Happy Customers</p>
+                <p className="text-3xl font-bold text-white">50K+</p>
+                <p className="text-xs text-white/40 uppercase tracking-wider">Happy Customers</p>
               </div>
-              <div className="w-px h-10 bg-[var(--border)] dark:bg-white/20" />
+              <div className="w-px h-10 bg-white/20" />
               <div>
-                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">4.9</p>
-                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Average Rating</p>
+                <p className="text-3xl font-bold text-white">4.9</p>
+                <p className="text-xs text-white/40 uppercase tracking-wider">Average Rating</p>
               </div>
-              <div className="w-px h-10 bg-[var(--border)] dark:bg-white/20" />
+              <div className="w-px h-10 bg-white/20" />
               <div>
-                <p className="text-3xl font-bold text-[var(--text)] dark:text-white">200+</p>
-                <p className="text-xs text-[var(--text-secondary)] dark:text-white/40 uppercase tracking-wider">Premium Brands</p>
+                <p className="text-3xl font-bold text-white">200+</p>
+                <p className="text-xs text-white/40 uppercase tracking-wider">Premium Brands</p>
               </div>
             </motion.div>
           </motion.div>
@@ -197,31 +213,31 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
             className="relative hidden lg:block"
           >
             <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 dark:from-zinc-800 via-zinc-900 dark:via-zinc-900 to-black" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 dark:to-white/10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border border-white/10 dark:border-white/10 rounded-full flex items-center justify-center">
-                  <div className="w-32 h-32 border border-white/5 dark:border-white/5 rounded-full flex items-center justify-center">
-                    <span className="text-6xl font-light text-white/20 dark:text-white/20">H</span>
+                <div className="w-48 h-48 border border-white/10 rounded-full flex items-center justify-center">
+                  <div className="w-32 h-32 border border-white/5 rounded-full flex items-center justify-center">
+                    <span className="text-6xl font-light text-white/20">H</span>
                   </div>
                 </div>
               </div>
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 right-8 bg-white/10 dark:bg-white/10 backdrop-blur-sm border border-white/20 dark:border-white/20 rounded-2xl p-4"
+                className="absolute top-8 right-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
               >
-                <p className="text-xs text-white/60 dark:text-white/60">Featured</p>
-                <p className="text-sm font-semibold text-white dark:text-white">Leather Jacket</p>
+                <p className="text-xs text-white/60">Featured</p>
+                <p className="text-sm font-semibold text-white">Leather Jacket</p>
               </motion.div>
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 left-8 bg-white/10 dark:bg-white/10 backdrop-blur-sm border border-white/20 dark:border-white/20 rounded-2xl p-4"
+                className="absolute bottom-12 left-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
               >
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <span className="text-sm font-semibold text-white dark:text-white">4.9</span>
+                  <span className="text-sm font-semibold text-white">4.9</span>
                 </div>
               </motion.div>
             </div>
@@ -235,13 +251,13 @@ function HeroSection({ settings }: { settings: SiteSettings | null }) {
         transition={{ delay: 1.5 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
-        <span className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] dark:text-white/30">Scroll</span>
+        <span className="text-[10px] uppercase tracking-widest text-white/30">Scroll</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-5 h-8 border border-[var(--border)] dark:border-white/20 rounded-full flex items-start justify-center p-1.5"
+          className="w-5 h-8 border border-white/20 rounded-full flex items-start justify-center p-1.5"
         >
-          <div className="w-1 h-2 bg-[var(--text-secondary)] dark:bg-white/40 rounded-full" />
+          <div className="w-1 h-2 bg-white/40 rounded-full" />
         </motion.div>
       </motion.div>
     </section>
@@ -376,8 +392,9 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
 }
 
 // PROMO BANNER
-function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: boolean }) {
-  const activeBanner = banners.find((b) => b.is_active) || banners[0];
+function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean }) {
+  const activeBanners = banners.filter((b) => b.is_active && b.position === "promo");
+  const activeBanner = activeBanners[0];
 
   if (loading) {
     return (
@@ -392,49 +409,59 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
   if (!activeBanner) return null;
 
   return (
-    <section className="py-20 bg-[var(--bg-secondary)] dark:bg-black relative overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-[var(--bg-secondary)] dark:bg-gradient-to-r dark:from-black dark:via-zinc-900 dark:to-black" />
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-[var(--glass-bg)] dark:bg-white/5 rounded-full blur-[200px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[var(--glass-bg)] dark:bg-white/3 rounded-full blur-[150px]" />
-      </div>
+    <section
+      className="py-20 relative overflow-hidden"
+      style={activeBanner?.background_image ? {
+        backgroundImage: `url(${activeBanner.background_image})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      } : undefined}
+    >
+      <div className="absolute inset-0 bg-black/70" />
 
       <AnimatedSection className="container mx-auto px-6 relative z-10">
-        <div className="relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:via-zinc-950 dark:to-black border border-[var(--border)] dark:border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 border border-[var(--border)] dark:border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 border border-[var(--border)] dark:border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        <div className="relative border border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden"
+          style={activeBanner?.background_image ? {
+            background: "rgba(0,0,0,0.3)",
+            backdropFilter: "blur(4px)",
+          } : undefined}
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 border border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
 
           <div className="relative z-10 max-w-2xl">
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-block text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] border border-[var(--border)] rounded-full px-4 py-1.5 mb-6 dark:text-white/50 dark:border-white/20"
-            >
-              Limited Time Offer
-            </motion.span>
+            {activeBanner.subtitle && (
+              <motion.span
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-block text-xs uppercase tracking-[0.3em] text-white/70 border border-white/20 rounded-full px-4 py-1.5 mb-6"
+              >
+                {activeBanner.subtitle}
+              </motion.span>
+            )}
 
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[var(--text)] dark:text-white mb-4 leading-tight"
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight"
             >
-              {activeBanner.title || "SUMMER SALE"}
+              {activeBanner.title}
             </motion.h2>
 
-            {activeBanner.subtitle && (
+            {activeBanner.description && (
               <motion.p
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="text-lg text-[var(--text-secondary)] dark:text-white/50 mb-8"
+                className="text-lg text-white/60 mb-8"
               >
-                {activeBanner.subtitle}
+                {activeBanner.description}
               </motion.p>
-            )}
+            )
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -444,7 +471,7 @@ function PromoBanner({ banners, loading }: { banners: PromoBanner[]; loading: bo
             >
               <Link
                 href={activeBanner.cta_link || "/products"}
-                className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
               >
                 {activeBanner.cta_text || "Shop Now"}
                 <ArrowRight className="w-4 h-4" />
@@ -673,7 +700,7 @@ export default function HomePage() {
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [promoBanners, setPromoBanners] = useState<PromoBanner[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -689,10 +716,10 @@ export default function HomePage() {
         .select("*")
         .order("name");
 
-      // Fetch trending products
+      // Fetch trending products (no FK join — flat columns)
       const { data: trendingData } = await supabase
         .from("products")
-        .select("*, categories(name)")
+        .select("*")
         .eq("is_trending", true)
         .eq("is_active", true)
         .limit(6);
@@ -700,7 +727,7 @@ export default function HomePage() {
       // Fetch featured products (new arrivals)
       const { data: featuredData } = await supabase
         .from("products")
-        .select("*, categories(name)")
+        .select("*")
         .eq("is_featured", true)
         .eq("is_active", true)
         .limit(4);
@@ -713,13 +740,12 @@ export default function HomePage() {
         .order("created_at", { ascending: false })
         .limit(3);
 
-      // Fetch promo banners
+      // Fetch banners from the new banners table
       const { data: bannersData } = await supabase
-        .from("promo_banners")
+        .from("banners")
         .select("*")
         .eq("is_active", true)
-        .order("sort_order")
-        .limit(1);
+        .order("sort_order", { ascending: true });
 
       // Fetch site settings
       const { data: settingsData } = await supabase
@@ -731,20 +757,18 @@ export default function HomePage() {
       const transformedTrending = (trendingData || []).map((p: any) => ({
         ...p,
         images: p.images || [],
-        category: p.categories?.name,
       }));
 
       const transformedFeatured = (featuredData || []).map((p: any) => ({
         ...p,
         images: p.images || [],
-        category: p.categories?.name,
       }));
 
       setCategories(categoriesData || []);
       setTrendingProducts(transformedTrending);
       setFeaturedProducts(transformedFeatured);
       setTestimonials(testimonialsData || []);
-      setPromoBanners(bannersData || []);
+      setBanners(bannersData || []);
       setSiteSettings(settingsData);
     } catch (err) {
       console.error("Error fetching homepage data:", err);
@@ -762,12 +786,14 @@ export default function HomePage() {
     return <ErrorFallback message={error} onRetry={fetchData} />;
   }
 
+  const heroBanners = banners.filter((b) => b.position === "hero" || b.position === undefined);
+
   return (
     <main className="bg-[var(--bg)] dark:bg-black min-h-screen">
-      <HeroSection settings={siteSettings} />
+      <HeroSection settings={siteSettings} heroBanners={heroBanners} />
       <CategoriesSection categories={categories} loading={loading} />
       <TrendingSection products={trendingProducts} loading={loading} />
-      <PromoBanner banners={promoBanners} loading={loading} />
+      <PromoBanner banners={banners} loading={loading} />
       <NewArrivalsSection products={featuredProducts} loading={loading} />
       <TestimonialsSection testimonials={testimonials} loading={loading} />
       <NewsletterSection />

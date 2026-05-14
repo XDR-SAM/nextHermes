@@ -21,8 +21,9 @@ export const useThemeStore = create<ThemeState>()(
         const next = current === "dark" ? "light" : "dark";
         set({ theme: next });
 
-        // Apply to <html> element
+        // Apply to <html> element — both class (Tailwind dark:) and attr (CSS vars)
         if (typeof document !== "undefined") {
+          document.documentElement.classList.toggle("dark", next === "dark");
           document.documentElement.setAttribute("data-theme", next);
         }
       },
@@ -37,8 +38,9 @@ export const useThemeStore = create<ThemeState>()(
     {
       name: "hermes-theme",
       onRehydrateStorage: () => (state) => {
-        // On load, sync data-theme attribute with stored value
+        // On load, sync BOTH .dark class and data-theme attribute with stored value
         if (state && typeof document !== "undefined") {
+          document.documentElement.classList.toggle("dark", state.theme === "dark");
           document.documentElement.setAttribute("data-theme", state.theme);
         }
       },

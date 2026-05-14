@@ -20,6 +20,8 @@ import {
   Moon,
   ShoppingBag,
   ArrowRight,
+  MapPin,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
@@ -29,6 +31,7 @@ import { CartDrawer } from "./cart-drawer";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
+  { label: "Track Order", href: "/orders" },
   { label: "Shop", href: "/products" },
   { label: "New Arrivals", href: "/new-arrivals" },
   { label: "About", href: "/about" },
@@ -53,7 +56,7 @@ export function Navbar() {
 
   // Auth state
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
-  const [profile, setProfile] = useState<{ full_name?: string; email?: string } | null>(null);
+  const [profile, setProfile] = useState<{ full_name?: string; email?: string; role?: string } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -84,7 +87,7 @@ export function Navbar() {
         setUser(u);
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, role")
           .eq("id", u.id)
           .single();
         setProfile(profileData || { email: u.email });
@@ -97,7 +100,7 @@ export function Navbar() {
           setUser(session.user);
           supabase
             .from("profiles")
-            .select("full_name")
+            .select("full_name, role")
             .eq("id", session.user.id)
             .single()
             .then(({ data }) => setProfile(data || { email: session.user.email }));
@@ -326,6 +329,9 @@ export function Navbar() {
                           { icon: User, label: "Profile", href: "/profile" },
                           { icon: Package, label: "Orders", href: "/orders" },
                           { icon: Settings, label: "Settings", href: "/settings" },
+                          ...(profile?.role === "admin" || profile?.role === "super_admin"
+                            ? [{ icon: LayoutDashboard, label: "Admin Panel", href: "/admin" }]
+                            : []),
                         ].map(({ icon: Icon, label, href }) => (
                           <Link
                             key={label}

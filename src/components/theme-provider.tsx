@@ -10,10 +10,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Read persisted theme from localStorage and apply to <html>
     // This handles the initial hydration case properly
     const stored = localStorage.getItem("hermes-theme");
-    const theme = stored ? JSON.parse(stored).state?.theme : "dark";
-    // Also toggle .dark class on <html> for Tailwind dark: variants
+    const parsed = stored ? JSON.parse(stored) : null;
+    const theme = parsed?.state?.theme ?? "dark";
+
+    // Apply BOTH .dark class (for Tailwind dark: variants) AND data-theme (for CSS vars)
     document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.setAttribute("data-theme", theme ?? "dark");
+    document.documentElement.setAttribute("data-theme", theme);
 
     // Subscribe to future theme changes
     const unsub = useThemeStore.subscribe((state) => {
