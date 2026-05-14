@@ -16,14 +16,11 @@ import {
   LogOut,
   Settings,
   Package,
-  Sun,
-  Moon,
   LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
-import { useThemeStore, toggleTheme } from "@/store/theme-store";
 import { CartDrawer } from "./cart-drawer";
 
 const NAV_LINKS = [
@@ -56,13 +53,11 @@ export function Navbar() {
   const [authLoading, setAuthLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
-  const theme = useThemeStore((s) => s.theme);
   const cartItems = useCartStore((s) => s.items);
   const wishlistItems = useWishlistStore((s) => s.wishlistItems);
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlistItems.length;
-  const isDark = theme === "dark";
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -232,25 +227,6 @@ export function Navbar() {
               <Search className="w-[18px] h-[18px]" />
             </button>
 
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2.5 rounded-full hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground"
-              aria-label="Toggle theme"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {isDark ? (
-                  <motion.span key="moon" initial={{ opacity: 0, rotate: -20 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: 20 }} transition={{ duration: 0.15 }}>
-                    <Moon className="w-[18px] h-[18px]" />
-                  </motion.span>
-                ) : (
-                  <motion.span key="sun" initial={{ opacity: 0, rotate: 20 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: -20 }} transition={{ duration: 0.15 }}>
-                    <Sun className="w-[18px] h-[18px]" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
-
             {/* Wishlist */}
             <Link
               href="/wishlist"
@@ -381,12 +357,6 @@ export function Navbar() {
                 HERMES
               </Link>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { setIsMobileMenuOpen(false); toggleTheme(); }}
-                  className="p-2.5 rounded-full hover:bg-muted transition-colors text-muted-foreground"
-                >
-                  {isDark ? <Moon className="w-[18px] h-[18px]" /> : <Sun className="w-[18px] h-[18px]" />}
-                </button>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
                   <X className="w-[18px] h-[18px]" />
                 </button>

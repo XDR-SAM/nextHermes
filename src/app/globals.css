@@ -1,63 +1,38 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   TAILWIND DARK MODE — class-based (Tailwind v4 convention)
-   Adding .dark to <html> activates all dark: variants.
-   NO data-theme attribute needed.
+   LIGHT MODE ONLY — white background, black text
+   No .dark class, no data-theme. Pure light always.
    ═══════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* Core semantic colors — resolve to Tailwind utility classes */
-  --color-background: oklch(0 0 0);           /* bg-background */
-  --color-foreground: oklch(0 0 100);          /* text-foreground */
-  --color-muted: oklch(0.65 0 50);             /* text-muted-foreground */
-  --color-muted-foreground: oklch(0.55 0 50);
-  --color-border: oklch(0.18 0 0);            /* border */
-  --color-input: oklch(0.18 0 0);
-  --color-ring: oklch(0.65 0 0);
-  --color-primary: oklch(0 0 100);             /* text-primary */
-  --color-primary-foreground: oklch(0 0 0);
-  --color-secondary: oklch(0.14 0 0);
-  --color-secondary-foreground: oklch(0.85 0 0);
-  --color-accent: oklch(0.14 0 0);
-  --color-accent-foreground: oklch(0.95 0 0);
+  /* Core semantic colors */
+  --color-background: #ffffff;
+  --color-foreground: #111111;
+  --color-muted: #f4f4f5;
+  --color-muted-foreground: #71717a;
+  --color-border: #e4e4e7;
+  --color-input: #e4e4e7;
+  --color-ring: #71717a;
+  --color-primary: #111111;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f4f4f5;
+  --color-secondary-foreground: #111111;
+  --color-accent: #f4f4f5;
+  --color-accent-foreground: #111111;
   --color-destructive: oklch(0.58 0.21 25);
   --color-destructive-foreground: oklch(0.98 0 100);
   --color-success: oklch(0.65 0.19 145);
   --color-success-foreground: oklch(0.98 0 100);
   --color-warning: oklch(0.75 0.18 85);
   --color-warning-foreground: oklch(0.2 0 0);
-
-  /* Card colors */
-  --color-card: oklch(0.1 0 0);
-  --color-card-foreground: oklch(0 0 100);
-  --color-popover: oklch(0.1 0 0);
-  --color-popover-foreground: oklch(0 0 100);
+  --color-card: #ffffff;
+  --color-card-foreground: #111111;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #111111;
 
   /* Fonts */
   --font-sans: var(--font-inter), system-ui, sans-serif;
-}
-
-/* ─── Dark mode overrides ─── */
-/* These @layer rules let Tailwind generate dark: variants that override the theme defaults */
-.dark {
-  --color-background: oklch(0 0 0);
-  --color-foreground: oklch(0 0 100);
-  --color-muted: oklch(0.55 0 50);
-  --color-muted-foreground: oklch(0.45 0 50);
-  --color-border: oklch(0.17 0 0);
-  --color-input: oklch(0.14 0 0);
-  --color-ring: oklch(0.6 0 50);
-  --color-primary: oklch(0 0 100);
-  --color-primary-foreground: oklch(0 0 0);
-  --color-secondary: oklch(0.14 0 0);
-  --color-secondary-foreground: oklch(0.9 0 0);
-  --color-accent: oklch(0.12 0 0);
-  --color-accent-foreground: oklch(0.95 0 0);
-  --color-card: oklch(0.08 0 0);
-  --color-card-foreground: oklch(0 0 100);
-  --color-popover: oklch(0.08 0 0);
-  --color-popover-foreground: oklch(0 0 100);
 }
 
 /* ─── Global resets ─── */
@@ -70,10 +45,6 @@ html {
   color-scheme: light;
   background: var(--color-background);
   color: var(--color-foreground);
-}
-
-.dark html {
-  color-scheme: dark;
 }
 
 body {
@@ -103,11 +74,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.35 0 0);
+  background: #d4d4d8;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0);
+  background: #a1a1aa;
 }
 
 /* ─── Focus visible ─── */
@@ -126,70 +97,25 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    oklch(0.15 0 0) 25%,
-    oklch(0.22 0 0) 50%,
-    oklch(0.15 0 0) 75%
+    #f4f4f5 25%,
+    #e4e4e7 50%,
+    #f4f4f5 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-/* ─── Smooth transitions for all themed elements ─── */
-/* Applied only to non-interactive/decorative elements to avoid janky UX */
+/* ─── Smooth transitions ─── */
 .theme-transition,
 .theme-transition * {
   transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    fill 0.25s ease,
-    stroke 0.25s ease !important;
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease !important;
 }
 
-/* ─── Disable transitions on elements that animate ─── */
+/* ─── Disable transitions on animated elements ─── */
 .no-transition,
 .no-transition * {
   transition: none !important;
-}
-
-/* ─── Glass utility ─── */
-.glass {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: oklch(0 0 0 / 0.04);
-  border: 1px solid oklch(0 0 0 / 0.08);
-}
-
-.dark .glass {
-  background: oklch(0 0 0 / 0.3);
-  border-color: oklch(0 0 0 / 0.15);
-}
-
-/* ─── CSS var aliases for components still using them ─── */
-:root {
-  --bg: var(--color-background);
-  --bg-secondary: var(--color-secondary);
-  --bg-card: var(--color-card);
-  --text: var(--color-foreground);
-  --text-secondary: var(--color-muted-foreground);
-  --border: var(--color-border);
-  --accent: var(--color-foreground);
-  --glass-bg: oklch(0 0 0 / 0.04);
-  --glass-border: oklch(0 0 0 / 0.08);
-}
-
-.dark {
-  --glass-bg: oklch(0 0 0 / 0.3);
-  --glass-border: oklch(0 0 0 / 0.15);
-}
-
-/* ─── Grain texture overlay ─── */
-.grain::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 1;
 }
