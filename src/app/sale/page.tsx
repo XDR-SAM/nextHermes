@@ -117,20 +117,7 @@ export default function SalePage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                originalPrice={
-                  product.compare_at_price && product.compare_at_price > product.price
-                    ? product.compare_at_price
-                    : undefined
-                }
-                image={product.primary_image || "https://picsum.photos/400"}
-                rating={product.avg_rating || 0}
-                category={product.category?.name}
-              />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         )}

@@ -364,16 +364,7 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
           {products.slice(0, 6).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.08}>
-              <ProductCard
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.original_price}
-                image={product.images?.[0] || "https://picsum.photos/400"}
-                rating={product.rating}
-                reviewCount={product.review_count}
-                category={product.category}
-              />
+              <ProductCard product={product} />
             </AnimatedSection>
           ))}
         </div>
@@ -530,16 +521,7 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           {products.slice(0, 4).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.1}>
-              <ProductCard
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.original_price}
-                image={product.images?.[0] || "https://picsum.photos/400"}
-                rating={product.rating}
-                reviewCount={product.review_count}
-                category={product.category}
-              />
+              <ProductCard product={product} />
             </AnimatedSection>
           ))}
         </div>

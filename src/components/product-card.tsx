@@ -4,87 +4,44 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, ShoppingCart, Eye } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/cart-store";
 import { useWishlistStore } from "@/store/wishlist-store";
 
-interface ProductCardProps {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating?: number;
-  reviewCount?: number;
-  category?: string;
-  className?: string;
-}
+// Minimal product shape — pages only pass a subset of fields
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ProductCore = any;
 
-function StarRating({ rating, count }: { rating: number; count?: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <svg
-          key={i}
-          className={cn("w-3.5 h-3.5", i < Math.floor(rating) ? "text-yellow-400" : "text-white/20")}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
-      {count !== undefined && (
-        <span className="text-xs text-[var(--text-secondary)] ml-1">({count})</span>
-      )}
-    </div>
-  );
-}
-
-export function ProductCard({
-  id,
-  name,
-  price,
-  originalPrice,
-  image,
-  rating = 0,
-  reviewCount,
-  category,
-  className,
-}: ProductCardProps) {
+// ─── ProductCard ──────────────────────────────────────────────────────────────
+export function ProductCard({ product }: { product: ProductCore }) {
+  const { id, name, price, original_price, stock_quantity, stock_status } = product;
   const [isHovered, setIsHovered] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  const { addItem } = useCartStore();
+  const addItem = useCartStore((s) => s.addItem);
   const { isInWishlist, toggleWishlist } = useWishlistStore();
 
   const inWishlist = isInWishlist(id);
-  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-  const isDiscounted = originalPrice && originalPrice > price;
+  const isDiscounted = original_price !== null && original_price > price;
+  const discountPct = isDiscounted
+    ? Math.round(((original_price - price) / original_price) * 100)
+    : 0;
+  const isOutOfStock = stock_status === "out_of_stock" || (stock_quantity ?? 0) === 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isAdding || isOutOfStock) return;
 
-    if (isAddingToCart) return;
-
-    setIsAddingToCart(true);
-    addItem({
-      id,
-      name,
-      price,
-      image,
-      quantity: 1,
-    });
-    setAddedToCart(true);
-    setTimeout(() => {
-      setIsAddingToCart(false);
-      setAddedToCart(false);
-    }, 1500);
+    setIsAdding(true);
+    addItem({ id, name, price, image: "", quantity: 1 });
+    setAdded(true);
+    setTimeout(() => { setIsAdding(false); setAdded(false); }, 1500);
   };
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     toggleWishlist(id);
@@ -92,122 +49,108 @@ export function ProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className={cn("group relative", className)}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <Link
         href={`/products/${id}`}
-        className="block bg-[var(--bg-card)] dark:bg-[#111] border border-[var(--border)] rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/15 hover:shadow-2xl hover:shadow-black/50"
+        className="block rounded-2xl border border-border overflow-hidden bg-card transition-all duration-300 hover:border-foreground/30 hover:shadow-md"
       >
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-white/5">
-          <Image
-            src={image || "https://picsum.photos/400"}
-            alt={name}
-            width={400}
-            height={400}
-            className={cn(
-              "w-full h-full object-cover transition-transform duration-500",
-              isHovered ? "scale-105" : "scale-100"
-            )}
-          />
+        {/* Image area */}
+        <div className="relative aspect-square overflow-hidden bg-muted">
+          {/* Placeholder — no images seeded */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-5xl font-bold text-foreground/10 select-none">
+              {name.charAt(0)}
+            </span>
+          </div>
 
-          {/* Discount Badge */}
+          {/* Discount badge */}
           {isDiscounted && (
-            <div className="absolute top-3 left-3 bg-white text-black text-[10px] font-bold px-2.5 py-1 rounded-full">
-              -{discount}%
+            <div className="absolute top-3 left-3 bg-foreground text-background text-[10px] font-bold px-2.5 py-1 rounded-full">
+              -{discountPct}%
             </div>
           )}
 
-          {/* Wishlist Button */}
+          {/* Out of stock overlay */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+              <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">
+                Out of Stock
+              </span>
+            </div>
+          )}
+
+          {/* Wishlist button */}
           <button
-            onClick={handleWishlistToggle}
+            onClick={handleWishlist}
             className={cn(
-              "absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300",
+              "absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center",
+              "transition-all duration-200 z-10",
               inWishlist
                 ? "bg-red-500 text-white"
-                : "bg-black/40 text-white/70 hover:text-white hover:bg-black/60"
+                : "bg-background/80 text-muted-foreground hover:text-foreground hover:bg-background"
             )}
-            style={inWishlist ? { backgroundColor: "#ef4444" } : {}}
           >
             <Heart className={cn("w-4 h-4", inWishlist ? "fill-current" : "")} />
           </button>
 
-          {/* Quick View Overlay */}
+          {/* Quick-add overlay */}
           <motion.div
             initial={false}
-            animate={{
-              opacity: isHovered ? 1 : 0,
-              y: isHovered ? 0 : 10,
-            }}
+            animate={{ opacity: isHovered && !isOutOfStock ? 1 : 0, y: isHovered ? 0 : 8 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none"
+            className="absolute inset-x-0 bottom-0 p-3"
           >
-            <div className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-2 px-4 text-sm text-white font-medium pointer-events-auto">
-              <Eye className="w-4 h-4" />
-              Quick View
-            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding || isOutOfStock}
+              className={cn(
+                "w-full py-2.5 rounded-full text-xs font-semibold transition-all duration-200",
+                "flex items-center justify-center gap-1.5",
+                added
+                  ? "bg-emerald-500 text-white"
+                  : "bg-foreground text-background hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
+              )}
+            >
+              {added ? (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Added!
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  Add to Cart
+                </>
+              )}
+            </button>
           </motion.div>
         </div>
 
-        {/* Product Info */}
-        <div className="p-4 space-y-2">
-          {/* Category */}
-          {category && (
-            <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)]">
-              {category}
-            </p>
-          )}
-
-          {/* Name */}
-          <h3 className="text-sm font-medium text-[var(--text)] line-clamp-2 leading-snug group-hover:text-[var(--text)]/90 transition-colors">
+        {/* Info */}
+        <div className="p-4 space-y-1.5">
+          <h3 className="text-sm font-medium line-clamp-2 leading-snug text-foreground">
             {name}
           </h3>
 
-          {/* Rating */}
-          {rating > 0 && (
-            <StarRating rating={rating} count={reviewCount} />
-          )}
-
           {/* Price */}
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-sm font-semibold text-[var(--text)]">${price.toFixed(2)}</span>
-            {isDiscounted && originalPrice && (
-              <span className="text-xs text-[var(--text-secondary)] line-through">
-                ${originalPrice.toFixed(2)}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-foreground">
+              ${price.toLocaleString()}
+            </span>
+            {isDiscounted && original_price && (
+              <span className="text-xs text-muted-foreground line-through">
+                ${original_price.toLocaleString()}
               </span>
             )}
           </div>
-
-          {/* Add to Cart Button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={isAddingToCart}
-            className={cn(
-              "mt-3 w-full py-2.5 rounded-full text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-2",
-              addedToCart
-                ? "bg-emerald-500 text-white"
-                : "bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent)]/90 active:scale-[0.98]"
-            )}
-          >
-            {addedToCart ? (
-              <>
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                Added
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="w-3.5 h-3.5" />
-                Add to Cart
-              </>
-            )}
-          </button>
         </div>
       </Link>
     </motion.div>

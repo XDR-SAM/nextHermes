@@ -815,16 +815,7 @@ export default function ProductDetailPage() {
             <h2 className="text-2xl font-bold text-[var(--text)] mb-8">You May Also Like</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard
-                  key={relatedProduct.id}
-                  id={relatedProduct.id}
-                  name={relatedProduct.name}
-                  price={relatedProduct.price}
-                  originalPrice={relatedProduct.compare_at_price}
-                  image={relatedProduct.primary_image || "https://picsum.photos/400"}
-                  rating={relatedProduct.avg_rating}
-                  category={relatedProduct.category?.name}
-                />
+                <ProductCard key={relatedProduct.id} product={relatedProduct} />
               ))}
             </div>
           </div>

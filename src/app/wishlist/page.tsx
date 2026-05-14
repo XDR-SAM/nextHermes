@@ -244,15 +244,7 @@ export default function WishlistPage() {
                     transition={{ delay: i * 0.05, duration: 0.3 }}
                     className="relative"
                   >
-                    <ProductCard
-                      id={product.id}
-                      name={product.name}
-                      price={product.price}
-                      originalPrice={product.compare_at_price}
-                      image={product.primary_image || "https://picsum.photos/400"}
-                      rating={product.avg_rating}
-                      category={product.category?.name}
-                    />
+                    <ProductCard product={product} />
                     
                     {/* Remove Button */}
                     <button
