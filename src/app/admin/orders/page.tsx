@@ -8,7 +8,8 @@ interface OrderItem {
   id: string;
   product_id: string;
   quantity: number;
-  unit_price: number;
+  unit_price?: number;
+  total?: number;
   product_name?: string | null;
   product?: { name: string | null; metadata: Record<string, unknown> | null } | null;
 }
@@ -19,17 +20,15 @@ interface Order {
   updated_at: string;
   total: number | null;
   subtotal: number | null;
-  tax: number | null;
-  shipping_cost: number | null;
   status: string;
-  payment_status: string | null;
   shipping_address: string | null;
-  billing_address: string | null;
   notes: string | null;
   user_id: string;
   order_items: OrderItem[] | null;
   profile_name?: string | null;
   profile_email?: string | null;
+  tracking_number?: string | null;
+  tracking_link?: string | null;
 }
 
 const STATUS_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
@@ -57,7 +56,7 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("id, user_id, status, subtotal, shipping_address, billing_address, notes, coupon_id, discount_amount, created_at, updated_at")
+      .select("id, user_id, status, subtotal, shipping_address, notes, created_at, updated_at, tracking_number, tracking_link")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
@@ -114,7 +113,7 @@ export default function OrdersPage() {
     // Fetch order items without FK join (schema cache issue on Vercel)
     const { data: items } = await supabase
       .from("order_items")
-      .select("id, product_id, quantity, unit_price")
+      .select("id, product_id, quantity, total, product_name, unit_price")
       .eq("order_id", order.id);
 
     // Fetch product names separately
@@ -224,12 +223,12 @@ export default function OrdersPage() {
         paymentStatus,
         customerName: (order as Order & { profile_name?: string | null }).profile_name || "Customer",
         customerEmail: (order as Order & { profile_email?: string | null }).profile_email || "",
-        billingAddress: order.billing_address,
+        billingAddress: null,
         shippingAddress: order.shipping_address,
         subtotal: order.subtotal || 0,
-        tax: order.tax || 0,
-        shippingCost: order.shipping_cost || 0,
-        total: order.total || 0,
+        tax: 0,
+        shippingCost: 0,
+        total: order.subtotal || 0,
         lineItems,
         businessName: "HERMES",
         businessAddress: "123 Commerce Street, Suite 100, New York, NY 10001",
@@ -306,7 +305,7 @@ export default function OrdersPage() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
-                  {["Order ID", "Customer", "Date", "Total", "Status", "Actions"].map(h => (
+                  {["Order ID", "Customer", "Date", "Total", "Status", "Tracking", "Actions"].map(h => (
                     <th key={h} style={{
                       padding: "14px 16px", textAlign: "left", fontSize: "12px",
                       color: "#6B6B67", fontWeight: "600",
@@ -360,6 +359,26 @@ export default function OrdersPage() {
                             <option key={s} value={s} style={{ background: "#FAFAF8" }}>{s}</option>
                           ))}
                         </select>
+                      </td>
+                      <td style={{ padding: "14px 16px" }}>
+                        {order.tracking_number ? (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "11px", fontFamily: "monospace", color: "#141413", background: "#F4F4F1", padding: "2px 6px", borderRadius: "3px" }}>
+                              {order.tracking_number.slice(0, 18)}{order.tracking_number.length > 18 ? "…" : ""}
+                            </span>
+                            <a
+                              href={`/track/${order.tracking_number}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ fontSize: "11px", color: "#3b82f6", textDecoration: "none" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              ↗ View
+                            </a>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: "12px", color: "#ABAB9A" }}>—</span>
+                        )}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <button onClick={() => viewOrderDetails(order)} style={{
@@ -500,11 +519,11 @@ export default function OrdersPage() {
                             {item.product_name || "Unknown Product"}
                           </div>
                           <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                            Qty: {item.quantity} × {formatCurrency(item.unit_price)}
+                            Qty: {item.quantity} × {formatCurrency(item.unit_price ?? ((item.total ?? 0) / item.quantity))}
                           </div>
                         </div>
                         <div style={{ fontSize: "14px", fontWeight: "600", color: "#141413" }}>
-                          {formatCurrency(item.quantity * item.unit_price)}
+                          {formatCurrency((item.total ?? 0))}
                         </div>
                       </div>
                     ))}
@@ -523,7 +542,6 @@ export default function OrdersPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 {[
                   { label: "Shipping Address", value: selectedOrder.shipping_address },
-                  { label: "Billing Address", value: selectedOrder.billing_address },
                 ].map(({ label, value }) => (
                   <div key={label}>
                     <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 8px" }}>
@@ -538,6 +556,53 @@ export default function OrdersPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Tracking Info */}
+              {selectedOrder.tracking_number && (
+                <div style={{ marginBottom: "24px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 12px" }}>
+                    Tracking
+                  </h3>
+                  <div style={{
+                    background: "#F4F4F1", borderRadius: "8px", padding: "16px",
+                    display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px"
+                  }}>
+                    <div>
+                      <div style={{ fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Tracking Number</div>
+                      <div style={{ fontSize: "14px", fontFamily: "monospace", fontWeight: "600", color: "#141413" }}>
+                        {selectedOrder.tracking_number}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        onClick={() => {
+                          const link = selectedOrder.tracking_link || `https://next-hermes.vercel.app/track/${selectedOrder.tracking_number}`;
+                          navigator.clipboard.writeText(link);
+                          showToast("Tracking link copied!", "success");
+                        }}
+                        style={{
+                          padding: "6px 14px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                          background: "white", color: "#141413", fontSize: "12px", cursor: "pointer"
+                        }}
+                      >
+                        Copy Link
+                      </button>
+                      <a
+                        href={`/track/${selectedOrder.tracking_number}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: "6px 14px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                          background: "white", color: "#141413", fontSize: "12px",
+                          textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px"
+                        }}
+                      >
+                        <Package size={12} /> Track Page ↗
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Notes */}
               {selectedOrder.notes && (

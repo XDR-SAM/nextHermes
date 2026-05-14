@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, subtotal, shipping_address, invoice_number, created_at, updated_at")
+      .select("id, status, subtotal, shipping_address, notes, created_at, updated_at, tracking_number, tracking_link")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     }
 
     const orderIds = (ordersData || []).map((o) => o.id);
-    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string }[]> = {};
+    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string; product_name?: string }[]> = {};
     if (orderIds.length > 0) {
       const { data: allItems } = await supabase
         .from("order_items")
-        .select("order_id, id, product_id, quantity, total")
+        .select("order_id, id, product_id, quantity, total, product_name")
         .in("order_id", orderIds);
       if (allItems) {
         for (const item of allItems) {
@@ -52,17 +52,20 @@ export async function GET(request: NextRequest) {
 
     const formatted = (ordersData || []).map((order) => ({
       id: order.id,
-      order_number: order.invoice_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
+      order_number: order.tracking_number ? `ORD-${order.tracking_number.slice(4, 12)}` : `ORD-${order.id.slice(0, 8).toUpperCase()}`,
       status: order.status,
       total: order.subtotal,
       subtotal: order.subtotal,
+      tracking_number: order.tracking_number,
+      tracking_link: order.tracking_link,
       created_at: order.created_at,
       items: (itemsByOrder[order.id] || []).map((item) => ({
         id: item.id,
-        name: `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
+        name: item.product_name || `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
         quantity: item.quantity,
-        price: item.quantity > 0 ? item.total / item.quantity : 0,
+        price: item.quantity > 0 ? Number(item.total) / item.quantity : 0,
         image: "https://picsum.photos/100",
+        product_id: item.product_id,
       })),
       item_count: (itemsByOrder[order.id] || []).length,
     }));

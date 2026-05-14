@@ -136,6 +136,12 @@ export default function CheckoutPage() {
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderResult, setOrderResult] = useState<{
+    tracking_number: string;
+    tracking_link: string;
+    order_number: string;
+    order_id: string;
+  } | null>(null);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -159,6 +165,13 @@ export default function CheckoutPage() {
         body: JSON.stringify({ items, address, payment_method: paymentMethod, total }),
       });
       if (res.ok) {
+        const data = await res.json();
+        setOrderResult({
+          tracking_number: data.tracking_number,
+          tracking_link: data.tracking_link,
+          order_number: data.order_number,
+          order_id: data.order_id,
+        });
         clearCart();
         setOrderPlaced(true);
       } else {
@@ -172,26 +185,75 @@ export default function CheckoutPage() {
     }
   };
 
-  if (orderPlaced) {
+  if (orderPlaced && orderResult) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] text-[#141413] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#FAFAF8] text-[#141413] flex items-center justify-center px-4 py-10">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-md w-full text-center"
+          className="max-w-lg w-full"
         >
-          <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-emerald-500" />
+          <div className="bg-white border border-[#E5E5E0] rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+              <Check className="w-8 h-8 text-emerald-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Order Placed!</h2>
+            <p className="text-[#6B6B67] mb-6">
+              Thank you for your order. We&apos;ll send a confirmation to{" "}
+              <span className="text-[#141413] font-medium">{address.email}</span> shortly.
+            </p>
+
+            {/* Tracking Info */}
+            <div className="bg-[#FAFAF8] rounded-xl p-5 mb-6 text-left">
+              <p className="text-xs uppercase tracking-wider text-[#6B6B67] mb-3">Track Your Order</p>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2">
+                  <span className="text-xs font-semibold text-[#6B6B67] mt-0.5 w-20 shrink-0">Order #</span>
+                  <span className="text-sm font-mono font-semibold text-[#141413]">{orderResult.order_number}</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-xs font-semibold text-[#6B6B67] mt-0.5 w-20 shrink-0">Tracking #</span>
+                  <span className="text-sm font-mono font-semibold text-[#141413] break-all">{orderResult.tracking_number}</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#E5E5E0]">
+                <p className="text-xs text-[#6B6B67] mb-2">Share this tracking link:</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={orderResult.tracking_link}
+                    readOnly
+                    className="flex-1 text-xs font-mono bg-white border border-[#E5E5E0] rounded-lg px-3 py-2 text-[#6B6B67] focus:outline-none truncate"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(orderResult.tracking_link);
+                    }}
+                    className="px-3 py-2 bg-[#141413] text-white rounded-lg text-xs font-medium hover:opacity-85 transition-opacity shrink-0"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <a
+                href={`/track/${orderResult.tracking_number}`}
+                className="mt-3 flex items-center justify-center gap-2 w-full py-3 bg-[#141413] text-white rounded-xl text-sm font-semibold hover:opacity-85 transition-opacity"
+              >
+                <Package className="w-4 h-4" />
+                Track My Order Now
+              </a>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={() => router.push("/orders")} className="flex-1">
+                View My Orders
+              </Button>
+              <Button onClick={() => router.push("/products")} className="flex-1">
+                Continue Shopping
+              </Button>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold mb-3">Order Placed!</h2>
-          <p className="text-[#6B6B67] mb-8">
-            Thank you for your order. We&apos;ll send a confirmation to{" "}
-            <span className="text-[#141413]">{address.email}</span> shortly.
-          </p>
-          <Button onClick={() => router.push("/products")} className="w-full">
-            Continue Shopping
-          </Button>
         </motion.div>
       </div>
     );

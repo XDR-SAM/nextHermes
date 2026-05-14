@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, subtotal, user_id, shipping_address, invoice_number, created_at, updated_at")
+      .select("id, status, subtotal, user_id, shipping_address, invoice_number, tracking_number, tracking_link, created_at, updated_at")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -140,7 +140,6 @@ export async function POST(request: NextRequest) {
         status: "pending",
         subtotal: body.subtotal || 0,
         shipping_address: body.shipping_address || null,
-        billing_address: body.billing_address || null,
       })
       .select()
       .single();
