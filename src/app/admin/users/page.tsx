@@ -36,9 +36,9 @@ export default function UsersPage() {
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const loadUserStats = useCallback(async (userId: string) => {
-    const ordersRes = await supabase.from("orders").select("id, total_amount").eq("user_id", userId);
+    const ordersRes = await supabase.from("orders").select("id, amount").eq("user_id", userId);
     const count = (ordersRes.data || []).length;
-    const total = (ordersRes.data || []).reduce((sum: number, o: { total_amount?: number }) => sum + (o.total_amount || 0), 0);
+    const total = (ordersRes.data || []).reduce((sum: number, o: { amount?: number }) => sum + (o.amount || 0), 0);
     setUserStats({ order_count: count, total_spend: total });
   }, [supabase]);
 

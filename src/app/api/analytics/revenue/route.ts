@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("orders")
-    .select("created_at, total")
+    .select("created_at, amount")
     .eq("status", "delivered")
     .gte("created_at", startDate.toISOString())
     .lte("created_at", endDate.toISOString())
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const byDate: Record<string, number> = {};
   for (const order of data || []) {
     const date = order.created_at.split("T")[0];
-    byDate[date] = (byDate[date] || 0) + (order.total || 0);
+    byDate[date] = (byDate[date] || 0) + (order.amount || 0);
   }
 
   const series = Object.entries(byDate).map(([date, total]) => ({ date, total: Math.round(total * 100) / 100 }));
@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
 
   const { data: prevData } = await supabase
     .from("orders")
-    .select("total")
+    .select("amount")
     .eq("status", "delivered")
     .gte("created_at", prevStartDate.toISOString())
     .lte("created_at", prevEndDate.toISOString());
 
-  const prevTotal = (prevData || []).reduce((sum, o) => sum + (o.total || 0), 0);
-  const currentTotal = (data || []).reduce((sum, o) => sum + (o.total || 0), 0);
+  const prevTotal = (prevData || []).reduce((sum, o) => sum + (o.amount || 0), 0);
+  const currentTotal = (data || []).reduce((sum, o) => sum + (o.amount || 0), 0);
   const pctChange = prevTotal > 0 ? ((currentTotal - prevTotal) / prevTotal) * 100 : 0;
 
   return NextResponse.json({

@@ -15,9 +15,10 @@ interface Stats {
 interface RecentOrder {
   id: string;
   created_at: string;
-  total: number;
+  amount?: number | null;
   status: string;
-  profiles: { full_name: string | null; email: string } | null;
+  profile_name?: string;
+  profile_email?: string;
 }
 
 export default function AdminDashboard() {
@@ -41,18 +42,32 @@ export default function AdminDashboard() {
         supabase.from("orders").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders")
-          .select("id, created_at, total, status, profiles(full_name, email)")
+          .select("id, created_at, amount, status, user_id")
           .order("created_at", { ascending: false })
           .limit(5),
       ]);
 
+      const recentOrderData = recentOrdersRes.data || [];
+      const orderUserIds = [...new Set(recentOrderData.map((o: { user_id?: string }) => o.user_id).filter(Boolean))] as string[];
+      let profileMap: Record<string, { full_name: string; email: string }> = {};
+      if (orderUserIds.length > 0) {
+        const { data: profiles } = await supabase.from("profiles").select("id, full_name, email").in("id", orderUserIds);
+        if (profiles) {
+          for (const p of profiles) profileMap[p.id] = { full_name: p.full_name || "Unknown", email: p.email || "—" };
+        }
+      }
+      const enrichedOrders = recentOrderData.map((o: { user_id?: string }) => ({
+        ...o,
+        profile_name: profileMap[o.user_id || ""]?.full_name || "—",
+        profile_email: profileMap[o.user_id || ""]?.email || "—",
+      }));
       setStats({
         totalProducts: productsRes.count || 0,
         totalCategories: categoriesRes.count || 0,
         totalOrders: ordersRes.count || 0,
         totalUsers: usersRes.count || 0,
       });
-      setRecentOrders((recentOrdersRes.data || []) as unknown as RecentOrder[]);
+      setRecentOrders(enrichedOrders as unknown as RecentOrder[]);
       setLoading(false);
     };
     load();
@@ -185,17 +200,17 @@ export default function AdminDashboard() {
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
-                          {order.profiles?.full_name || "Guest"}
+                          {order.profile_name || "Guest"}
                         </div>
                         <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                          {order.profiles?.email || "—"}
+                          {order.profile_email || "—"}
                         </div>
                       </td>
                       <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
                         {formatDate(order.created_at)}
                       </td>
                       <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#141413" }}>
-                        {formatCurrency(order.total)}
+                        {formatCurrency(order.amount || 0)}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <span style={{

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   // Top customers by lifetime value (sum of order totals) — no FK join
   const { data, error } = await supabase
     .from("orders")
-    .select("user_id, total, payment_status, status")
+    .select("user_id, amount, payment_status, status, created_at")
     .eq("status", "delivered")
     .order("created_at", { ascending: false });
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         order_count: 0,
       };
     }
-    customerLV[order.user_id].total_spent += order.total || 0;
+    customerLV[order.user_id].total_spent += order.amount || 0;
     customerLV[order.user_id].order_count += 1;
   }
 

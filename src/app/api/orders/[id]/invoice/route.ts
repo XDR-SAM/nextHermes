@@ -72,7 +72,7 @@ export async function GET(
     // 1. Fetch order — flat columns only, no FK joins
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, status, total, subtotal, tax, shipping_cost, user_id, shipping_address, billing_address, payment_status, created_at")
+      .select("id, status, amount, subtotal, tax, shipping_cost, user_id, shipping_address, billing_address, payment_status, created_at")
       .eq("id", id)
       .single();
 
@@ -130,7 +130,7 @@ export async function GET(
     const subtotal = order.subtotal || 0;
     const tax = order.tax || 0;
     const shipping = order.shipping_cost || 0;
-    const total = order.total || subtotal + tax + shipping;
+    const total = order.amount || subtotal + tax + shipping;
 
     const html = `<!DOCTYPE html>
 <html lang="en">
