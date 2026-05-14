@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, amount, subtotal, tax, shipping_cost, shipping_address, payment_method, payment_status, invoice_number, created_at, updated_at")
+      .select("id, status, subtotal, shipping_address, invoice_number, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     }
 
     const orderIds = (ordersData || []).map((o) => o.id);
-    let itemsByOrder: Record<string, { id: string; quantity: number; unit_price: number; product_name: string }[]> = {};
+    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string }[]> = {};
     if (orderIds.length > 0) {
       const { data: allItems } = await supabase
         .from("order_items")
-        .select("order_id, id, product_name, quantity, unit_price")
+        .select("order_id, id, product_id, quantity, total")
         .in("order_id", orderIds);
       if (allItems) {
         for (const item of allItems) {
@@ -54,16 +54,14 @@ export async function GET(request: NextRequest) {
       id: order.id,
       order_number: order.invoice_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
       status: order.status,
-      total: order.amount,
+      total: order.subtotal,
       subtotal: order.subtotal,
-      tax: order.tax,
-      shipping_cost: order.shipping_cost,
       created_at: order.created_at,
       items: (itemsByOrder[order.id] || []).map((item) => ({
         id: item.id,
-        name: item.product_name || "Unknown Product",
+        name: `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
         quantity: item.quantity,
-        price: item.unit_price,
+        price: item.quantity > 0 ? item.total / item.quantity : 0,
         image: "https://picsum.photos/100",
       })),
       item_count: (itemsByOrder[order.id] || []).length,

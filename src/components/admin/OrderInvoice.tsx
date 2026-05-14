@@ -284,7 +284,7 @@ export default function OrderInvoice({ data, onClose }: OrderInvoiceProps) {
                     {item.unitPrice}
                   </td>
                   <td style={{ padding: "14px 12px", fontSize: "14px", fontWeight: "600", color: "#111827", textAlign: "right" }}>
-                    {item.total}
+                    {item.quantity > 0 ? formatCurrency(Number(item.total) / item.quantity) : formatCurrency(0)}
                   </td>
                 </tr>
               ))}

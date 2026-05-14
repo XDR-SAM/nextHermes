@@ -42,7 +42,7 @@ export default function AdminDashboard() {
         supabase.from("orders").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("orders")
-          .select("id, created_at, amount, status, user_id")
+          .select("id, created_at, subtotal, status, user_id")
           .order("created_at", { ascending: false })
           .limit(5),
       ]);

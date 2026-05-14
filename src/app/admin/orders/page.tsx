@@ -57,7 +57,7 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("id, user_id, status, amount, subtotal, tax, shipping_cost, shipping_address, billing_address, payment_status, payment_method, created_at, updated_at")
+      .select("id, user_id, status, subtotal, shipping_address, billing_address, notes, coupon_id, discount_amount, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
@@ -85,7 +85,7 @@ export default function OrdersPage() {
       }
       const enriched = (ordersData || []).map((o: Order) => ({
         ...o,
-        total: (o as Order & { amount?: number }).amount ?? o.total ?? null,
+        total: o.subtotal || 0,
         profile_name: profileMap[o.user_id]?.full_name || null,
         profile_email: profileMap[o.user_id]?.email || null,
       }));

@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
       product_id: item.id,
       product_name: item.name,
       quantity: item.quantity,
-      unit_price: item.price,
       total: item.price * item.quantity,
     }));
 

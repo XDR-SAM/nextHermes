@@ -72,7 +72,7 @@ export async function GET(
     // 1. Fetch order — flat columns only, no FK joins
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select("id, status, amount, subtotal, tax, shipping_cost, user_id, shipping_address, billing_address, payment_status, created_at")
+      .select("id, status, subtotal, user_id, shipping_address, billing_address, created_at")
       .eq("id", id)
       .single();
 
@@ -83,7 +83,7 @@ export async function GET(
     // 2. Fetch order items — flat columns only
     const { data: orderItems } = await supabase
       .from("order_items")
-      .select("id, product_id, quantity, unit_price, product_name")
+      .select("order_id, id, quantity, total, product_id")
       .eq("order_id", id);
 
     if (!orderItems || orderItems.length === 0) {
@@ -99,19 +99,20 @@ export async function GET(
 
     // 4. Build line items
     const lineItems = orderItems.map((item, index) => {
-      const lineTotal = Number(item.quantity) * Number(item.unit_price);
+      const lineTotal = Number(item.quantity) * (item.quantity > 0 ? Number(item.total) / Number(item.quantity) : 0);
+      const unitPrice = item.quantity > 0 ? Number(item.total) / Number(item.quantity) : 0;
       return {
         index: index + 1,
-        description: escapeHtml(item.product_name || "Product"),
+        description: `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
         sku: "—",
         quantity: item.quantity,
-        unitPrice: formatCurrency(Number(item.unit_price)),
-        total: formatCurrency(lineTotal),
+        unitPrice: formatCurrency(unitPrice),
+        total: formatCurrency(Number(item.total)),
       };
     });
 
-    // 5. Payment status badge colors
-    const paymentStatus = order.payment_status || order.status;
+    // 5. Payment status badge colors — use order status as payment proxy
+    const paymentStatus = order.status;
     const paymentStatusLabel = paymentStatus ? paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1) : "Unknown";
 
     const BADGE_COLORS: Record<string, { bg: string; color: string }> = {
@@ -128,9 +129,9 @@ export async function GET(
     const dueDate = formatDate(new Date(new Date(order.created_at).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString());
 
     const subtotal = order.subtotal || 0;
-    const tax = order.tax || 0;
-    const shipping = order.shipping_cost || 0;
-    const total = order.amount || subtotal + tax + shipping;
+    const tax = 0;
+    const shipping = 0;
+    const total = subtotal;
 
     const html = `<!DOCTYPE html>
 <html lang="en">

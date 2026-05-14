@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-.select("id, status, amount, subtotal, tax, shipping_cost, user_id, shipping_address, payment_method, payment_status, invoice_number, created_at, updated_at")
+      .select("id, status, subtotal, user_id, shipping_address, invoice_number, created_at, updated_at")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -79,11 +79,11 @@ export async function GET(request: NextRequest) {
 
     // Fetch order items separately
     const orderIds = (ordersData || []).map((o) => o.id);
-    let itemsByOrder: Record<string, { id: string; quantity: number; unit_price: number; product_name: string }[]> = {};
+    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string }[]> = {};
     if (orderIds.length > 0) {
       const { data: allItems } = await supabase
         .from("order_items")
-        .select("order_id, id, product_name, quantity, unit_price")
+        .select("order_id, id, product_id, quantity, total")
         .in("order_id", orderIds);
       if (allItems) {
         for (const item of allItems) {
@@ -96,23 +96,16 @@ export async function GET(request: NextRequest) {
     const orders = (ordersData || []).map((o) => ({
       id: o.id,
       status: o.status,
-      amount: o.amount,
       subtotal: o.subtotal,
-      tax: o.tax,
-      shipping_cost: o.shipping_cost,
-      payment_method: o.payment_method,
-      payment_status: o.payment_status,
       shipping_address: o.shipping_address,
       invoice_number: o.invoice_number,
-      order_number: o.invoice_number || `ORD-${o.id.slice(0, 8).toUpperCase()}`,
       created_at: o.created_at,
-      updated_at: o.updated_at,
       profile: profileMap[o.user_id] || null,
       items: (itemsByOrder[o.id] || []).map((item) => ({
         id: item.id,
         quantity: item.quantity,
-        unit_price: item.unit_price,
-        product_name: item.product_name,
+        unit_price: item.quantity > 0 ? item.total / item.quantity : 0,
+        product_name: `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
       })),
     }));
 
@@ -146,9 +139,6 @@ export async function POST(request: NextRequest) {
         user_id: auth.userId,
         status: "pending",
         subtotal: body.subtotal || 0,
-        tax: body.tax || 0,
-        shipping_cost: body.shipping_cost || 0,
-        amount: body.amount || 0,
         shipping_address: body.shipping_address || null,
         billing_address: body.billing_address || null,
       })

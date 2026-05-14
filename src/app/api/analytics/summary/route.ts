@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   // Summary stats: total revenue, total orders, avg order value, total customers
   const { data: orders, error } = await supabase
     .from("orders")
-    .select("amount")
+    .select("subtotal")
     .eq("status", "delivered");
 
   const { count: customerCount } = await supabase
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const totalRevenue = (orders || []).reduce((sum, o) => sum + (o.amount || 0), 0);
+  const totalRevenue = (orders || []).reduce((sum, o) => sum + (o.subtotal || 0), 0);
   const totalOrders = (orders || []).length;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
