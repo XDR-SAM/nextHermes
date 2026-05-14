@@ -51,7 +51,7 @@ export default function InventoryPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     const [productsRes, warehousesRes, inventoryRes] = await Promise.all([
-      supabase.from("products").select("id, name, sku, image_url, stock_quantity, categories(name)").order("name").limit(500),
+      supabase.from("products").select("id, name, sku, image_url, stock_quantity, category_id").order("name").limit(500),
       supabase.from("warehouses").select("id, name, location, is_active").eq("is_active", true).order("name"),
       supabase.from("warehouse_inventory").select("*").order("updated_at", { ascending: false }).limit(500),
     ]);

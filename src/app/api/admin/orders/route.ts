@@ -48,10 +48,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select(
-        `id, status, total, subtotal, tax, shipping_cost, order_number, user_id, shipping_address, created_at, updated_at,
-        items:order_items(id, quantity, unit_price, product:products(id, name, slug, primary_image))`
-      )
+      .select("id, status, amount, subtotal, tax, shipping_cost, order_number, user_id, shipping_address, payment_method, payment_status, created_at, updated_at")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -59,13 +56,67 @@ export async function GET(request: NextRequest) {
       query = query.eq("status", status);
     }
 
-    const { data: orders, error } = await query;
+    const { data: ordersData, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ orders: orders || [] }, { status: 200 });
+    // Fetch profiles separately to avoid FK join schema cache issues
+    const userIds = [...new Set((ordersData || []).map((o) => o.user_id).filter(Boolean))];
+    let profileMap: Record<string, { full_name: string | null; email: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", userIds);
+      if (profiles) {
+        for (const p of profiles) {
+          profileMap[p.id] = { full_name: p.full_name, email: p.email };
+        }
+      }
+    }
+
+    // Fetch order items separately
+    const orderIds = (ordersData || []).map((o) => o.id);
+    let itemsByOrder: Record<string, { id: string; quantity: number; unit_price: number; product_name: string }[]> = {};
+    if (orderIds.length > 0) {
+      const { data: allItems } = await supabase
+        .from("order_items")
+        .select("order_id, id, product_name, quantity, unit_price")
+        .in("order_id", orderIds);
+      if (allItems) {
+        for (const item of allItems) {
+          if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
+          itemsByOrder[item.order_id].push(item);
+        }
+      }
+    }
+
+    const orders = (ordersData || []).map((o) => ({
+      id: o.id,
+      status: o.status,
+      total: o.amount,
+      subtotal: o.subtotal,
+      tax: o.tax,
+      shipping_cost: o.shipping_cost,
+      order_number: o.order_number,
+      user_id: o.user_id,
+      shipping_address: o.shipping_address,
+      payment_method: o.payment_method,
+      payment_status: o.payment_status,
+      created_at: o.created_at,
+      updated_at: o.updated_at,
+      profile: profileMap[o.user_id] || null,
+      items: (itemsByOrder[o.id] || []).map((item) => ({
+        id: item.id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        product_name: item.product_name,
+      })),
+    }));
+
+    return NextResponse.json({ orders }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

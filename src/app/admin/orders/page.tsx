@@ -27,8 +27,9 @@ interface Order {
   billing_address: string | null;
   notes: string | null;
   user_id: string;
-  profiles: { full_name: string | null; email: string } | null;
   order_items: OrderItem[] | null;
+  profile_name?: string | null;
+  profile_email?: string | null;
 }
 
 const STATUS_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
@@ -56,18 +57,38 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("*, profiles(full_name, email)")
+      .select("id, user_id, status, total, subtotal, tax, shipping_cost, order_number, shipping_address, billing_address, payment_status, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
       query = query.eq("status", statusFilter);
     }
 
-    const { data, error } = await query;
+    const { data: ordersData, error } = await query;
     if (error) {
       showToast(`Failed to load orders: ${error.message}`, "error");
+      setOrders([]);
     } else {
-      setOrders((data || []) as Order[]);
+      // Fetch profile names separately to avoid FK join schema cache issues
+      const userIds = [...new Set((ordersData || []).map((o: Order) => o.user_id).filter(Boolean))];
+      let profileMap: Record<string, { full_name: string | null; email: string }> = {};
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", userIds);
+        if (profiles) {
+          for (const p of profiles) {
+            profileMap[p.id] = { full_name: p.full_name, email: p.email };
+          }
+        }
+      }
+      const enriched = (ordersData || []).map((o: Order) => ({
+        ...o,
+        profile_name: profileMap[o.user_id]?.full_name || null,
+        profile_email: profileMap[o.user_id]?.email || null,
+      }));
+      setOrders(enriched as Order[]);
     }
     setLoading(false);
   }, [supabase, statusFilter]);
@@ -195,14 +216,13 @@ export default function OrdersPage() {
           total: m[6].trim(),
         });
       }
-      const profile = order.profiles;
       const invoiceData: InvoiceData = {
         invoiceNumber,
         issueDate,
         dueDate,
         paymentStatus,
-        customerName: profile?.full_name || "Customer",
-        customerEmail: profile?.email || "",
+        customerName: (order as Order & { profile_name?: string | null }).profile_name || "Customer",
+        customerEmail: (order as Order & { profile_email?: string | null }).profile_email || "",
         billingAddress: order.billing_address,
         shippingAddress: order.shipping_address,
         subtotal: order.subtotal || 0,
@@ -310,10 +330,10 @@ export default function OrdersPage() {
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
-                          {order.profiles?.full_name || "Guest"}
+                          {order.profile_name || "Guest"}
                         </div>
                         <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                          {order.profiles?.email || "—"}
+                          {order.profile_email || "—"}
                         </div>
                       </td>
                       <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
@@ -448,10 +468,10 @@ export default function OrdersPage() {
                   background: "#F4F4F1", borderRadius: "8px", padding: "16px"
                 }}>
                   <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
-                    {selectedOrder.profiles?.full_name || "Guest"}
+                    {(selectedOrder as Order & { profile_name?: string | null }).profile_name || "Guest"}
                   </div>
                   <div style={{ fontSize: "13px", color: "#6B6B67" }}>
-                    {selectedOrder.profiles?.email || "—"}
+                    {(selectedOrder as Order & { profile_email?: string | null }).profile_email || "—"}
                   </div>
                 </div>
               </div>

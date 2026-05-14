@@ -33,7 +33,7 @@ interface Product {
   is_active: boolean;
   created_at: string;
   metadata: Record<string, unknown> | null;
-  categories: { name: string } | null;
+  category_name?: string | null;
 }
 
 interface ProductFormData {
@@ -74,11 +74,17 @@ export default function ProductsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     const [productsRes, categoriesRes, warehousesRes] = await Promise.all([
-      supabase.from("products").select("*, categories(name)").order("created_at", { ascending: false }),
+      supabase.from("products").select("id, name, slug, description, price, compare_at_price, stock_quantity, is_active, is_featured, is_trending, primary_image, category_id, brand_id, created_at, updated_at").order("created_at", { ascending: false }),
       supabase.from("categories").select("id, name, slug").eq("is_active", true).order("name"),
       supabase.from("warehouses").select("id, name, location").eq("is_active", true).order("name"),
     ]);
-    setProducts((productsRes.data || []) as Product[]);
+    if (categoriesRes.error) {
+      showToast(`Failed to load categories`, "error");
+    }
+    setProducts(((productsRes.data || []) as Product[]).map((p) => ({
+      ...p,
+      category_name: (categoriesRes.data || []).find((c: Category) => c.id === p.category_id)?.name || null,
+    })));
     setCategories((categoriesRes.data || []) as Category[]);
     setWarehouses((warehousesRes.data || []) as Warehouse[]);
     setLoading(false);
@@ -252,7 +258,7 @@ export default function ProductsPage() {
   const filteredProducts = products.filter(p => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    const catName = (p.categories?.name || "").toLowerCase();
+    const catName = (p.category_name || "").toLowerCase();
     return p.name.toLowerCase().includes(q) ||
       (p.sku || "").toLowerCase().includes(q) ||
       catName.includes(q);
@@ -363,7 +369,7 @@ export default function ProductsPage() {
                       </div>
                     </td>
                     <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>
-                      {product.categories?.name || "—"}
+                      {product.category_name || "—"}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "600" }}>{formatCurrency(product.price)}</div>

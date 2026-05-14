@@ -20,10 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select(
-        `id, status, total, subtotal, tax, shipping_cost, order_number, shipping_address, created_at, updated_at,
-        items:order_items(id, quantity, unit_price, product:products(id, name, slug, primary_image))`
-      )
+      .select("id, status, amount, subtotal, tax, shipping_cost, order_number, shipping_address, payment_method, payment_status, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -32,29 +29,44 @@ export async function GET(request: NextRequest) {
       query = query.eq("status", status);
     }
 
-    const { data: orders, error } = await query;
+    const { data: ordersData, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const formatted = (orders || []).map((order) => ({
+    const orderIds = (ordersData || []).map((o) => o.id);
+    let itemsByOrder: Record<string, { id: string; quantity: number; unit_price: number; product_name: string }[]> = {};
+    if (orderIds.length > 0) {
+      const { data: allItems } = await supabase
+        .from("order_items")
+        .select("order_id, id, product_name, quantity, unit_price")
+        .in("order_id", orderIds);
+      if (allItems) {
+        for (const item of allItems) {
+          if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
+          itemsByOrder[item.order_id].push(item);
+        }
+      }
+    }
+
+    const formatted = (ordersData || []).map((order) => ({
       id: order.id,
       order_number: order.order_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
       status: order.status,
-      total: order.total,
+      total: order.amount,
       subtotal: order.subtotal,
       tax: order.tax,
       shipping_cost: order.shipping_cost,
       created_at: order.created_at,
-      items: (order.items || []).map((item: Record<string, unknown>) => ({
+      items: (itemsByOrder[order.id] || []).map((item) => ({
         id: item.id,
-        name: (item.product as Record<string, unknown>)?.name || "Unknown Product",
+        name: item.product_name || "Unknown Product",
         quantity: item.quantity,
         price: item.unit_price,
-        image: (item.product as Record<string, unknown>)?.primary_image || "https://picsum.photos/100",
+        image: "https://picsum.photos/100",
       })),
-      item_count: (order.items || []).length,
+      item_count: (itemsByOrder[order.id] || []).length,
     }));
 
     return NextResponse.json({ orders: formatted }, { status: 200 });
