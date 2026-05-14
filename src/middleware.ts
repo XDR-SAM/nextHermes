@@ -23,6 +23,8 @@ const PUBLIC_PATHS = [
   "/contact",
   "/privacy",
   "/terms",
+  "/api/banners",
+  "/api/seed",
   "/api/auth/login",
   "/api/auth/signup",
   "/api/auth/forgot-password",
