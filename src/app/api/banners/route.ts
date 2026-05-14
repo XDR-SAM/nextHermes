@@ -148,3 +148,135 @@ export async function POST(request: NextRequest) {
   const [data] = await res.json();
   return NextResponse.json({ banner: data }, { status: 201 });
 }
+
+// PUT — admin only, update existing banner
+export async function PUT(request: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient(cookieStore);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!["admin", "super_admin"].includes(profile?.role ?? "")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const {
+    id,
+    title,
+    subtitle,
+    description,
+    cta_text,
+    cta_link,
+    background_image,
+    background_color,
+    text_color,
+    sort_order,
+    is_active,
+    show_from,
+    show_until,
+  } = body;
+
+  if (!id) {
+    return NextResponse.json({ error: "Banner ID is required" }, { status: 400 });
+  }
+
+  const dbPayload: Record<string, unknown> = {
+    ...(title !== undefined && { title }),
+    ...(subtitle !== undefined && { subtitle: subtitle || description || "" }),
+    ...(cta_text !== undefined && { link_text: cta_text }),
+    ...(cta_link !== undefined && { link: cta_link }),
+    ...(background_image !== undefined && { background_image: background_image || null }),
+    ...(background_color !== undefined && { background_color: background_color || "#0a0a0a" }),
+    ...(text_color !== undefined && { text_color: text_color || "#ffffff" }),
+    ...(sort_order !== undefined && { sort_order }),
+    ...(is_active !== undefined && { is_active }),
+    ...(show_from !== undefined && { starts_at: show_from || null }),
+    ...(show_until !== undefined && { ends_at: show_until || null }),
+  };
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/promo_banners?id=eq.${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(dbPayload),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    return NextResponse.json({ error: err }, { status: 500 });
+  }
+
+  const [data] = await res.json();
+  return NextResponse.json({ banner: data });
+}
+
+// DELETE — admin only, delete banner
+export async function DELETE(request: NextRequest) {
+  const cookieStore = await cookies();
+  const supabase = createRouteHandlerClient(cookieStore);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!["admin", "super_admin"].includes(profile?.role ?? "")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+
+  if (!id) {
+    return NextResponse.json({ error: "Banner ID is required" }, { status: 400 });
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/promo_banners?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+    },
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    return NextResponse.json({ error: err }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}

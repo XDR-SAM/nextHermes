@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Globe, Camera, CircleUser } from "lucide-react";
-import { useThemeStore } from "@/store/theme-store";
 import { cn } from "@/lib/utils";
 
 const QUICK_LINKS = [
@@ -31,8 +30,6 @@ const SOCIAL_LINKS = [
 export function Footer() {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const theme = useThemeStore((s) => s.theme);
-  const isDark = theme === "dark";
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,26 +41,17 @@ export function Footer() {
   };
 
   return (
-    <footer className={cn(
-      "border-t",
-      isDark ? "bg-[#0a0a0a] border-[#222] text-white" : "bg-[#f5f5f5] border-[#e5e5e5] text-black"
-    )}>
+    <footer className="border-t border-[var(--border)] bg-[var(--bg-secondary)] dark:bg-[#0a0a0a]">
       {/* Main Footer Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
         {/* Brand Column */}
         <div className="space-y-5">
           <Link href="/" className="inline-block">
-            <span className={cn(
-              "font-bold text-xl tracking-[0.2em]",
-              isDark ? "text-white" : "text-black"
-            )}>
+            <span className="font-bold text-xl tracking-[0.2em] text-[var(--text)] dark:text-white">
               HERMES
             </span>
           </Link>
-          <p className={cn(
-            "text-sm leading-relaxed max-w-xs",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
+          <p className="text-sm leading-relaxed max-w-xs text-[var(--text-secondary)]">
             Premium fashion & lifestyle. Curated collections for the modern individual.
           </p>
 
@@ -78,9 +66,9 @@ export function Footer() {
                 aria-label={label}
                 className={cn(
                   "w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-300",
-                  isDark
-                    ? "border-[#222] text-[#888] hover:text-white hover:border-white/50"
-                    : "border-[#e5e5e5] text-[#666] hover:text-black hover:border-black/50"
+                  "border-[var(--border)] text-[var(--text-secondary)]",
+                  "hover:text-[var(--text)] hover:border-[var(--text-secondary)]",
+                  "dark:border-white/20 dark:text-white/60 dark:hover:text-white dark:hover:border-white/50"
                 )}
               >
                 <Icon className="w-4 h-4" />
@@ -91,10 +79,7 @@ export function Footer() {
 
         {/* Quick Links Column */}
         <div>
-          <h3 className={cn(
-            "text-xs font-semibold uppercase tracking-widest mb-6",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-6 text-[var(--text-secondary)]">
             Quick Links
           </h3>
           <ul className="space-y-3">
@@ -102,12 +87,7 @@ export function Footer() {
               <li key={link.label}>
                 <Link
                   href={link.href}
-                  className={cn(
-                    "text-sm transition-colors duration-200",
-                    isDark
-                      ? "text-white/60 hover:text-white"
-                      : "text-black/60 hover:text-black"
-                  )}
+                  className="text-sm transition-colors duration-200 text-[var(--text-secondary)] hover:text-[var(--text)] dark:text-white/60 dark:hover:text-white"
                 >
                   {link.label}
                 </Link>
@@ -118,23 +98,15 @@ export function Footer() {
 
         {/* Categories Column */}
         <div>
-          <h3 className={cn(
-            "text-xs font-semibold uppercase tracking-widest mb-6",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
-            Categories
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-6 text-[var(--text-secondary)]">
+            Support
           </h3>
           <ul className="space-y-3">
             {SUPPORT_LINKS.map((link) => (
               <li key={link.label}>
                 <Link
                   href={link.href}
-                  className={cn(
-                    "text-sm transition-colors duration-200",
-                    isDark
-                      ? "text-white/60 hover:text-white"
-                      : "text-black/60 hover:text-black"
-                  )}
+                  className="text-sm transition-colors duration-200 text-[var(--text-secondary)] hover:text-[var(--text)] dark:text-white/60 dark:hover:text-white"
                 >
                   {link.label}
                 </Link>
@@ -145,16 +117,10 @@ export function Footer() {
 
         {/* Newsletter Column */}
         <div>
-          <h3 className={cn(
-            "text-xs font-semibold uppercase tracking-widest mb-6",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
+          <h3 className="text-xs font-semibold uppercase tracking-widest mb-6 text-[var(--text-secondary)]">
             Newsletter
           </h3>
-          <p className={cn(
-            "text-sm mb-5 leading-relaxed",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
+          <p className="text-sm mb-5 leading-relaxed text-[var(--text-secondary)]">
             Get exclusive offers and updates delivered to your inbox.
           </p>
 
@@ -168,18 +134,18 @@ export function Footer() {
                 required
                 className={cn(
                   "w-full border rounded-full py-2.5 px-4 pr-12 text-sm placeholder:transition-colors focus:outline-none transition-all",
-                  isDark
-                    ? "bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-white/30 focus:bg-white/10"
-                    : "bg-black/5 border-black/10 text-black placeholder:text-gray-400 focus:border-black/30 focus:bg-black/10"
+                  "bg-[var(--glass-bg)] border-[var(--border)] text-[var(--text)]",
+                  "placeholder:text-[var(--text-secondary)]",
+                  "focus:border-[var(--text-secondary)] dark:focus:border-white/30",
+                  "dark:bg-white/5 dark:border-white/10 dark:placeholder:text-gray-500 dark:focus:bg-white/10",
+                  "dark:focus:border-white/30"
                 )}
               />
               <button
                 type="submit"
                 className={cn(
                   "absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                  isDark
-                    ? "bg-white text-black hover:bg-white/90"
-                    : "bg-black text-white hover:bg-black/90"
+                  "bg-[var(--accent)] text-[var(--bg)] hover:opacity-90"
                 )}
               >
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -196,45 +162,25 @@ export function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className={cn(
-        "border-t",
-        isDark ? "border-[#222]" : "border-[#e5e5e5]"
-      )}>
+      <div className="border-t border-[var(--border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className={cn(
-            "text-xs",
-            isDark ? "text-[#888]" : "text-[#666]"
-          )}>
+          <p className="text-xs text-[var(--text-secondary)]">
             © {new Date().getFullYear()} HERMES. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link
-              href="/privacy"
-              className={cn(
-                "text-xs transition-colors",
-                isDark ? "text-[#888] hover:text-white/70" : "text-[#666] hover:text-black/70"
-              )}
-            >
-              Privacy
-            </Link>
-            <Link
-              href="/terms"
-              className={cn(
-                "text-xs transition-colors",
-                isDark ? "text-[#888] hover:text-white/70" : "text-[#666] hover:text-black/70"
-              )}
-            >
-              Terms
-            </Link>
-            <Link
-              href="/cookies"
-              className={cn(
-                "text-xs transition-colors",
-                isDark ? "text-[#888] hover:text-white/70" : "text-[#666] hover:text-black/70"
-              )}
-            >
-              Cookies
-            </Link>
+            {[
+              { label: "Privacy", href: "/privacy" },
+              { label: "Terms", href: "/terms" },
+              { label: "Cookies", href: "/cookies" },
+            ].map(({ label, href }) => (
+              <Link
+                key={label}
+                href={href}
+                className="text-xs transition-colors text-[var(--text-secondary)] hover:text-[var(--text)] dark:text-white/50 dark:hover:text-white/80"
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

@@ -31,6 +31,7 @@ export const useThemeStore = create<ThemeState>()(
       setTheme: (theme: Theme) => {
         set({ theme });
         if (typeof document !== "undefined") {
+          document.documentElement.classList.toggle("dark", theme === "dark");
           document.documentElement.setAttribute("data-theme", theme);
         }
       },
