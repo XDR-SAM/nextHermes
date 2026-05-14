@@ -8,7 +8,7 @@ interface OrderItem {
   id: string;
   product_id: string;
   quantity: number;
-  price: number;
+  unit_price: number;
   product_name?: string | null;
   product?: { name: string | null; metadata: Record<string, unknown> | null } | null;
 }
@@ -57,7 +57,7 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("id, user_id, status, total, subtotal, tax, shipping_cost, order_number, shipping_address, billing_address, payment_status, created_at, updated_at")
+      .select("id, user_id, status, amount, subtotal, tax, shipping_cost, order_number, shipping_address, billing_address, payment_status, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
@@ -85,6 +85,7 @@ export default function OrdersPage() {
       }
       const enriched = (ordersData || []).map((o: Order) => ({
         ...o,
+        total: (o as Order & { amount?: number }).amount ?? o.total ?? null,
         profile_name: profileMap[o.user_id]?.full_name || null,
         profile_email: profileMap[o.user_id]?.email || null,
       }));
@@ -113,7 +114,7 @@ export default function OrdersPage() {
     // Fetch order items without FK join (schema cache issue on Vercel)
     const { data: items } = await supabase
       .from("order_items")
-      .select("id, product_id, quantity, price")
+      .select("id, product_id, quantity, unit_price")
       .eq("order_id", order.id);
 
     // Fetch product names separately
@@ -499,11 +500,11 @@ export default function OrdersPage() {
                             {item.product_name || "Unknown Product"}
                           </div>
                           <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                            Qty: {item.quantity} × {formatCurrency(item.price)}
+                            Qty: {item.quantity} × {formatCurrency(item.unit_price)}
                           </div>
                         </div>
                         <div style={{ fontSize: "14px", fontWeight: "600", color: "#141413" }}>
-                          {formatCurrency(item.quantity * item.price)}
+                          {formatCurrency(item.quantity * item.unit_price)}
                         </div>
                       </div>
                     ))}
