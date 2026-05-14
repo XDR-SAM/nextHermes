@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronLeft, Lock, CreditCard, ShoppingBag } from "lucide-react";
+import { Check, ChevronLeft, Package, Truck, CreditCard, Banknote, Clock } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2;
 
 interface AddressForm {
   name: string;
@@ -21,13 +21,12 @@ interface AddressForm {
   country: string;
 }
 
-const COUNTRIES = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan"];
+const COUNTRIES = ["United States", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", "Bangladesh", "India", "Pakistan", "Singapore", "Malaysia", "UAE", "Saudi Arabia"];
 
 function StepIndicator({ current }: { current: Step }) {
   const steps = [
     { n: 1, label: "Shipping" },
-    { n: 2, label: "Payment" },
-    { n: 3, label: "Review" },
+    { n: 2, label: "Review" },
   ];
   return (
     <div className="flex items-center justify-center gap-0 mb-10">
@@ -45,14 +44,14 @@ function StepIndicator({ current }: { current: Step }) {
             >
               {current > s.n ? <Check className="w-4 h-4" /> : s.n}
             </div>
-            <span className={`text-xs ${current >= s.n ? "text-[#141413]" : "text-white/30"}`}>
+            <span className={`text-xs ${current >= s.n ? "text-[#141413]" : "text-[#6B6B67]"}`}>
               {s.label}
             </span>
           </div>
           {i < steps.length - 1 && (
             <div
               className={`w-16 h-px mb-5 mx-2 transition-colors ${
-                current > s.n ? "bg-green-500" : "bg-[#E5E5E0]"
+                current > s.n ? "bg-emerald-500" : "bg-[#E5E5E0]"
               }`}
             />
           )}
@@ -65,11 +64,9 @@ function StepIndicator({ current }: { current: Step }) {
 function AddressFormFields({
   form,
   setForm,
-  disabled,
 }: {
   form: AddressForm;
   setForm: (f: AddressForm) => void;
-  disabled: boolean;
 }) {
   const update = (field: keyof AddressForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm({ ...form, [field]: e.target.value });
@@ -80,33 +77,33 @@ function AddressFormFields({
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Full Name *</label>
-          <Input value={form.name} onChange={update("name")} placeholder="Jane Doe" required disabled={disabled} />
+          <Input value={form.name} onChange={update("name")} placeholder="Jane Doe" required />
         </div>
         <div>
           <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Email *</label>
-          <Input type="email" value={form.email} onChange={update("email")} placeholder="jane@example.com" required disabled={disabled} />
+          <Input type="email" value={form.email} onChange={update("email")} placeholder="jane@example.com" required />
         </div>
       </div>
       <div>
         <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Phone</label>
-        <Input value={form.phone} onChange={update("phone")} placeholder="+1 (555) 000-0000" disabled={disabled} />
+        <Input value={form.phone} onChange={update("phone")} placeholder="+1 (555) 000-0000" />
       </div>
       <div>
         <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Address *</label>
-        <Input value={form.address} onChange={update("address")} placeholder="123 Main Street, Apt 4B" required disabled={disabled} />
+        <Input value={form.address} onChange={update("address")} placeholder="123 Main Street, Apt 4B" required />
       </div>
       <div className="grid sm:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">City *</label>
-          <Input value={form.city} onChange={update("city")} placeholder="San Francisco" required disabled={disabled} />
+          <Input value={form.city} onChange={update("city")} placeholder="San Francisco" required />
         </div>
         <div>
           <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">State / Province</label>
-          <Input value={form.state} onChange={update("state")} placeholder="CA" disabled={disabled} />
+          <Input value={form.state} onChange={update("state")} placeholder="CA" />
         </div>
         <div>
           <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">ZIP / Postal Code *</label>
-          <Input value={form.zip} onChange={update("zip")} placeholder="94102" required disabled={disabled} />
+          <Input value={form.zip} onChange={update("zip")} placeholder="94102" required />
         </div>
       </div>
       <div>
@@ -115,8 +112,7 @@ function AddressFormFields({
           value={form.country}
           onChange={update("country")}
           required
-          disabled={disabled}
-          className="w-full px-4 py-3 bg-transparent border border-[#E5E5E0] rounded-xl text-sm text-[#141413] focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 appearance-none"
+          className="w-full px-4 py-3 bg-transparent border border-[#E5E5E0] rounded-xl text-sm text-[#141413] focus:outline-none focus:border-[#141413] transition-colors appearance-none"
         >
           <option value="" disabled>Select country</option>
           {COUNTRIES.map((c) => (
@@ -136,11 +132,12 @@ export default function CheckoutPage() {
     name: "", email: "", phone: "",
     address: "", city: "", state: "", zip: "", country: "",
   });
+  const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [orderPlaced, setOrderPlaced] = useState(false);
 
-  // Redirect if cart is empty (after mount)
+  // Redirect if cart is empty
   useEffect(() => {
     if (items.length === 0 && !orderPlaced) {
       router.replace("/products");
@@ -148,7 +145,7 @@ export default function CheckoutPage() {
   }, [items.length, orderPlaced, router]);
 
   const subtotal = totalPrice();
-  const shipping = subtotal > 100 ? 0 : 9.99;
+  const shipping = subtotal >= 100 ? 0 : 9.99;
   const tax = subtotal * 0.0875;
   const total = subtotal + shipping + tax;
 
@@ -159,7 +156,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, address, total }),
+        body: JSON.stringify({ items, address, payment_method: paymentMethod, total }),
       });
       if (res.ok) {
         clearCart();
@@ -207,14 +204,10 @@ export default function CheckoutPage() {
       {/* Header */}
       <div className="border-b border-[#E5E5E0] px-4 py-5">
         <div className="max-w-5xl mx-auto flex items-center gap-4">
-          <button onClick={() => router.back()} className="text-white/40 hover:text-white transition-colors">
+          <button onClick={() => router.back()} className="text-[#6B6B67] hover:text-[#141413] transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h1 className="text-lg font-semibold tracking-tight">Checkout</h1>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-white/30">
-            <Lock className="w-3.5 h-3.5" />
-            Secure Checkout
-          </div>
         </div>
       </div>
 
@@ -235,13 +228,13 @@ export default function CheckoutPage() {
                   className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
                 >
                   <h2 className="text-xl font-semibold mb-6">Shipping Address</h2>
-                  <AddressFormFields form={address} setForm={setAddress} disabled={false} />
+                  <AddressFormFields form={address} setForm={setAddress} />
                   <div className="mt-8 flex justify-end">
                     <Button
                       onClick={() => setStep(2)}
                       disabled={!address.name || !address.email || !address.address || !address.city || !address.zip || !address.country}
                     >
-                      Continue to Payment
+                      Continue to Review
                     </Button>
                   </div>
                 </motion.div>
@@ -256,62 +249,64 @@ export default function CheckoutPage() {
                   transition={{ duration: 0.3 }}
                   className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
                 >
-                  <h2 className="text-xl font-semibold mb-6">Payment</h2>
+                  <h2 className="text-xl font-semibold mb-2">Review Your Order</h2>
+                  <p className="text-sm text-[#6B6B67] mb-6">Choose your payment method before placing the order.</p>
 
-                  {/* Stripe placeholder */}
-                  <div className="border border-[#E5E5E0] rounded-xl p-6 mb-6 bg-white/2">
-                    <div className="flex items-center gap-2 mb-4">
-                      <CreditCard className="w-4 h-4 text-[#6B6B67]" />
-                      <span className="text-sm font-medium">Card Details</span>
-                      <div className="ml-auto flex gap-1">
-                        {["visa", "mc", "amex", "discover"].map((c) => (
-                          <div key={c} className="w-8 h-5 rounded bg-white/10 flex items-center justify-center">
-                            <span className="text-[8px] uppercase font-bold text-white/50">{c}</span>
-                          </div>
-                        ))}
+                  {/* Payment Methods */}
+                  <div className="space-y-3 mb-6">
+                    {/* COD - Available */}
+                    <button
+                      onClick={() => setPaymentMethod("cod")}
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                        paymentMethod === "cod"
+                          ? "border-[#141413] bg-[#FAFAF8]"
+                          : "border-[#E5E5E0] hover:border-[#6B6B67]"
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        paymentMethod === "cod" ? "bg-[#141413] text-white" : "bg-[#F4F4F1] text-[#6B6B67]"
+                      }`}>
+                        <Banknote className="w-5 h-5" />
                       </div>
-                    </div>
-                    <div className="space-y-3">
-                      <Input placeholder="Card number" disabled={placing} />
-                      <div className="grid grid-cols-2 gap-3">
-                        <Input placeholder="MM / YY" disabled={placing} />
-                        <Input placeholder="CVC" disabled={placing} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold">Cash on Delivery (COD)</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-medium">Available</span>
+                        </div>
+                        <p className="text-xs text-[#6B6B67] mt-0.5">Pay when your order arrives. No online payment needed.</p>
                       </div>
-                      <Input placeholder="Name on card" disabled={placing} />
-                    </div>
-                    <p className="text-xs text-white/20 mt-3 flex items-center gap-1.5">
-                      <Lock className="w-3 h-3" />
-                      Secured by Stripe. Your card details are encrypted.
-                    </p>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        paymentMethod === "cod" ? "border-[#141413] bg-[#141413]" : "border-[#E5E5E0]"
+                      }`}>
+                        {paymentMethod === "cod" && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                    </button>
+
+                    {/* Online Payment - Coming Soon */}
+                    <button
+                      onClick={() => setPaymentMethod("online")}
+                      disabled
+                      className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left cursor-not-allowed opacity-60 ${
+                        paymentMethod === "online"
+                          ? "border-[#141413] bg-[#FAFAF8]"
+                          : "border-[#E5E5E0]"
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#F4F4F1] text-[#6B6B67] flex-shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-[#6B6B67]">Online Payment</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#F4F4F1] text-[#6B6B67] font-medium">Coming Soon</span>
+                        </div>
+                        <p className="text-xs text-[#6B6B67] mt-0.5">Credit/Debit Card, Stripe, PayPal — launching soon.</p>
+                      </div>
+                      <div className="w-5 h-5 rounded-full border-2 border-[#E5E5E0] flex items-center justify-center">
+                        <Clock className="w-3 h-3 text-[#6B6B67]" />
+                      </div>
+                    </button>
                   </div>
-
-                  {orderError && (
-                    <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                      {orderError}
-                    </div>
-                  )}
-
-                  <div className="flex justify-between mt-6">
-                    <Button variant="secondary" onClick={() => setStep(1)}>
-                      Back
-                    </Button>
-                    <Button onClick={() => setStep(3)}>
-                      Review Order
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-
-              {step === 3 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
-                >
-                  <h2 className="text-xl font-semibold mb-6">Review Your Order</h2>
 
                   {/* Shipping summary */}
                   <div className="border border-[#E5E5E0] rounded-xl p-5 mb-4">
@@ -321,18 +316,24 @@ export default function CheckoutPage() {
                         Edit
                       </button>
                     </div>
-                    <p className="text-sm font-medium">{address.name}</p>
-                    <p className="text-sm text-[#6B6B67]">
-                      {address.address}, {address.city}, {address.state} {address.zip}
-                    </p>
-                    <p className="text-sm text-[#6B6B67]">{address.country}</p>
+                    <div className="flex items-start gap-2">
+                      <Truck className="w-4 h-4 text-[#6B6B67] mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">{address.name}</p>
+                        <p className="text-sm text-[#6B6B67]">
+                          {address.address}, {address.city}, {address.state} {address.zip}
+                        </p>
+                        <p className="text-sm text-[#6B6B67]">{address.country}</p>
+                        {address.phone && <p className="text-sm text-[#6B6B67]">{address.phone}</p>}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Items */}
-                  <div className="border border-[#E5E5E0] rounded-xl divide-y divide-[#E5E5E0] mb-4">
+                  <div className="border border-[#E5E5E0] rounded-xl divide-y divide-[#E5E5E0] mb-4 max-h-64 overflow-y-auto">
                     {items.map((item) => (
                       <div key={item.id} className="p-4 flex gap-4 items-center">
-                        <div className="w-14 h-14 rounded-lg bg-white/5 overflow-hidden flex-shrink-0">
+                        <div className="w-14 h-14 rounded-lg bg-[#F4F4F1] overflow-hidden flex-shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
@@ -346,16 +347,16 @@ export default function CheckoutPage() {
                   </div>
 
                   {orderError && (
-                    <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
                       {orderError}
                     </div>
                   )}
 
-                  <div className="flex justify-between mt-6">
-                    <Button variant="secondary" onClick={() => setStep(2)}>
+                  <div className="flex justify-between items-center mt-6">
+                    <Button variant="secondary" onClick={() => setStep(1)}>
                       Back
                     </Button>
-                    <Button onClick={handlePlaceOrder} disabled={placing} className="min-w-[160px]">
+                    <Button onClick={handlePlaceOrder} disabled={placing} className="min-w-[200px]">
                       {placing ? (
                         <span className="flex items-center gap-2">
                           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -366,8 +367,8 @@ export default function CheckoutPage() {
                         </span>
                       ) : (
                         <span className="flex items-center gap-2">
-                          <Lock className="w-4 h-4" />
-                          Place Order
+                          <Package className="w-4 h-4" />
+                          Place Order — {paymentMethod === "cod" ? "Pay on Delivery" : "Online"}
                         </span>
                       )}
                     </Button>
@@ -381,14 +382,14 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2">
             <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sticky top-6">
               <h3 className="font-semibold mb-5 flex items-center gap-2">
-                <ShoppingBag className="w-4 h-4" />
+                <Package className="w-4 h-4" />
                 Order Summary
               </h3>
 
-              <div className="space-y-3 mb-5">
+              <div className="space-y-3 mb-5 max-h-48 overflow-y-auto">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-3 items-center">
-                    <div className="w-12 h-12 rounded-lg bg-white/5 overflow-hidden flex-shrink-0">
+                    <div className="w-12 h-12 rounded-lg bg-[#F4F4F1] overflow-hidden flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
@@ -425,6 +426,16 @@ export default function CheckoutPage() {
                   Add ${(100 - subtotal).toFixed(2)} more for free shipping
                 </p>
               )}
+
+              {/* Payment method indicator */}
+              <div className="mt-4 pt-4 border-t border-[#E5E5E0]">
+                <div className="flex items-center gap-2">
+                  <Banknote className="w-4 h-4 text-[#6B6B67]" />
+                  <span className="text-xs text-[#6B6B67]">
+                    {paymentMethod === "cod" ? "Pay on Delivery — no card needed" : "Online Payment — coming soon"}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
