@@ -24,72 +24,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Complete shipping address is required" }, { status: 400 });
     }
 
-    // Build shipping address string
-    const shippingAddress = `${address.name}${address.phone ? `, ${address.phone}` : ""}, ${address.address}, ${address.city}${address.state ? `, ${address.state}` : ""} ${address.zip}, ${address.country}`;
-
     // Calculate totals
     const subtotal = items.reduce((sum: number, item: { price: number; quantity: number }) => sum + (item.price * item.quantity), 0);
 
-    // Generate tracking number: TRK-{timestamp36}-{random6}
+    // Generate tracking number
     const ts = Date.now().toString(36).toUpperCase();
     const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
     const trackingNumber = `TRK-${ts}-${rand}`;
     const trackingLink = `https://next-hermes.vercel.app/track/${trackingNumber}`;
     const orderNumber = `ORD-${ts}`;
 
-    // Insert order — try with new columns first, fall back to base columns if they don't exist
-    let order: { id: string } | null = null;
-    let orderError: { message: string } | null = null;
+    // Build full shipping address from parts
+    const shippingAddress = `${address.name}${address.phone ? `, ${address.phone}` : ""}, ${address.address}, ${address.city}${address.state ? `, ${address.state}` : ""} ${address.zip}, ${address.country}`;
 
-    // Attempt 1: with tracking columns (works after migration)
-    const { data, error } = await supabase
+    // Insert order using actual DB columns
+    const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: user.id,
+        order_number: orderNumber,
         status: "pending",
         subtotal,
+        tax_amount: 0,
+        shipping_amount: subtotal >= 100 ? 0 : 9.99,
+        total_amount: subtotal + (subtotal >= 100 ? 0 : 9.99),
+        currency: "USD",
+        shipping_name: address.name,
         shipping_address: shippingAddress,
-        notes: `Payment: ${payment_method === "cod" ? "Cash on Delivery" : "Online Payment"}`,
+        shipping_city: address.city,
+        shipping_state: address.state || null,
+        shipping_postal: address.zip,
+        shipping_country: address.country,
+        shipping_phone: address.phone || null,
         tracking_number: trackingNumber,
         tracking_link: trackingLink,
-        order_number: orderNumber,
+        notes: `Payment: ${payment_method === "cod" ? "Cash on Delivery" : "Online Payment"}`,
       })
       .select("id")
       .single();
-
-    order = data;
-    orderError = error;
-
-    // Attempt 2: fallback without new columns (for pre-migration compatibility)
-    if (orderError) {
-      const { data: data2, error: error2 } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          status: "pending",
-          subtotal,
-          shipping_address: shippingAddress,
-          notes: `Payment: ${payment_method === "cod" ? "Cash on Delivery" : "Online Payment"}`,
-        })
-        .select("id")
-        .single();
-
-      order = data2;
-      orderError = error2;
-    }
 
     if (orderError || !order) {
       return NextResponse.json({ error: orderError?.message || "Failed to create order" }, { status: 500 });
     }
 
-    // Insert order items — with product_name and unit_price (fall back to total-only if not migrated)
+    // Insert order items — use actual DB columns: name, price, quantity, total
     const orderItems = items.map((item: { id: string; name: string; price: number; quantity: number; image?: string }) => ({
       order_id: order!.id,
       product_id: item.id,
-      product_name: item.name,
+      name: item.name,
+      price: item.price,
       quantity: item.quantity,
       total: item.price * item.quantity,
-      unit_price: item.price,
     }));
 
     const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
@@ -102,9 +87,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       order_id: order.id,
+      order_number: orderNumber,
       tracking_number: trackingNumber,
       tracking_link: trackingLink,
-      order_number: orderNumber,
       total: subtotal,
       payment_method,
     }, { status: 201 });

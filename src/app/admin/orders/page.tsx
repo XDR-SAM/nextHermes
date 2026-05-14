@@ -6,21 +6,25 @@ import { FileText, Package } from "lucide-react";
 
 interface OrderItem {
   id: string;
-  product_id: string;
+  product_id?: string;
+  name?: string | null;
+  price?: number | null;
   quantity: number;
-  unit_price?: number;
-  total?: number;
+  total: number | null;
   product_name?: string | null;
-  product?: { name: string | null; metadata: Record<string, unknown> | null } | null;
+  unit_price?: number | null;
 }
 
 interface Order {
   id: string;
   created_at: string;
   updated_at: string;
-  total: number | null;
+  total_amount: number | null;
   subtotal: number | null;
+  tax_amount?: number | null;
+  shipping_amount?: number | null;
   status: string;
+  order_number?: string | null;
   shipping_address: string | null;
   notes: string | null;
   user_id: string;
@@ -56,7 +60,7 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("id, user_id, status, subtotal, shipping_address, notes, created_at, updated_at, tracking_number, tracking_link")
+      .select("id, user_id, status, total_amount, subtotal, tax_amount, shipping_amount, order_number, tracking_number, tracking_link, shipping_address, notes, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
@@ -113,7 +117,7 @@ export default function OrdersPage() {
     // Fetch order items without FK join (schema cache issue on Vercel)
     const { data: items } = await supabase
       .from("order_items")
-      .select("id, product_id, quantity, total, product_name, unit_price")
+      .select("id, product_id, name, price, quantity, total, product_name, unit_price")
       .eq("order_id", order.id);
 
     // Fetch product names separately
@@ -133,7 +137,8 @@ export default function OrdersPage() {
 
       const enrichedItems = items.map((item: { product_id: string;[key: string]: unknown }) => ({
         ...item,
-        product_name: productMap[item.product_id] || "Unknown",
+        product_name: item.name || productMap[item.product_id] || "Unknown",
+        unit_price: item.price ?? null,
       }));
 
       setSelectedOrder({ ...order, order_items: enrichedItems as OrderItem[] });
@@ -340,7 +345,7 @@ export default function OrdersPage() {
                         {formatDate(order.created_at)}
                       </td>
                       <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#141413" }}>
-                        {formatCurrency(order.total)}
+                        {formatCurrency(order.total_amount)}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <select
@@ -474,7 +479,7 @@ export default function OrdersPage() {
                     ORDER TOTAL
                   </div>
                   <div style={{ fontSize: "24px", fontWeight: "700", color: "#141413" }}>
-                    {formatCurrency(selectedOrder.total)}
+                    {formatCurrency(selectedOrder.total_amount ?? (selectedOrder.subtotal ?? 0) + ((selectedOrder.tax_amount ?? 0) + (selectedOrder.shipping_amount ?? 0)))}
                   </div>
                 </div>
               </div>

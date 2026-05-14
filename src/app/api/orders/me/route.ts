@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, subtotal, shipping_address, notes, created_at, updated_at, tracking_number, tracking_link")
+      .select("id, order_number, status, total_amount, subtotal, tax_amount, shipping_amount, shipping_address, tracking_number, tracking_link, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -36,11 +36,11 @@ export async function GET(request: NextRequest) {
     }
 
     const orderIds = (ordersData || []).map((o) => o.id);
-    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string; product_name?: string }[]> = {};
+    let itemsByOrder: Record<string, { id: string; quantity: number; total: number; name: string; price: number; product_id?: string }[]> = {};
     if (orderIds.length > 0) {
       const { data: allItems } = await supabase
         .from("order_items")
-        .select("order_id, id, product_id, quantity, total, product_name")
+        .select("order_id, id, product_id, name, price, quantity, total")
         .in("order_id", orderIds);
       if (allItems) {
         for (const item of allItems) {
@@ -52,18 +52,18 @@ export async function GET(request: NextRequest) {
 
     const formatted = (ordersData || []).map((order) => ({
       id: order.id,
-      order_number: order.tracking_number ? `ORD-${order.tracking_number.slice(4, 12)}` : `ORD-${order.id.slice(0, 8).toUpperCase()}`,
+      order_number: order.order_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
       status: order.status,
-      total: order.subtotal,
-      subtotal: order.subtotal,
+      total: Number(order.total_amount),
+      subtotal: Number(order.subtotal),
       tracking_number: order.tracking_number,
       tracking_link: order.tracking_link,
       created_at: order.created_at,
       items: (itemsByOrder[order.id] || []).map((item) => ({
         id: item.id,
-        name: item.product_name || `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
+        name: item.name || `Product ${item.product_id?.slice(0, 6) || item.id.slice(0, 6)}`,
         quantity: item.quantity,
-        price: item.quantity > 0 ? Number(item.total) / item.quantity : 0,
+        price: Number(item.price),
         image: "https://picsum.photos/100",
         product_id: item.product_id,
       })),
