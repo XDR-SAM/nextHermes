@@ -25,9 +25,9 @@ import { CartDrawer } from "./cart-drawer";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Track Order", href: "/orders" },
   { label: "Shop", href: "/products" },
   { label: "New Arrivals", href: "/new-arrivals" },
+  { label: "Best Sellers", href: "/best-sellers" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -136,7 +136,7 @@ export function Navbar() {
 
   // Mobile resize
   useEffect(() => {
-    function handleResize() { if (window.innerWidth >= 768) setIsMobileMenuOpen(false); }
+    function handleResize() { if (window.innerWidth >= 1024) setIsMobileMenuOpen(false); }
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -176,66 +176,66 @@ export function Navbar() {
 
   return (
     <>
-      {/* ─── Topbar ribbon ───────────────────────────────────── */}
-      <div className="bg-foreground text-background h-8 flex items-center justify-center text-[11px] font-medium tracking-wide">
-        <span>Free shipping on orders over $150</span>
-        <span className="mx-3 opacity-40">·</span>
+      {/* ─── Topbar ribbon (compact) ─── */}
+      <div className="bg-[#141413] text-[#FAFAF8] h-9 flex items-center justify-center text-[11px] tracking-wide">
+        <span className="hidden xs:inline">Free shipping on orders over $150</span>
+        <span className="xs:hidden">Free shipping $150+</span>
+        <span className="mx-3 opacity-30">·</span>
         <span>New arrivals every Friday</span>
       </div>
 
-      {/* ─── Main navbar ──────────────────────────────────────── */}
+      {/* ─── Main navbar ─── */}
       <header
         className={cn(
-          "sticky top-0 z-50 transition-all duration-300",
+          "sticky top-0 z-50 transition-all duration-200",
           isScrolled
-            ? "shadow-sm backdrop-blur-xl bg-background/80"
-            : "bg-background/60"
+            ? "shadow-sm bg-[#FAFAF8]/95 backdrop-blur-md border-b border-[#E5E5E0]"
+            : "bg-[#FAFAF8]/70"
         )}
       >
-        <div className="max-w-screen-xl mx-auto px-6 h-16 flex items-center justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
 
           {/* Logo */}
-          <Link href="/" className="shrink-0">
-            <span className="font-bold text-lg tracking-[0.25em] text-foreground">
+          <Link href="/" className="shrink-0 group">
+            <span className="font-bold text-base tracking-[0.3em] text-[#141413] group-hover:opacity-70 transition-opacity duration-200">
               HERMES
             </span>
           </Link>
 
           {/* Desktop nav links */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-7">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-sm font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors duration-200 relative group"
+                className="text-[13px] font-medium tracking-wide text-[#6B6B67] hover:text-[#141413] transition-colors duration-200 relative after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-[#141413] hover:after:w-full after:transition-all after:duration-300"
               >
                 {link.label}
-                <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-foreground transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </nav>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
 
             {/* Search */}
             <button
               onClick={() => router.push("/products")}
-              className="p-2.5 rounded-full hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground"
+              className="p-2.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors duration-150 text-[#6B6B67] hover:text-[#141413]"
               aria-label="Search"
             >
-              <Search className="w-[18px] h-[18px]" />
+              <Search className="w-[19px] h-[19px]" strokeWidth={1.8} />
             </button>
 
             {/* Wishlist */}
             <Link
               href="/wishlist"
-              className="relative p-2.5 rounded-full hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground"
+              className="relative p-2.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors duration-150 text-[#6B6B67] hover:text-[#141413]"
             >
-              <Heart className="w-[18px] h-[18px]" />
+              <Heart className="w-[19px] h-[19px]" strokeWidth={1.8} />
               {wishlistCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-foreground text-background">
-                  {wishlistCount}
+                <span className="absolute -top-0.5 -right-0.5 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-[#141413] text-[#FAFAF8]">
+                  {wishlistCount > 9 ? "9+" : wishlistCount}
                 </span>
               )}
             </Link>
@@ -243,37 +243,41 @@ export function Navbar() {
             {/* Cart */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative p-2.5 rounded-full hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground"
+              className="relative p-2.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors duration-150 text-[#6B6B67] hover:text-[#141413]"
             >
-              <ShoppingCart className="w-[18px] h-[18px]" />
+              <ShoppingCart className="w-[19px] h-[19px]" strokeWidth={1.8} />
               {cartCount > 0 && (
                 <motion.span
                   key={cartCount}
-                  initial={{ scale: 0.4, opacity: 0 }}
+                  initial={{ scale: 0.3, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="absolute -top-0.5 -right-0.5 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-foreground text-background"
+                  transition={{ duration: 0.2, ease: "backOut" }}
+                  className="absolute -top-0.5 -right-0.5 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center bg-[#141413] text-[#FAFAF8]"
                 >
-                  {cartCount}
+                  {cartCount > 9 ? "9+" : cartCount}
                 </motion.span>
               )}
             </button>
 
+            {/* Divider */}
+            <div className="w-px h-5 bg-[#E5E5E0] mx-1.5 hidden sm:block" />
+
             {/* User dropdown */}
             {!authLoading && user ? (
-              <div className="relative ml-1" ref={dropdownRef}>
+              <div className="relative hidden sm:block" ref={dropdownRef}>
                 <button
                   onClick={() => setIsUserDropdownOpen((p) => !p)}
-                  className="flex items-center gap-1.5 p-1.5 rounded-full hover:bg-muted transition-colors duration-200"
+                  className="flex items-center gap-1.5 p-1.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors duration-150"
                   aria-label="User menu"
                 >
                   {profile?.full_name ? (
-                    <div className="w-7 h-7 rounded-full bg-foreground text-background flex items-center justify-center text-[11px] font-bold">
+                    <div className="w-7 h-7 rounded-full bg-[#141413] text-[#FAFAF8] flex items-center justify-center text-[11px] font-bold">
                       {profile.full_name.charAt(0).toUpperCase()}
                     </div>
                   ) : (
-                    <User className="w-[18px] h-[18px] text-muted-foreground" />
+                    <User className="w-[19px] h-[19px] text-[#6B6B67]" strokeWidth={1.8} />
                   )}
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                  <ChevronDown className={cn("w-3.5 h-3.5 text-[#6B6B67] transition-transform duration-150", isUserDropdownOpen && "rotate-180")} />
                 </button>
 
                 <AnimatePresence>
@@ -283,13 +287,13 @@ export function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.97 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 top-full mt-2 w-52 rounded-xl shadow-xl border border-border bg-card overflow-hidden"
+                      className="absolute right-0 top-full mt-2 w-56 rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.10)] border border-[#E5E5E0] bg-white overflow-hidden"
                     >
-                      <div className="px-4 py-3 border-b border-border">
-                        <p className="text-sm font-medium text-card-foreground truncate">{displayName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
+                      <div className="px-4 py-3.5 border-b border-[#E5E5E0]">
+                        <p className="text-sm font-medium text-[#141413] truncate">{displayName}</p>
+                        <p className="text-xs text-[#6B6B67] truncate mt-0.5">{displayEmail}</p>
                       </div>
-                      <div className="p-1.5">
+                      <div className="p-1.5 py-2">
                         {[
                           { icon: User, label: "Profile", href: "/profile" },
                           { icon: Package, label: "Orders", href: "/orders" },
@@ -302,18 +306,18 @@ export function Navbar() {
                             key={label}
                             href={href}
                             onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6B6B67] hover:text-[#141413] hover:bg-[#F4F4F1] transition-colors"
                           >
-                            <Icon className="w-4 h-4" />
+                            <Icon className="w-4 h-4" strokeWidth={1.8} />
                             {label}
                           </Link>
                         ))}
                         <button
                           onClick={handleSignOut}
                           disabled={signingOut}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors w-full disabled:opacity-50"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors w-full mt-1"
                         >
-                          <LogOut className="w-4 h-4" />
+                          <LogOut className="w-4 h-4" strokeWidth={1.8} />
                           {signingOut ? "Signing out..." : "Sign Out"}
                         </button>
                       </div>
@@ -324,24 +328,24 @@ export function Navbar() {
             ) : !authLoading ? (
               <Link
                 href="/login"
-                className="ml-1 px-4 py-1.5 rounded-full text-sm font-medium border border-border text-foreground hover:bg-foreground hover:text-background transition-all duration-200"
+                className="hidden sm:flex ml-1.5 px-4 py-2 rounded-[10px] text-[13px] font-medium border border-[#E5E5E0] text-[#141413] hover:bg-[#141413] hover:text-[#FAFAF8] hover:border-[#141413] transition-all duration-200"
               >
-                Login
+                Sign In
               </Link>
             ) : null}
 
             {/* Mobile hamburger */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2.5 rounded-full hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground ml-1"
+              className="lg:hidden p-2.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors duration-150 text-[#6B6B67] hover:text-[#141413] ml-1"
             >
-              <Menu className="w-[18px] h-[18px]" />
+              <Menu className="w-[19px] h-[19px]" strokeWidth={1.8} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ─── Mobile fullscreen menu ──────────────────────────── */}
+      {/* ─── Mobile fullscreen menu ─── */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -349,30 +353,28 @@ export function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed inset-0 z-[70] flex flex-col bg-background"
+            className="fixed inset-0 z-[70] flex flex-col bg-[#FAFAF8]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 h-16 border-b border-border shrink-0">
-              <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-lg tracking-[0.25em] text-foreground">
+            <div className="flex items-center justify-between px-6 h-16 border-b border-[#E5E5E0] shrink-0">
+              <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-base tracking-[0.3em] text-[#141413]">
                 HERMES
               </Link>
-              <div className="flex items-center gap-2">
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
-                  <X className="w-[18px] h-[18px]" />
-                </button>
-              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 rounded-[10px] hover:bg-[#F4F4F1] transition-colors text-[#6B6B67]">
+                <X className="w-[19px] h-[19px]" strokeWidth={1.8} />
+              </button>
             </div>
 
             {/* Search */}
-            <form onSubmit={handleSearch} className="px-6 pt-5 pb-2 shrink-0">
+            <form onSubmit={handleSearch} className="px-6 pt-5 pb-3 shrink-0">
               <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full border border-border rounded-full py-2.5 pl-11 pr-4 text-sm bg-muted text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors"
+                  className="w-full border border-[#E5E5E0] rounded-[10px] py-3 pl-11 pr-4 text-sm bg-[#F4F4F1] text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#141413] transition-colors"
                 />
               </div>
             </form>
@@ -389,7 +391,7 @@ export function Navbar() {
                   <Link
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between py-4 text-xl font-light border-b border-border text-foreground hover:text-muted-foreground transition-colors"
+                    className="flex items-center justify-between py-4 text-lg font-light border-b border-[#E5E5E0] text-[#141413] hover:text-[#6B6B67] transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -398,7 +400,7 @@ export function Navbar() {
 
               {!authLoading && user && (
                 <>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-6 mb-2 font-semibold">Account</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#6B6B67] mt-6 mb-2 font-semibold">Account</p>
                   {[
                     { label: "Profile", href: "/profile" },
                     { label: "Orders", href: "/orders" },
@@ -416,7 +418,7 @@ export function Navbar() {
                       <Link
                         href={link.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center justify-between py-4 text-lg font-light border-b border-border text-muted-foreground hover:text-foreground transition-colors"
+                        className="flex items-center justify-between py-4 text-base font-light border-b border-[#E5E5E0] text-[#6B6B67] hover:text-[#141413] transition-colors"
                       >
                         {link.label}
                       </Link>
@@ -427,34 +429,34 @@ export function Navbar() {
             </nav>
 
             {/* Bottom actions */}
-            <div className="px-6 pb-8 pt-4 border-t border-border shrink-0 space-y-3">
+            <div className="px-6 pb-8 pt-4 border-t border-[#E5E5E0] shrink-0 space-y-2.5">
               {!authLoading && user ? (
                 <>
-                  <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <Heart className="w-4 h-4" />
+                  <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 py-3 rounded-[10px] border border-[#E5E5E0] text-sm font-medium text-[#141413] hover:bg-[#F4F4F1] transition-colors">
+                    <Heart className="w-4 h-4" strokeWidth={1.8} />
                     Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
                   </Link>
                   <button
                     onClick={() => { setIsMobileMenuOpen(false); setIsCartOpen(true); }}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-foreground text-background font-medium text-sm hover:opacity-90 transition-opacity"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-[10px] bg-[#141413] text-[#FAFAF8] font-medium text-sm hover:opacity-90 transition-opacity"
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-4 h-4" strokeWidth={1.8} />
                     Cart {cartCount > 0 && `(${cartCount})`}
                   </button>
-                  <button onClick={handleSignOut} disabled={signingOut} className="w-full flex items-center justify-center gap-2 py-3 rounded-full border border-red-500/30 text-red-400 font-medium text-sm hover:border-red-500/60 transition-colors disabled:opacity-50">
-                    <LogOut className="w-4 h-4" />
+                  <button onClick={handleSignOut} disabled={signingOut} className="w-full flex items-center justify-center gap-2 py-3 rounded-[10px] border border-red-200 text-red-500 font-medium text-sm hover:bg-red-50 transition-colors disabled:opacity-50">
+                    <LogOut className="w-4 h-4" strokeWidth={1.8} />
                     {signingOut ? "Signing out..." : "Sign Out"}
                   </button>
                 </>
               ) : !authLoading ? (
                 <>
-                  <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 py-3 rounded-full border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <Heart className="w-4 h-4" />
+                  <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center gap-2 py-3 rounded-[10px] border border-[#E5E5E0] text-sm font-medium text-[#141413] hover:bg-[#F4F4F1] transition-colors">
+                    <Heart className="w-4 h-4" strokeWidth={1.8} />
                     Wishlist
                   </Link>
-                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-foreground text-background font-medium text-sm hover:opacity-90 transition-opacity">
-                    <User className="w-4 h-4" />
-                    Login / Sign Up
+                  <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="w-full flex items-center justify-center gap-2 py-3 rounded-[10px] bg-[#141413] text-[#FAFAF8] font-medium text-sm hover:opacity-90 transition-opacity">
+                    <User className="w-4 h-4" strokeWidth={1.8} />
+                    Sign In
                   </Link>
                 </>
               ) : null}

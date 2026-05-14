@@ -23,7 +23,7 @@ interface TimeSeries { date: string; count: number; }
 
 // ─── SVG Chart Components ─────────────────────────────────────────────
 function LineChart({ data, color = "#3b82f6", height = 200, label = "" }: { data: { date: string; total?: number; count?: number }[]; color?: string; height?: number; label?: string }) {
-  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", fontSize: "14px" }}>No data</div>;
+  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#6B6B67", fontSize: "14px" }}>No data</div>;
   const max = Math.max(...data.map(d => d.total || d.count || 0));
   const min = Math.min(...data.map(d => d.total || d.count || 0), 0);
   const range = max - min || 1;
@@ -55,15 +55,15 @@ function LineChart({ data, color = "#3b82f6", height = 200, label = "" }: { data
         const y = toY(t);
         return (
           <g key={i}>
-            <line x1={padL} y1={y} x2={padL + cW} y2={y} stroke="var(--border)" strokeWidth="1" strokeDasharray="4,4" />
-            <text x={padL - 8} y={y + 4} textAnchor="end" fontSize="11" fill="var(--text-secondary)">{t >= 1000 ? `${(t / 1000).toFixed(1)}k` : t}</text>
+            <line x1={padL} y1={y} x2={padL + cW} y2={y} stroke="#E5E5E0" strokeWidth="1" strokeDasharray="4,4" />
+            <text x={padL - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#6B6B67">{t >= 1000 ? `${(t / 1000).toFixed(1)}k` : t}</text>
           </g>
         );
       })}
       {/* X labels */}
       {xLabels.map((d, i) => {
         const idx = data.indexOf(d);
-        return <text key={i} x={toX(idx)} y={padT + cH + 16} textAnchor="middle" fontSize="10" fill="var(--text-secondary)">{d.date.slice(5)}</text>;
+        return <text key={i} x={toX(idx)} y={padT + cH + 16} textAnchor="middle" fontSize="10" fill="#6B6B67">{d.date.slice(5)}</text>;
       })}
       {/* Area */}
       <path d={areaD} fill={`url(#lg-${label})`} />
@@ -81,7 +81,7 @@ function LineChart({ data, color = "#3b82f6", height = 200, label = "" }: { data
 }
 
 function BarChart({ data, color = "#a855f7", height = 200, horizontal = false }: { data: { name: string; value: number }[]; color?: string; height?: number; horizontal?: boolean }) {
-  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", fontSize: "14px" }}>No data</div>;
+  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#6B6B67", fontSize: "14px" }}>No data</div>;
   const max = Math.max(...data.map(d => d.value));
   if (horizontal) {
     const rowH = Math.min(40, height / data.length);
@@ -92,9 +92,9 @@ function BarChart({ data, color = "#a855f7", height = 200, horizontal = false }:
           const y = i * rowH + 4;
           return (
             <g key={i}>
-              <text x="0" y={y + 16} fontSize="12" fill="var(--text)" textAnchor="start">{d.name.length > 18 ? d.name.slice(0, 18) + "…" : d.name}</text>
+              <text x="0" y={y + 16} fontSize="12" fill="#141413" textAnchor="start">{d.name.length > 18 ? d.name.slice(0, 18) + "…" : d.name}</text>
               <rect x="140" y={y + 6} width={barW} height={rowH - 14} rx="4" fill={color} opacity={0.8 - i * 0.05} />
-              <text x={150 + barW} y={y + 16} fontSize="11" fill="var(--text-secondary)">{d.value}</text>
+              <text x={150 + barW} y={y + 16} fontSize="11" fill="#6B6B67">{d.value}</text>
             </g>
           );
         })}
@@ -111,8 +111,8 @@ function BarChart({ data, color = "#a855f7", height = 200, horizontal = false }:
         return (
           <g key={i}>
             <rect x={x} y={height - 30 - barH} width={barW} height={barH} rx="4" fill={color} opacity={0.7 + 0.3 * (d.value / max)} />
-            <text x={x + barW / 2} y={height - 10} textAnchor="middle" fontSize="10" fill="var(--text-secondary)">{d.name.slice(0, 8)}</text>
-            <text x={x + barW / 2} y={height - 35 - barH} textAnchor="middle" fontSize="11" fill="var(--text)">{d.value}</text>
+            <text x={x + barW / 2} y={height - 10} textAnchor="middle" fontSize="10" fill="#6B6B67">{d.name.slice(0, 8)}</text>
+            <text x={x + barW / 2} y={height - 35 - barH} textAnchor="middle" fontSize="11" fill="#141413">{d.value}</text>
           </g>
         );
       })}
@@ -121,7 +121,7 @@ function BarChart({ data, color = "#a855f7", height = 200, horizontal = false }:
 }
 
 function DonutChart({ data, height = 260 }: { data: { name: string; revenue: number }[]; height?: number }) {
-  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", fontSize: "14px" }}>No data</div>;
+  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#6B6B67", fontSize: "14px" }}>No data</div>;
   const colors = ["#3b82f6", "#a855f7", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4", "#ec4899", "#8b5cf6"];
   const total = data.reduce((s, d) => s + d.revenue, 0);
   const R = 90, CX = 110, CY = height / 2;
@@ -150,16 +150,16 @@ function DonutChart({ data, height = 260 }: { data: { name: string; revenue: num
             onMouseLeave={e => { (e.target as SVGPathElement).setAttribute("opacity", "0.85"); }}
           />
         ))}
-        <circle cx={CX} cy={CY} r={R - 18} fill="var(--bg-card)" />
-        <text x={CX} y={CY - 8} textAnchor="middle" fontSize="12" fill="var(--text-secondary)">Total</text>
-        <text x={CX} y={CY + 10} textAnchor="middle" fontSize="14" fontWeight="700" fill="var(--text)">${(total / 1000).toFixed(1)}k</text>
+        <circle cx={CX} cy={CY} r={R - 18} fill="white" />
+        <text x={CX} y={CY - 8} textAnchor="middle" fontSize="12" fill="#6B6B67">Total</text>
+        <text x={CX} y={CY + 10} textAnchor="middle" fontSize="14" fontWeight="700" fill="#141413">${(total / 1000).toFixed(1)}k</text>
       </svg>
       <div style={{ flex: 1, minWidth: "140px" }}>
         {slices.map((s, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
             <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: s.color, flexShrink: 0 }} />
-            <span style={{ fontSize: "12px", color: "var(--text)", flex: 1 }}>{s.name}</span>
-            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>${(s.revenue / 1000).toFixed(1)}k</span>
+            <span style={{ fontSize: "12px", color: "#141413", flex: 1 }}>{s.name}</span>
+            <span style={{ fontSize: "12px", color: "#6B6B67" }}>${(s.revenue / 1000).toFixed(1)}k</span>
           </div>
         ))}
       </div>
@@ -171,11 +171,11 @@ function DonutChart({ data, height = 260 }: { data: { name: string; revenue: num
 function ChartCard({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div style={{
-      background: "var(--bg-card)", border: "1px solid var(--border)",
+      background: "white", border: "1px solid #E5E5E0",
       borderRadius: "12px", padding: "24px",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h3 style={{ fontSize: "15px", fontWeight: "600", color: "var(--text)", margin: 0 }}>{title}</h3>
+        <h3 style={{ fontSize: "15px", fontWeight: "600", color: "#141413", margin: 0 }}>{title}</h3>
         {action}
       </div>
       {children}
@@ -269,7 +269,7 @@ export default function AnalyticsDashboard() {
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "32px" }}>
         {[...Array(4)].map((_, i) => (
-          <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", padding: "24px", height: "120px" }} />
+          <div key={i} style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", padding: "24px", height: "120px" }} />
         ))}
       </div>
     </div>
@@ -280,23 +280,23 @@ export default function AnalyticsDashboard() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 style={{ fontSize: "24px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Analytics</h1>
-          <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "14px" }}>Overview of your store performance</p>
+          <h1 style={{ fontSize: "24px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Analytics</h1>
+          <p style={{ color: "#6B6B67", margin: 0, fontSize: "14px" }}>Overview of your store performance</p>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {/* Date Range Picker */}
           {([7, 30, 90, 365] as DateRange[]).map(d => (
             <button key={d} onClick={() => setRange(d)} style={{
               padding: "6px 14px", borderRadius: "6px", border: "1px solid",
-              borderColor: range === d ? "#3b82f6" : "var(--border)",
+              borderColor: range === d ? "#3b82f6" : "#E5E5E0",
               background: range === d ? "rgba(59,130,246,0.1)" : "transparent",
-              color: range === d ? "#3b82f6" : "var(--text-secondary)",
+              color: range === d ? "#3b82f6" : "#6B6B67",
               fontSize: "13px", fontWeight: "500", cursor: "pointer",
             }}>{d === 365 ? "1Y" : `${d}D`}</button>
           ))}
           <button onClick={exportCSV} disabled={exporting} style={{
-            padding: "6px 14px", borderRadius: "6px", border: "1px solid var(--border)",
-            background: "transparent", color: "var(--text-secondary)",
+            padding: "6px 14px", borderRadius: "6px", border: "1px solid #E5E5E0",
+            background: "transparent", color: "#6B6B67",
             fontSize: "13px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
           }}>
             {exporting ? "Exporting…" : "📥 Export CSV"}
@@ -308,7 +308,7 @@ export default function AnalyticsDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {statCards.map((card, i) => (
           <div key={i} style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "12px", padding: "20px 24px",
             transition: "border-color 0.2s",
           }}>
@@ -317,7 +317,7 @@ export default function AnalyticsDashboard() {
               {card.change !== undefined && <ChangeIndicator pct={card.change} />}
             </div>
             <div style={{ fontSize: "28px", fontWeight: "700", color: card.color, lineHeight: 1 }}>{card.value}</div>
-            <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginTop: "6px" }}>{card.label}</div>
+            <div style={{ fontSize: "13px", color: "#6B6B67", marginTop: "6px" }}>{card.label}</div>
           </div>
         ))}
       </div>
@@ -329,15 +329,15 @@ export default function AnalyticsDashboard() {
           { label: "Revenue Today", value: fmt(realtime.revenueToday), icon: "💵", color: "#22c55e" },
         ].map((m, i) => (
           <div key={i} style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "10px", padding: "16px 20px",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
               <span>{m.icon}</span>
-              <span style={{ fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: "600" }}>Live</span>
+              <span style={{ fontSize: "12px", color: "#6B6B67", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: "600" }}>Live</span>
             </div>
             <div style={{ fontSize: "22px", fontWeight: "700", color: m.color }}>{m.value}</div>
-            <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>{m.label}</div>
+            <div style={{ fontSize: "12px", color: "#6B6B67", marginTop: "4px" }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -345,7 +345,7 @@ export default function AnalyticsDashboard() {
       {/* Charts Row 1 */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
         <ChartCard title="Revenue Over Time">
-          <div style={{ color: "var(--text-secondary)", fontSize: "13px", marginBottom: "12px" }}>
+          <div style={{ color: "#6B6B67", fontSize: "13px", marginBottom: "12px" }}>
             {fmt(revenueTotal)} total · {range}d period
           </div>
           <LineChart data={revenue.map(r => ({ date: r.date, total: r.total }))} color="#22c55e" height={180} label="rev" />
@@ -371,24 +371,24 @@ export default function AnalyticsDashboard() {
       {/* Top Customers Table */}
       <ChartCard title="Top Customers by Lifetime Value">
         {topCustomers.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "32px", color: "var(--text-secondary)" }}>No customer data yet</div>
+          <div style={{ textAlign: "center", padding: "32px", color: "#6B6B67" }}>No customer data yet</div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "500px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["#", "Customer", "Email", "Orders", "Lifetime Value"].map(h => (
-                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: "12px", color: "#6B6B67", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {topCustomers.map((c, i) => (
-                  <tr key={c.user_id} style={{ borderBottom: "1px solid var(--border)" }}>
-                    <td style={{ padding: "12px 14px", fontSize: "13px", color: "var(--text-secondary)", fontWeight: "600" }}>{i + 1}</td>
-                    <td style={{ padding: "12px 14px", fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{c.full_name}</td>
-                    <td style={{ padding: "12px 14px", fontSize: "13px", color: "var(--text-secondary)" }}>{c.email}</td>
-                    <td style={{ padding: "12px 14px", fontSize: "14px", color: "var(--text)" }}>{c.order_count}</td>
+                  <tr key={c.user_id} style={{ borderBottom: "1px solid #E5E5E0" }}>
+                    <td style={{ padding: "12px 14px", fontSize: "13px", color: "#6B6B67", fontWeight: "600" }}>{i + 1}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "14px", fontWeight: "500", color: "#141413" }}>{c.full_name}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "13px", color: "#6B6B67" }}>{c.email}</td>
+                    <td style={{ padding: "12px 14px", fontSize: "14px", color: "#141413" }}>{c.order_count}</td>
                     <td style={{ padding: "12px 14px", fontSize: "14px", fontWeight: "600", color: "#22c55e" }}>{fmt(c.total_spent)}</td>
                   </tr>
                 ))}

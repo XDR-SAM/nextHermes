@@ -229,8 +229,8 @@ export default function OrdersPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Orders</h1>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>{orders.length} orders</p>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Orders</h1>
+          <p style={{ color: "#6B6B67", margin: 0 }}>{orders.length} orders</p>
         </div>
       </div>
 
@@ -240,9 +240,9 @@ export default function OrdersPage() {
           onClick={() => setStatusFilter("all")}
           style={{
             padding: "8px 16px", borderRadius: "8px", border: "1px solid",
-            borderColor: statusFilter === "all" ? "#3b82f6" : "var(--border)",
+            borderColor: statusFilter === "all" ? "#3b82f6" : "#E5E5E0",
             background: statusFilter === "all" ? "rgba(59,130,246,0.1)" : "transparent",
-            color: statusFilter === "all" ? "#3b82f6" : "var(--text-secondary)",
+            color: statusFilter === "all" ? "#3b82f6" : "#6B6B67",
             fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s ease"
           }}
         >
@@ -254,9 +254,9 @@ export default function OrdersPage() {
             onClick={() => setStatusFilter(status)}
             style={{
               padding: "8px 16px", borderRadius: "8px", border: "1px solid",
-              borderColor: statusFilter === status ? STATUS_STYLES[status].color : "var(--border)",
+              borderColor: statusFilter === status ? STATUS_STYLES[status].color : "#E5E5E0",
               background: statusFilter === status ? STATUS_STYLES[status].bg : "transparent",
-              color: statusFilter === status ? STATUS_STYLES[status].color : "var(--text-secondary)",
+              color: statusFilter === status ? STATUS_STYLES[status].color : "#6B6B67",
               fontSize: "13px", fontWeight: "500", cursor: "pointer", transition: "all 0.15s ease",
               textTransform: "capitalize"
             }}
@@ -268,26 +268,26 @@ export default function OrdersPage() {
 
       {/* Table */}
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border)",
+        background: "white", border: "1px solid #E5E5E0",
         borderRadius: "12px", overflow: "hidden"
       }}>
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             Loading orders...
           </div>
         ) : orders.length === 0 ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             No orders found
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "700px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["Order ID", "Customer", "Date", "Total", "Status", "Actions"].map(h => (
                     <th key={h} style={{
                       padding: "14px 16px", textAlign: "left", fontSize: "12px",
-                      color: "var(--text-secondary)", fontWeight: "600",
+                      color: "#6B6B67", fontWeight: "600",
                       textTransform: "uppercase", letterSpacing: "0.5px"
                     }}>{h}</th>
                   ))}
@@ -297,28 +297,28 @@ export default function OrdersPage() {
                 {orders.map(order => {
                   const statusStyle = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
                   return (
-                    <tr key={order.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <tr key={order.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                       <td style={{ padding: "14px 16px" }}>
                         <span style={{
-                          fontSize: "13px", fontFamily: "monospace", color: "var(--text)",
-                          background: "var(--bg-secondary)", padding: "4px 8px",
+                          fontSize: "13px", fontFamily: "monospace", color: "#141413",
+                          background: "#F4F4F1", padding: "4px 8px",
                           borderRadius: "4px"
                         }}>
                           #{order.id.slice(0, 8).toUpperCase()}
                         </span>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
-                        <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                        <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
                           {order.profiles?.full_name || "Guest"}
                         </div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                           {order.profiles?.email || "—"}
                         </div>
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
                         {formatDate(order.created_at)}
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#141413" }}>
                         {formatCurrency(order.total)}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
@@ -335,14 +335,14 @@ export default function OrdersPage() {
                           }}
                         >
                           {STATUS_OPTIONS.map(s => (
-                            <option key={s} value={s} style={{ background: "var(--bg)" }}>{s}</option>
+                            <option key={s} value={s} style={{ background: "#FAFAF8" }}>{s}</option>
                           ))}
                         </select>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <button onClick={() => viewOrderDetails(order)} style={{
-                          padding: "6px 12px", borderRadius: "6px", border: "1px solid var(--border)",
-                          background: "transparent", color: "var(--text)", fontSize: "12px",
+                          padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                          background: "transparent", color: "#141413", fontSize: "12px",
                           cursor: "pointer", transition: "all 0.15s ease"
                         }}>
                           View Details
@@ -366,35 +366,35 @@ export default function OrdersPage() {
         }}
         onClick={(e) => e.target === e.currentTarget && setSelectedOrder(null)}>
           <div style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh",
             overflow: "auto"
           }}>
             {/* Header */}
             <div style={{
-              padding: "20px 24px", borderBottom: "1px solid var(--border)",
+              padding: "20px 24px", borderBottom: "1px solid #E5E5E0",
               display: "flex", justifyContent: "space-between", alignItems: "center",
-              position: "sticky", top: 0, background: "var(--bg-card)", zIndex: 10
+              position: "sticky", top: 0, background: "white", zIndex: 10
             }}>
               <div>
-                <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>
                   Order #{selectedOrder.id.slice(0, 8).toUpperCase()}
                 </h2>
-                <p style={{ fontSize: "13px", color: "var(--text-secondary)", margin: 0 }}>
+                <p style={{ fontSize: "13px", color: "#6B6B67", margin: 0 }}>
                   {formatDate(selectedOrder.created_at)}
                 </p>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
                 <button onClick={() => openInvoice(selectedOrder)} style={{
-                  padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)",
-                  background: "transparent", color: "var(--text)", fontSize: "12px",
+                  padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                  background: "transparent", color: "#141413", fontSize: "12px",
                   cursor: "pointer", transition: "all 0.15s ease"
                 }}>
                   📄 Invoice
                 </button>
                 <button onClick={() => setSelectedOrder(null)} style={{
                 padding: "8px", border: "none", background: "transparent",
-                color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px"
+                color: "#6B6B67", cursor: "pointer", fontSize: "18px"
               }}>✕</button>
               </div>
             </div>
@@ -403,9 +403,9 @@ export default function OrdersPage() {
               {/* Status & Summary */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "24px" }}>
                 <div style={{
-                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                  background: "#F4F4F1", borderRadius: "8px", padding: "16px"
                 }}>
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px", fontWeight: "600" }}>
+                  <div style={{ fontSize: "12px", color: "#6B6B67", marginBottom: "8px", fontWeight: "600" }}>
                     STATUS
                   </div>
                   <select
@@ -415,23 +415,23 @@ export default function OrdersPage() {
                     style={{
                       width: "100%", padding: "8px 12px", borderRadius: "6px", fontSize: "14px", fontWeight: "600",
                       border: "1px solid", background: STATUS_STYLES[selectedOrder.status]?.bg || "transparent",
-                      borderColor: STATUS_STYLES[selectedOrder.status]?.border || "var(--border)",
-                      color: STATUS_STYLES[selectedOrder.status]?.color || "var(--text)",
+                      borderColor: STATUS_STYLES[selectedOrder.status]?.border || "#E5E5E0",
+                      color: STATUS_STYLES[selectedOrder.status]?.color || "#141413",
                       cursor: updatingStatus ? "not-allowed" : "pointer", outline: "none", textTransform: "capitalize"
                     }}
                   >
                     {STATUS_OPTIONS.map(s => (
-                      <option key={s} value={s} style={{ background: "var(--bg)" }}>{s}</option>
+                      <option key={s} value={s} style={{ background: "#FAFAF8" }}>{s}</option>
                     ))}
                   </select>
                 </div>
                 <div style={{
-                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                  background: "#F4F4F1", borderRadius: "8px", padding: "16px"
                 }}>
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "8px", fontWeight: "600" }}>
+                  <div style={{ fontSize: "12px", color: "#6B6B67", marginBottom: "8px", fontWeight: "600" }}>
                     ORDER TOTAL
                   </div>
-                  <div style={{ fontSize: "24px", fontWeight: "700", color: "var(--text)" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "700", color: "#141413" }}>
                     {formatCurrency(selectedOrder.total)}
                   </div>
                 </div>
@@ -439,16 +439,16 @@ export default function OrdersPage() {
 
               {/* Customer Info */}
               <div style={{ marginBottom: "24px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 12px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 12px" }}>
                   Customer Information
                 </h3>
                 <div style={{
-                  background: "var(--bg-secondary)", borderRadius: "8px", padding: "16px"
+                  background: "#F4F4F1", borderRadius: "8px", padding: "16px"
                 }}>
-                  <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                  <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
                     {selectedOrder.profiles?.full_name || "Guest"}
                   </div>
-                  <div style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <div style={{ fontSize: "13px", color: "#6B6B67" }}>
                     {selectedOrder.profiles?.email || "—"}
                   </div>
                 </div>
@@ -456,31 +456,31 @@ export default function OrdersPage() {
 
               {/* Order Items */}
               <div style={{ marginBottom: "24px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 12px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 12px" }}>
                   Order Items
                 </h3>
                 {selectedOrder.order_items && selectedOrder.order_items.length > 0 ? (
-                  <div style={{ border: "1px solid var(--border)", borderRadius: "8px", overflow: "hidden" }}>
+                  <div style={{ border: "1px solid #E5E5E0", borderRadius: "8px", overflow: "hidden" }}>
                     {selectedOrder.order_items.map((item, index) => (
                       <div key={item.id} style={{
                         padding: "14px 16px",
                         display: "flex", alignItems: "center", gap: "12px",
-                        borderBottom: index < selectedOrder.order_items!.length - 1 ? "1px solid var(--border)" : "none"
+                        borderBottom: index < selectedOrder.order_items!.length - 1 ? "1px solid #E5E5E0" : "none"
                       }}>
                         <div style={{
                           width: "48px", height: "48px", borderRadius: "6px",
-                          background: "var(--bg-secondary)", display: "flex",
+                          background: "#F4F4F1", display: "flex",
                           alignItems: "center", justifyContent: "center", fontSize: "18px"
                         }}>📦</div>
                         <div style={{ flex: "1" }}>
-                          <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                          <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
                             {item.product_name || "Unknown Product"}
                           </div>
-                          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                          <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                             Qty: {item.quantity} × {formatCurrency(item.price)}
                           </div>
                         </div>
-                        <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                        <div style={{ fontSize: "14px", fontWeight: "600", color: "#141413" }}>
                           {formatCurrency(item.quantity * item.price)}
                         </div>
                       </div>
@@ -488,8 +488,8 @@ export default function OrdersPage() {
                   </div>
                 ) : (
                   <div style={{
-                    padding: "24px", textAlign: "center", color: "var(--text-secondary)",
-                    background: "var(--bg-secondary)", borderRadius: "8px"
+                    padding: "24px", textAlign: "center", color: "#6B6B67",
+                    background: "#F4F4F1", borderRadius: "8px"
                   }}>
                     No items found for this order
                   </div>
@@ -503,12 +503,12 @@ export default function OrdersPage() {
                   { label: "Billing Address", value: selectedOrder.billing_address },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 8px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 8px" }}>
                       {label}
                     </h3>
                     <div style={{
-                      padding: "12px", background: "var(--bg-secondary)", borderRadius: "8px",
-                      fontSize: "13px", color: "var(--text-secondary)", minHeight: "60px"
+                      padding: "12px", background: "#F4F4F1", borderRadius: "8px",
+                      fontSize: "13px", color: "#6B6B67", minHeight: "60px"
                     }}>
                       {value || "Not provided"}
                     </div>
@@ -519,12 +519,12 @@ export default function OrdersPage() {
               {/* Notes */}
               {selectedOrder.notes && (
                 <div style={{ marginTop: "16px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", margin: "0 0 8px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", margin: "0 0 8px" }}>
                     Order Notes
                   </h3>
                   <div style={{
-                    padding: "12px", background: "var(--bg-secondary)", borderRadius: "8px",
-                    fontSize: "13px", color: "var(--text-secondary)"
+                    padding: "12px", background: "#F4F4F1", borderRadius: "8px",
+                    fontSize: "13px", color: "#6B6B67"
                   }}>
                     {selectedOrder.notes}
                   </div>
@@ -543,8 +543,8 @@ export default function OrdersPage() {
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
           }}>
             <div style={{
-              background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px",
-              padding: "48px", textAlign: "center", color: "var(--text-secondary)"
+              background: "white", border: "1px solid #E5E5E0", borderRadius: "12px",
+              padding: "48px", textAlign: "center", color: "#6B6B67"
             }}>
               Loading invoice...
             </div>

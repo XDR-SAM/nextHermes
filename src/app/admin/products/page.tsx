@@ -271,8 +271,8 @@ export default function ProductsPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Products</h1>
-          <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "13px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Products</h1>
+          <p style={{ color: "#6B6B67", margin: 0, fontSize: "13px" }}>
             {products.length} total
             {lowStockCount > 0 && <span style={{ color: "#eab308", marginLeft: "12px" }}>⚠️ {lowStockCount} low stock</span>}
             {outOfStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "8px" }}>⛔ {outOfStockCount} out of stock</span>}
@@ -310,22 +310,22 @@ export default function ProductsPage() {
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
         <input type="text" placeholder="Search by name, SKU, or category..."
           value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
-          style={{ flex: 1, maxWidth: "400px", padding: "12px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text)", fontSize: "14px", outline: "none" }} />
+          style={{ flex: 1, maxWidth: "400px", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none" }} />
       </div>
 
       {/* Table */}
-      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading products...</div>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>Loading products...</div>
         ) : paginated.length === 0 ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             {searchQuery ? "No products found" : "No products yet. Add your first product!"}
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   <th style={{ padding: "12px 16px", width: "40px" }}>
                     <input type="checkbox" checked={allSelected} onChange={e => {
                       if (e.target.checked) setSelectedIds(prev => { const n = new Set(prev); paginated.forEach(p => n.add(p.id)); return n; });
@@ -333,13 +333,13 @@ export default function ProductsPage() {
                     }} style={{ width: "16px", height: "16px", accentColor: "#22c55e", cursor: "pointer" }} />
                   </th>
                   {["Image", "Name", "Category", "Price", "Stock", "Variants", "Status", "Actions"].map(h => (
-                    <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+                    <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", color: "#6B6B67", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {paginated.map(product => (
-                  <tr key={product.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr key={product.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                     <td style={{ padding: "12px 16px" }}>
                       <input type="checkbox" checked={selectedIds.has(product.id)}
                         onChange={e => setSelectedIds(prev => { const n = new Set(prev); e.target.checked ? n.add(product.id) : n.delete(product.id); return n; })}
@@ -351,23 +351,23 @@ export default function ProductsPage() {
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px" }}
                           onError={e => { e.currentTarget.style.display = "none"; (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex"; }} />
                       ) : null}
-                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "var(--bg-secondary)", display: product.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>📦</div>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: product.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>📦</div>
                     </td>
                     <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{product.name}</div>
-                      <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                      <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{product.name}</div>
+                      <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                         {product.featured && <span style={{ color: "#f59e0b" }}>⭐</span>}
                         {product.trending && <span style={{ color: "#ef4444" }}>🔥</span>}
                         {product.sku && `SKU: ${product.sku}`}
                       </div>
                     </td>
-                    <td style={{ padding: "14px 16px", fontSize: "14px", color: "var(--text-secondary)" }}>
+                    <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>
                       {product.categories?.name || "—"}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "600" }}>{formatCurrency(product.price)}</div>
                       {product.original_price && product.original_price > product.price && (
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)", textDecoration: "line-through" }}>{formatCurrency(product.original_price)}</div>
+                        <div style={{ fontSize: "12px", color: "#6B6B67", textDecoration: "line-through" }}>{formatCurrency(product.original_price)}</div>
                       )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
@@ -381,7 +381,7 @@ export default function ProductsPage() {
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <button onClick={() => openVariantModal(product.id)}
-                        style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid var(--border)", background: "rgba(167,139,250,0.1)", color: "#a78bfa", fontSize: "12px", cursor: "pointer" }}>
+                        style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "rgba(167,139,250,0.1)", color: "#a78bfa", fontSize: "12px", cursor: "pointer" }}>
                         Variants
                       </button>
                     </td>
@@ -392,11 +392,11 @@ export default function ProductsPage() {
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                        <button onClick={() => openEditModal(product)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "12px", cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => openEditModal(product)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>Edit</button>
                         {deleteConfirm === product.id ? (
                           <div style={{ display: "flex", gap: "4px" }}>
                             <button onClick={() => handleDelete(product.id)} style={{ padding: "6px 10px", borderRadius: "6px", border: "none", background: "#ef4444", color: "#fff", fontSize: "12px", cursor: "pointer" }}>Confirm</button>
-                            <button onClick={() => setDeleteConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
+                            <button onClick={() => setDeleteConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
                           </div>
                         ) : (
                           <button onClick={() => setDeleteConfirm(product.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
@@ -414,17 +414,17 @@ export default function ProductsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px", flexWrap: "wrap", gap: "12px" }}>
-          <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+          <span style={{ fontSize: "13px", color: "#6B6B67" }}>
             Page {page} of {totalPages} — {filteredProducts.length} products
           </span>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-card)", color: page === 1 ? "var(--text-secondary)" : "var(--text)", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>← Prev</button>
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === 1 ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>← Prev</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const p = page <= 3 ? i + 1 : page + i - 2;
               if (p < 1 || p > totalPages) return null;
-              return <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 14px", borderRadius: "6px", border: "1px solid", borderColor: p === page ? "#22c55e" : "var(--border)", background: p === page ? "rgba(34,197,94,0.1)" : "var(--bg-card)", color: p === page ? "#22c55e" : "var(--text)", fontSize: "13px", cursor: "pointer" }}>{p}</button>;
+              return <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 14px", borderRadius: "6px", border: "1px solid", borderColor: p === page ? "#22c55e" : "#E5E5E0", background: p === page ? "rgba(34,197,94,0.1)" : "white", color: p === page ? "#22c55e" : "#141413", fontSize: "13px", cursor: "pointer" }}>{p}</button>;
             })}
-            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--bg-card)", color: page === totalPages ? "var(--text-secondary)" : "var(--text)", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next →</button>
+            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === totalPages ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next →</button>
           </div>
         </div>
       )}
@@ -433,51 +433,51 @@ export default function ProductsPage() {
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflow: "auto" }}>
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>{editingProduct ? "Edit Product" : "Add Product"}</h2>
-              <button onClick={() => setShowModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px" }}>✕</button>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflow: "auto" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>{editingProduct ? "Edit Product" : "Add Product"}</h2>
+              <button onClick={() => setShowModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
             </div>
             <form onSubmit={handleSubmit} style={{ padding: "24px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Name *</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Name *</label>
                   <input type="text" value={formData.name} onChange={e => handleNameChange(e.target.value)} required style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Slug</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Slug</label>
                   <input type="text" value={formData.slug} onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))} style={inputStyle} />
                 </div>
               </div>
               <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Short Description</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Short Description</label>
                 <input type="text" value={formData.short_description} onChange={e => setFormData(prev => ({ ...prev, short_description: e.target.value }))} style={inputStyle} placeholder="Brief tagline" />
               </div>
               <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Description</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Description</label>
                 <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginTop: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Price *</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Price *</label>
                   <input type="number" step="0.01" min="0" value={formData.price} onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))} required style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Original Price</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Original Price</label>
                   <input type="number" step="0.01" min="0" value={formData.original_price} onChange={e => setFormData(prev => ({ ...prev, original_price: e.target.value }))} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Stock Quantity</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Stock Quantity</label>
                   <input type="number" min="0" value={formData.stock_quantity} onChange={e => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))} style={inputStyle} />
                 </div>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>SKU</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>SKU</label>
                   <input type="text" value={formData.sku} onChange={e => setFormData(prev => ({ ...prev, sku: e.target.value }))} style={inputStyle} placeholder="Product SKU" />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Category</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Category</label>
                   <select value={formData.category_id} onChange={e => setFormData(prev => ({ ...prev, category_id: e.target.value }))} style={inputStyle}>
                     <option value="">Select Category</option>
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
@@ -485,7 +485,7 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Image URL</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Image URL</label>
                 <input type="url" value={formData.image_url} onChange={e => setFormData(prev => ({ ...prev, image_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
               </div>
               <div style={{ display: "flex", gap: "24px", marginTop: "20px" }}>
@@ -494,7 +494,7 @@ export default function ProductsPage() {
                     <input type="checkbox" checked={formData[item.key as keyof ProductFormData] as boolean}
                       onChange={e => setFormData(prev => ({ ...prev, [item.key]: e.target.checked }))}
                       style={{ width: "16px", height: "16px", accentColor: "#22c55e" }} />
-                    <span style={{ fontSize: "14px", color: "var(--text)" }}>{item.label}</span>
+                    <span style={{ fontSize: "14px", color: "#141413" }}>{item.label}</span>
                   </label>
                 ))}
               </div>
@@ -502,7 +502,7 @@ export default function ProductsPage() {
                 <button type="submit" disabled={saving} style={{ flex: "1", padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                   {saving ? "Saving..." : (editingProduct ? "Update Product" : "Add Product")}
                 </button>
-                <button type="button" onClick={() => setShowModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "14px", fontWeight: "500", cursor: "pointer" }}>Cancel</button>
+                <button type="button" onClick={() => setShowModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "14px", fontWeight: "500", cursor: "pointer" }}>Cancel</button>
               </div>
             </form>
           </div>
@@ -513,27 +513,27 @@ export default function ProductsPage() {
       {showVariantModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowVariantModal(null)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", overflow: "auto" }}>
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>Product Variants</h2>
-              <button onClick={() => setShowVariantModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px" }}>✕</button>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", overflow: "auto" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Product Variants</h2>
+              <button onClick={() => setShowVariantModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
             </div>
             <div style={{ padding: "24px" }}>
               {/* Existing variants */}
               {(variants[showVariantModal] || []).length > 0 && (
                 <div style={{ marginBottom: "24px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "12px" }}>Existing Variants</h3>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6B6B67", marginBottom: "12px" }}>Existing Variants</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {(variants[showVariantModal] || []).map(v => (
-                      <div key={v.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "var(--bg-secondary)", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                      <div key={v.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0" }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{v.name}</div>
-                          <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                          <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{v.name}</div>
+                          <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                             {v.sku && `SKU: ${v.sku} · `}Modifier: {v.price_modifier >= 0 ? "+" : ""}{formatCurrency(v.price_modifier)} · Stock: {v.stock_quantity}
                           </div>
                         </div>
                         <span style={{ padding: "3px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: "600", background: v.is_active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: v.is_active ? "#22c55e" : "#ef4444" }}>{v.is_active ? "Active" : "Inactive"}</span>
-                        <button onClick={() => setVariantForm(v)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "12px", cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => setVariantForm(v)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>Edit</button>
                         <button onClick={() => handleVariantDelete(showVariantModal, v.id)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
                       </div>
                     ))}
@@ -541,32 +541,32 @@ export default function ProductsPage() {
                 </div>
               )}
               {/* Add / Edit variant form */}
-              <div style={{ background: "var(--bg-secondary)", borderRadius: "8px", border: "1px solid var(--border)", padding: "20px" }}>
-                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "var(--text)", marginBottom: "16px" }}>
+              <div style={{ background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0", padding: "20px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", marginBottom: "16px" }}>
                   {variantForm.id ? "Edit Variant" : "Add Variant"}
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Name * (e.g. Red / Large)</label>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Name * (e.g. Red / Large)</label>
                     <input type="text" value={variantForm.name || ""} onChange={e => setVariantForm(prev => ({ ...prev, name: e.target.value }))} style={inputStyle} placeholder="Color / Size" />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>SKU</label>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>SKU</label>
                     <input type="text" value={variantForm.sku || ""} onChange={e => setVariantForm(prev => ({ ...prev, sku: e.target.value }))} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Price Modifier ($)</label>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Price Modifier ($)</label>
                     <input type="number" step="0.01" value={variantForm.price_modifier || 0} onChange={e => setVariantForm(prev => ({ ...prev, price_modifier: parseFloat(e.target.value) || 0 }))} style={inputStyle} />
                   </div>
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Stock Quantity</label>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Stock Quantity</label>
                     <input type="number" min="0" value={variantForm.stock_quantity || 0} onChange={e => setVariantForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))} style={inputStyle} />
                   </div>
                 </div>
                 <div style={{ marginTop: "12px" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
                     <input type="checkbox" checked={variantForm.is_active !== false} onChange={e => setVariantForm(prev => ({ ...prev, is_active: e.target.checked }))} style={{ width: "16px", height: "16px", accentColor: "#22c55e" }} />
-                    <span style={{ fontSize: "13px", color: "var(--text)" }}>Active</span>
+                    <span style={{ fontSize: "13px", color: "#141413" }}>Active</span>
                   </label>
                 </div>
                 <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
@@ -574,7 +574,7 @@ export default function ProductsPage() {
                     {saving ? "Saving..." : (variantForm.id ? "Update Variant" : "Add Variant")}
                   </button>
                   {variantForm.id && (
-                    <button onClick={() => setVariantForm({ name: "", sku: "", price_modifier: 0, stock_quantity: 0, is_active: true })} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "13px", cursor: "pointer" }}>New Variant</button>
+                    <button onClick={() => setVariantForm({ name: "", sku: "", price_modifier: 0, stock_quantity: 0, is_active: true })} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "13px", cursor: "pointer" }}>New Variant</button>
                   )}
                 </div>
               </div>
@@ -587,19 +587,19 @@ export default function ProductsPage() {
       {showBulkModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowBulkModal(false)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "420px", padding: "28px" }}>
-            <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: "0 0 12px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "420px", padding: "28px" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: "0 0 12px" }}>
               Confirm Bulk {bulkAction.charAt(0).toUpperCase() + bulkAction.slice(1)}
             </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: "14px", margin: "0 0 24px" }}>
-              Are you sure you want to {bulkAction} <strong style={{ color: "var(--text)" }}>{selectedIds.size} product(s)</strong>?
+            <p style={{ color: "#6B6B67", fontSize: "14px", margin: "0 0 24px" }}>
+              Are you sure you want to {bulkAction} <strong style={{ color: "#141413" }}>{selectedIds.size} product(s)</strong>?
               {bulkAction === "delete" && " This action cannot be undone."}
             </p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button onClick={handleBulkAction} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: bulkAction === "delete" ? "#ef4444" : "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Processing..." : `Yes, ${bulkAction} all`}
               </button>
-              <button onClick={() => setShowBulkModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setShowBulkModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -620,8 +620,8 @@ export default function ProductsPage() {
 
       <style jsx global>{`
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        input::placeholder, textarea::placeholder { color: var(--text-secondary); }
-        select option { background: var(--bg); color: var(--text); }
+        input::placeholder, textarea::placeholder { color: #6B6B67; }
+        select option { background: #FAFAF8; color: #141413; }
         @media (max-width: 640px) {
           div[style*="gridTemplateColumns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
           div[style*="gridTemplateColumns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
@@ -633,6 +633,6 @@ export default function ProductsPage() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px", borderRadius: "8px",
-  border: "1px solid var(--border)", background: "var(--bg-secondary)",
-  color: "var(--text)", fontSize: "14px", outline: "none", boxSizing: "border-box"
+  border: "1px solid #E5E5E0", background: "#F4F4F1",
+  color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box"
 };

@@ -81,12 +81,12 @@ export default function AdminDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px" }}>
         {[...Array(4)].map((_, i) => (
           <div key={i} style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "12px", padding: "24px", animation: "pulse 1.5s ease-in-out infinite"
           }}>
-            <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "var(--bg-secondary)", marginBottom: "16px" }} />
-            <div style={{ width: "60px", height: "28px", background: "var(--bg-secondary)", borderRadius: "4px" }} />
-            <div style={{ width: "80px", height: "14px", background: "var(--bg-secondary)", borderRadius: "4px", marginTop: "8px" }} />
+            <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "#F4F4F1", marginBottom: "16px" }} />
+            <div style={{ width: "60px", height: "28px", background: "#F4F4F1", borderRadius: "4px" }} />
+            <div style={{ width: "80px", height: "14px", background: "#F4F4F1", borderRadius: "4px", marginTop: "8px" }} />
           </div>
         ))}
       </div>
@@ -97,10 +97,10 @@ export default function AdminDashboard() {
     <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
       {/* Welcome Section */}
       <div style={{ marginBottom: "32px" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>
+        <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>
           Welcome back, {profile?.full_name?.split(" ")[0] || "Admin"}
         </h1>
-        <p style={{ color: "var(--text-secondary)", margin: 0 }}>Here's what's happening with your store today.</p>
+        <p style={{ color: "#6B6B67", margin: 0 }}>Here's what's happening with your store today.</p>
       </div>
 
       {/* Stats Cards */}
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
           { label: "Total Users", value: stats.totalUsers, icon: "👥", color: "#f59e0b" },
         ].map((stat, index) => (
           <div key={index} style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "12px", padding: "24px", transition: "all 0.2s ease",
           }}
           onMouseOver={(e) => {
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
             e.currentTarget.style.transform = "translateY(-2px)";
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.borderColor = "#E5E5E0";
             e.currentTarget.style.transform = "translateY(0)";
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
@@ -134,18 +134,18 @@ export default function AdminDashboard() {
             <div style={{ fontSize: "32px", fontWeight: "700", color: stat.color, marginBottom: "4px" }}>
               {stat.value.toLocaleString()}
             </div>
-            <div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>{stat.label}</div>
+            <div style={{ fontSize: "14px", color: "#6B6B67" }}>{stat.label}</div>
           </div>
         ))}
       </div>
 
       {/* Recent Orders */}
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border)",
+        background: "white", border: "1px solid #E5E5E0",
         borderRadius: "12px", padding: "24px", marginBottom: "32px"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>Recent Orders</h2>
+          <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Recent Orders</h2>
           <Link href="/admin/orders" style={{
             fontSize: "13px", color: "#3b82f6", textDecoration: "none",
             fontWeight: "500"
@@ -153,18 +153,18 @@ export default function AdminDashboard() {
         </div>
 
         {recentOrders.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px", color: "var(--text-secondary)" }}>
+          <div style={{ textAlign: "center", padding: "40px", color: "#6B6B67" }}>
             No orders yet
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "500px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["Order ID", "Customer", "Date", "Total", "Status"].map(h => (
                     <th key={h} style={{
                       padding: "12px 16px", textAlign: "left", fontSize: "12px",
-                      color: "var(--text-secondary)", fontWeight: "600",
+                      color: "#6B6B67", fontWeight: "600",
                       textTransform: "uppercase", letterSpacing: "0.5px"
                     }}>{h}</th>
                   ))}
@@ -174,24 +174,24 @@ export default function AdminDashboard() {
                 {recentOrders.map(order => {
                   const statusStyle = getStatusColor(order.status);
                   return (
-                    <tr key={order.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <tr key={order.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                       <td style={{ padding: "14px 16px" }}>
-                        <span style={{ fontSize: "13px", fontFamily: "monospace", color: "var(--text)" }}>
+                        <span style={{ fontSize: "13px", fontFamily: "monospace", color: "#141413" }}>
                           #{order.id.slice(0, 8).toUpperCase()}
                         </span>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
-                        <div style={{ fontSize: "14px", color: "var(--text)", fontWeight: "500" }}>
+                        <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
                           {order.profiles?.full_name || "Guest"}
                         </div>
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                           {order.profiles?.email || "—"}
                         </div>
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
                         {formatDate(order.created_at)}
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#141413" }}>
                         {formatCurrency(order.total)}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
@@ -214,10 +214,10 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border)",
+        background: "white", border: "1px solid #E5E5E0",
         borderRadius: "12px", padding: "24px"
       }}>
-        <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: "0 0 20px" }}>Quick Actions</h2>
+        <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: "0 0 20px" }}>Quick Actions</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
           {[
             { label: "Add Product", href: "/admin/products", icon: "➕", color: "#22c55e" },
@@ -228,8 +228,8 @@ export default function AdminDashboard() {
             <Link key={action.label} href={action.href} style={{
               display: "flex", alignItems: "center", gap: "10px",
               padding: "14px 18px", borderRadius: "8px",
-              background: "var(--bg-secondary)", border: "1px solid var(--border)",
-              textDecoration: "none", color: "var(--text)", fontSize: "14px",
+              background: "#F4F4F1", border: "1px solid #E5E5E0",
+              textDecoration: "none", color: "#141413", fontSize: "14px",
               fontWeight: "500", transition: "all 0.15s ease"
             }}
             onMouseOver={(e) => {
@@ -237,8 +237,8 @@ export default function AdminDashboard() {
               e.currentTarget.style.background = `${action.color}10`;
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = "var(--border)";
-              e.currentTarget.style.background = "var(--bg-secondary)";
+              e.currentTarget.style.borderColor = "#E5E5E0";
+              e.currentTarget.style.background = "#F4F4F1";
             }}>
               <span>{action.icon}</span> {action.label}
             </Link>

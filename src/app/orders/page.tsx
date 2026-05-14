@@ -86,7 +86,7 @@ const STATUS_CONFIG: Record<
 function OrderSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6">
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="h-4 bg-white/5 rounded w-32" />
           <div className="h-5 bg-white/5 rounded w-20" />
@@ -112,28 +112,28 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
       transition={{ duration: 0.3 }}
       className="overflow-hidden"
     >
-      <div className="pt-6 mt-6 border-t border-[var(--border)]">
+      <div className="pt-6 mt-6 border-t border-[#E5E5E0]">
         {/* Order Summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div>
-            <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Subtotal</p>
-            <p className="text-sm font-medium text-[var(--text)]">${(order.subtotal || order.total).toFixed(2)}</p>
+            <p className="text-xs text-[#6B6B67] uppercase tracking-wider mb-1">Subtotal</p>
+            <p className="text-sm font-medium text-[#141413]">${(order.subtotal || order.total).toFixed(2)}</p>
           </div>
           {order.tax !== undefined && order.tax > 0 && (
             <div>
-              <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Tax</p>
-              <p className="text-sm font-medium text-[var(--text)]">${order.tax.toFixed(2)}</p>
+              <p className="text-xs text-[#6B6B67] uppercase tracking-wider mb-1">Tax</p>
+              <p className="text-sm font-medium text-[#141413]">${order.tax.toFixed(2)}</p>
             </div>
           )}
           {order.shipping_cost !== undefined && order.shipping_cost > 0 && (
             <div>
-              <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Shipping</p>
-              <p className="text-sm font-medium text-[var(--text)]">${order.shipping_cost.toFixed(2)}</p>
+              <p className="text-xs text-[#6B6B67] uppercase tracking-wider mb-1">Shipping</p>
+              <p className="text-sm font-medium text-[#141413]">${order.shipping_cost.toFixed(2)}</p>
             </div>
           )}
           <div>
-            <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Total</p>
-            <p className="text-sm font-bold text-[var(--text)]">${order.total.toFixed(2)}</p>
+            <p className="text-xs text-[#6B6B67] uppercase tracking-wider mb-1">Total</p>
+            <p className="text-sm font-bold text-[#141413]">${order.total.toFixed(2)}</p>
           </div>
         </div>
 
@@ -141,11 +141,11 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
         {order.shipping_method && (
           <div className="mb-6 p-4 bg-white/5 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <Truck className="w-4 h-4 text-[var(--text-secondary)]" />
-              <p className="text-sm font-medium text-[var(--text)]">{order.shipping_method}</p>
+              <Truck className="w-4 h-4 text-[#6B6B67]" />
+              <p className="text-sm font-medium text-[#141413]">{order.shipping_method}</p>
             </div>
             {order.tracking_number && (
-              <p className="text-xs text-[var(--text-secondary)]">
+              <p className="text-xs text-[#6B6B67]">
                 Tracking: <span className="font-mono">{order.tracking_number}</span>
               </p>
             )}
@@ -154,7 +154,7 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
 
         {/* Order Items */}
         <div className="space-y-3">
-          <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wider">Items</p>
+          <p className="text-xs text-[#6B6B67] uppercase tracking-wider">Items</p>
           {order.items.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-3 bg-white/5 rounded-xl">
               <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/10 shrink-0">
@@ -167,12 +167,12 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[var(--text)] truncate">{item.name}</p>
-                <p className="text-xs text-[var(--text-secondary)]">
+                <p className="text-sm font-medium text-[#141413] truncate">{item.name}</p>
+                <p className="text-xs text-[#6B6B67]">
                   Qty: {item.quantity} × ${item.price.toFixed(2)}
                 </p>
               </div>
-              <p className="text-sm font-semibold text-[var(--text)] shrink-0">
+              <p className="text-sm font-semibold text-[#141413] shrink-0">
                 ${(item.price * item.quantity).toFixed(2)}
               </p>
             </div>
@@ -183,7 +183,7 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
         <div className="flex flex-wrap gap-3 mt-6">
           <button
             onClick={() => onReorder(order.items)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-[var(--bg)] rounded-full text-sm font-semibold hover:bg-[var(--accent)]/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#141413] text-[#FAFAF8] rounded-full text-sm font-semibold hover:opacity-85 transition-opacity"
           >
             <RefreshCw className="w-4 h-4" />
             Reorder
@@ -191,7 +191,7 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
           {order.tracking_number && (
             <button
               onClick={() => onTrack(order.tracking_number!)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 text-[var(--text)] rounded-full text-sm font-semibold hover:bg-white/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 text-[#141413] rounded-full text-sm font-semibold hover:bg-white/20 transition-colors"
             >
               <MapPin className="w-4 h-4" />
               Track Order
@@ -199,7 +199,7 @@ function OrderDetails({ order, onReorder, onTrack }: { order: Order; onReorder: 
           )}
           <Link
             href={`/orders/${order.id}`}
-            className="flex items-center gap-2 px-4 py-2 text-[var(--text-secondary)] text-sm hover:text-[var(--text)] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-[#6B6B67] text-sm hover:text-[#141413] transition-colors"
           >
             View Invoice
             <ExternalLink className="w-3.5 h-3.5" />
@@ -273,7 +273,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--bg)]">
+    <main className="min-h-screen bg-[#FAFAF8]">
       {/* Success Toast */}
       <AnimatePresence>
         {reorderSuccess && (
@@ -290,12 +290,12 @@ export default function OrdersPage() {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border)]">
+      <div className="bg-white border-b border-[#E5E5E0]">
         <div className="container mx-auto px-6 py-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[#141413] mb-2">
             My Orders
           </h1>
-          <p className="text-[var(--text-secondary)]">
+          <p className="text-[#6B6B67]">
             {loading ? "Loading..." : `${orders.length} order${orders.length !== 1 ? "s" : ""} placed`}
           </p>
         </div>
@@ -318,17 +318,17 @@ export default function OrdersPage() {
             className="flex flex-col items-center justify-center py-32 text-center"
           >
             <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
-              <ShoppingBag className="w-12 h-12 text-[var(--text-secondary)]" />
+              <ShoppingBag className="w-12 h-12 text-[#6B6B67]" />
             </div>
-            <h2 className="text-2xl font-bold text-[var(--text)] mb-3">
+            <h2 className="text-2xl font-bold text-[#141413] mb-3">
               No orders yet
             </h2>
-            <p className="text-[var(--text-secondary)] mb-8 max-w-sm">
+            <p className="text-[#6B6B67] mb-8 max-w-sm">
               When you place an order, it will appear here so you can track it easily.
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:bg-[var(--accent)]/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#141413] text-[#FAFAF8] px-8 py-4 rounded-full font-semibold hover:opacity-85 transition-opacity"
             >
               Start Shopping
               <ArrowRight className="w-4 h-4" />
@@ -347,7 +347,7 @@ export default function OrdersPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.4 }}
-                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden hover:border-white/10 transition-colors"
+                  className="bg-white border border-[#E5E5E0] rounded-2xl overflow-hidden hover:border-[#E5E5E0] transition-colors"
                 >
                   {/* Order Header - Clickable */}
                   <button
@@ -357,7 +357,7 @@ export default function OrdersPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-1 flex-wrap">
-                          <span className="text-sm font-semibold text-[var(--text)]">
+                          <span className="text-sm font-semibold text-[#141413]">
                             {order.order_number}
                           </span>
                           <span
@@ -371,7 +371,7 @@ export default function OrdersPage() {
                             {status.label}
                           </span>
                         </div>
-                        <p className="text-xs text-[var(--text-secondary)]">
+                        <p className="text-xs text-[#6B6B67]">
                           Placed on{" "}
                           {new Date(order.created_at).toLocaleDateString("en-US", {
                             month: "long",
@@ -383,16 +383,16 @@ export default function OrdersPage() {
 
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-[var(--text)]">
+                          <p className="text-sm font-semibold text-[#141413]">
                             ${order.total.toFixed(2)}
                           </p>
-                          <p className="text-xs text-[var(--text-secondary)]">
+                          <p className="text-xs text-[#6B6B67]">
                             {order.item_count} item{order.item_count !== 1 ? "s" : ""}
                           </p>
                         </div>
                         <ChevronDown
                           className={cn(
-                            "w-5 h-5 text-[var(--text-secondary)] transition-transform duration-300",
+                            "w-5 h-5 text-[#6B6B67] transition-transform duration-300",
                             isExpanded && "rotate-180"
                           )}
                         />
@@ -405,7 +405,7 @@ export default function OrdersPage() {
                         {order.items.slice(0, 5).map((item) => (
                           <div
                             key={item.id}
-                            className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/5 border border-[var(--border)] shrink-0"
+                            className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/5 border border-[#E5E5E0] shrink-0"
                           >
                             <Image
                               src={item.image || "https://picsum.photos/100"}
@@ -417,8 +417,8 @@ export default function OrdersPage() {
                           </div>
                         ))}
                         {order.items.length > 5 && (
-                          <div className="relative w-16 h-16 rounded-lg bg-white/5 border border-[var(--border)] flex items-center justify-center shrink-0">
-                            <span className="text-xs text-[var(--text-secondary)]">
+                          <div className="relative w-16 h-16 rounded-lg bg-white/5 border border-[#E5E5E0] flex items-center justify-center shrink-0">
+                            <span className="text-xs text-[#6B6B67]">
                               +{order.items.length - 5}
                             </span>
                           </div>

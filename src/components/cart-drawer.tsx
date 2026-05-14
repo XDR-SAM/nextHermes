@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus, Minus, ShoppingBag, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -19,12 +18,12 @@ const DRAWER_VARIANTS = {
   visible: {
     x: 0,
     opacity: 1,
-    transition: { type: "spring" as const, damping: 30, stiffness: 300 },
+    transition: { type: "spring" as const, damping: 28, stiffness: 300 },
   },
   exit: {
     x: "100%",
     opacity: 0,
-    transition: { duration: 0.2, ease: "easeIn" as const },
+    transition: { duration: 0.22, ease: "easeIn" as const },
   },
 };
 
@@ -54,9 +53,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
   return (
@@ -70,7 +67,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             animate="visible"
             exit="exit"
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -80,26 +77,27 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="fixed right-0 top-0 bottom-0 z-[80] w-full max-w-md bg-[#0a0a0a] border-l border-white/10 flex flex-col shadow-2xl"
+            className="fixed right-0 top-0 bottom-0 z-[80] w-full max-w-[420px] bg-white border-l border-[#E5E5E0] flex flex-col shadow-[-8px_0_40px_rgba(0,0,0,0.12)]"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-white" />
-                <h2 className="text-base font-semibold text-white">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E5E0]">
+              <div className="flex items-center gap-2.5">
+                <ShoppingBag className="w-5 h-5 text-[#141413]" strokeWidth={1.8} />
+                <h2 className="text-base font-semibold text-[#141413]">
                   Your Cart
                 </h2>
                 {itemCount > 0 && (
-                  <span className="text-xs text-white/50 pl-1">
+                  <span className="text-xs text-[#6B6B67] pl-1">
                     ({itemCount} {itemCount === 1 ? "item" : "items"})
                   </span>
                 )}
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                className="p-2 rounded-[10px] text-[#6B6B67] hover:text-[#141413] hover:bg-[#F4F4F1] transition-all"
+                aria-label="Close cart"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" strokeWidth={1.8} />
               </button>
             </div>
 
@@ -109,7 +107,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             ) : (
               <>
                 {/* Cart Items List */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                   <AnimatePresence initial={false}>
                     {items.map((item) => (
                       <motion.div
@@ -121,28 +119,25 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         transition={{ duration: 0.2 }}
                         className="flex gap-4"
                       >
-                        {/* Product Image */}
-                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-white/5 border border-white/10 shrink-0">
-                          <Image
-                            src={item.image || "https://picsum.photos/200"}
-                            alt={item.name}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover"
-                          />
+                        {/* Product Image placeholder */}
+                        <div className="w-20 h-20 rounded-[12px] overflow-hidden bg-[#F4F4F1] border border-[#E5E5E0] shrink-0 flex items-center justify-center">
+                          <span className="text-xl font-bold text-[#D4D4CC]">
+                            {item.name?.charAt(0) || "?"}
+                          </span>
                         </div>
 
                         {/* Product Info */}
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 flex flex-col">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-sm font-medium text-white line-clamp-2 leading-tight">
+                            <h4 className="text-[13px] font-medium text-[#141413] line-clamp-2 leading-snug">
                               {item.name}
                             </h4>
                             <button
                               onClick={() => removeItem(item.id)}
-                              className="shrink-0 p-1 rounded text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                              className="shrink-0 p-1 rounded text-[#6B6B67] hover:text-red-500 hover:bg-red-50 transition-all"
+                              aria-label="Remove item"
                             >
-                              <X className="w-3.5 h-3.5" />
+                              <X className="w-3.5 h-3.5" strokeWidth={1.8} />
                             </button>
                           </div>
 
@@ -150,12 +145,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {(item.size || item.color) && (
                             <div className="flex items-center gap-2 mt-1">
                               {item.size && (
-                                <span className="text-xs text-white/40">
-                                  Size: {item.size}
-                                </span>
+                                <span className="text-xs text-[#6B6B67]">Size: {item.size}</span>
                               )}
                               {item.color && (
-                                <span className="text-xs text-white/40">
+                                <span className="text-xs text-[#6B6B67]">
                                   {item.size ? "•" : ""} {item.color}
                                 </span>
                               )}
@@ -163,33 +156,33 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           )}
 
                           {/* Price & Quantity */}
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2">
-                              {/* Quantity Controls */}
-                              <div className="flex items-center border border-white/10 rounded-full overflow-hidden">
-                                <button
-                                  onClick={() =>
-                                    updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                                  }
-                                  className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <span className="w-8 text-center text-xs text-white font-medium">
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    updateQuantity(item.id, item.quantity + 1)
-                                  }
-                                  className="w-7 h-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
+                          <div className="flex items-center justify-between mt-auto pt-3">
+                            {/* Quantity Controls */}
+                            <div className="flex items-center border border-[#E5E5E0] rounded-full overflow-hidden">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, Math.max(1, item.quantity - 1))
+                                }
+                                className="w-7 h-7 flex items-center justify-center text-[#6B6B67] hover:text-[#141413] hover:bg-[#F4F4F1] transition-all"
+                                aria-label="Decrease quantity"
+                              >
+                                <Minus className="w-3 h-3" strokeWidth={2} />
+                              </button>
+                              <span className="w-8 text-center text-xs text-[#141413] font-medium">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                                className="w-7 h-7 flex items-center justify-center text-[#6B6B67] hover:text-[#141413] hover:bg-[#F4F4F1] transition-all"
+                                aria-label="Increase quantity"
+                              >
+                                <Plus className="w-3 h-3" strokeWidth={2} />
+                              </button>
                             </div>
 
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-[14px] font-semibold text-[#141413]">
                               ${(item.price * item.quantity).toFixed(2)}
                             </span>
                           </div>
@@ -200,31 +193,31 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
 
                 {/* Footer: Subtotal & Actions */}
-                <div className="border-t border-white/10 px-6 py-5 space-y-4">
+                <div className="border-t border-[#E5E5E0] px-6 py-5 space-y-4 bg-white">
                   {/* Subtotal */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-white/60">Subtotal</span>
-                    <span className="text-base font-semibold text-white">
+                    <span className="text-sm text-[#6B6B67]">Subtotal</span>
+                    <span className="text-[15px] font-semibold text-[#141413]">
                       ${subtotal.toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-xs text-white/30">
+                  <p className="text-xs text-[#6B6B67]">
                     Shipping and taxes calculated at checkout.
                   </p>
 
                   {/* Buttons */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <Link
                       href="/checkout"
                       onClick={onClose}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-[10px] bg-[#141413] text-[#FAFAF8] font-semibold text-sm hover:opacity-90 transition-opacity"
                     >
                       Checkout
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-4 h-4" strokeWidth={1.8} />
                     </Link>
                     <button
                       onClick={onClose}
-                      className="w-full py-3 rounded-full border border-white/20 text-white/80 font-medium text-sm hover:border-white/40 hover:text-white transition-all"
+                      className="w-full py-3 rounded-[10px] border border-[#E5E5E0] text-[#6B6B67] font-medium text-sm hover:bg-[#F4F4F1] hover:text-[#141413] transition-all"
                     >
                       Continue Shopping
                     </button>
@@ -242,20 +235,20 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 function EmptyCart({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-      <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-5">
-        <ShoppingBag className="w-8 h-8 text-white/30" />
+      <div className="w-20 h-20 rounded-full bg-[#F4F4F1] border border-[#E5E5E0] flex items-center justify-center mb-5">
+        <ShoppingBag className="w-8 h-8 text-[#D4D4CC]" strokeWidth={1.5} />
       </div>
-      <h3 className="text-lg font-semibold text-white mb-2">Your cart is empty</h3>
-      <p className="text-sm text-white/40 mb-8 leading-relaxed max-w-xs">
+      <h3 className="text-lg font-semibold text-[#141413] mb-2">Your cart is empty</h3>
+      <p className="text-sm text-[#6B6B67] mb-8 leading-relaxed max-w-xs">
         Looks like you haven&apos;t added any items yet. Start exploring our collection.
       </p>
       <Link
         href="/products"
         onClick={onClose}
-        className="flex items-center gap-2 px-8 py-3 rounded-full bg-white text-black font-semibold text-sm hover:bg-white/90 transition-colors"
+        className="flex items-center gap-2 px-8 py-3 rounded-[10px] bg-[#141413] text-[#FAFAF8] font-semibold text-sm hover:opacity-90 transition-opacity"
       >
         Browse Products
-        <ArrowRight className="w-4 h-4" />
+        <ArrowRight className="w-4 h-4" strokeWidth={1.8} />
       </Link>
     </div>
   );

@@ -230,8 +230,8 @@ export default function InventoryPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Inventory Management</h1>
-          <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "13px" }}>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Inventory Management</h1>
+          <p style={{ color: "#6B6B67", margin: 0, fontSize: "13px" }}>
             {inventory.length} warehouse entries
             {lowStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "12px" }}>⛔ {lowStockCount} low stock alerts</span>}
           </p>
@@ -256,8 +256,8 @@ export default function InventoryPage() {
           { label: "Low Stock Alerts", value: lowStockCount.toString(), color: lowStockCount > 0 ? "#ef4444" : "#898989" },
           { label: "Active Warehouses", value: warehouses.length.toString(), color: "#3ecf8e" },
         ].map(s => (
-          <div key={s.label} style={{ padding: "20px", borderRadius: "12px", background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <div style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>{s.label}</div>
+          <div key={s.label} style={{ padding: "20px", borderRadius: "12px", background: "white", border: "1px solid #E5E5E0" }}>
+            <div style={{ fontSize: "11px", color: "#6B6B67", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>{s.label}</div>
             <div style={{ fontSize: "28px", fontWeight: "700", color: s.color }}>{s.value}</div>
           </div>
         ))}
@@ -267,17 +267,17 @@ export default function InventoryPage() {
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
         <input type="text" placeholder="Search product name or SKU..."
           value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-          style={{ flex: 1, maxWidth: "350px", padding: "12px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text)", fontSize: "14px", outline: "none" }} />
+          style={{ flex: 1, maxWidth: "350px", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none" }} />
         <select value={filterWarehouse} onChange={e => setFilterWarehouse(e.target.value)}
-          style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text)", fontSize: "14px", outline: "none" }}>
+          style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none" }}>
           <option value="all">All Warehouses</option>
           {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
         </select>
         <button onClick={() => setShowLowStock(!showLowStock)} style={{
           padding: "12px 16px", borderRadius: "8px", border: "1px solid",
-          borderColor: showLowStock ? "#ef4444" : "var(--border)",
-          background: showLowStock ? "rgba(239,68,68,0.1)" : "var(--bg-card)",
-          color: showLowStock ? "#ef4444" : "var(--text)",
+          borderColor: showLowStock ? "#ef4444" : "#E5E5E0",
+          background: showLowStock ? "rgba(239,68,68,0.1)" : "white",
+          color: showLowStock ? "#ef4444" : "#141413",
           fontSize: "14px", cursor: "pointer", fontWeight: showLowStock ? "600" : "400"
         }}>
           ⚠️ Low Stock Only
@@ -285,20 +285,20 @@ export default function InventoryPage() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading inventory...</div>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>Loading inventory...</div>
         ) : combinedInventory.length === 0 ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             {searchQuery || filterWarehouse !== "all" || showLowStock ? "No inventory entries match your filters" : "No inventory data. Add inventory entries or products."}
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "800px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["Product", "SKU", "Warehouse", "Available", "Reserved", "Total", "Status", "Actions"].map(h => (
-                    <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", color: "var(--text-secondary)", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+                    <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", color: "#6B6B67", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -307,7 +307,7 @@ export default function InventoryPage() {
                   const total = entry.available_quantity + entry.reserved_quantity;
                   const isLow = entry.available_quantity < entry.low_stock_threshold;
                   return (
-                    <tr key={entry.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    <tr key={entry.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                       <td style={{ padding: "12px 16px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                           {entry.product?.image_url ? (
@@ -315,14 +315,14 @@ export default function InventoryPage() {
                               style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "6px" }}
                               onError={e => { e.currentTarget.style.display = "none"; (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex"; }} />
                           ) : null}
-                          <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "var(--bg-secondary)", display: entry.product?.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>📦</div>
-                          <span style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{entry.product?.name || "—"}</span>
+                          <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#F4F4F1", display: entry.product?.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>📦</div>
+                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{entry.product?.name || "—"}</span>
                         </div>
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
                         {entry.product?.sku || "—"}
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#6B6B67" }}>
                         {entry.warehouse ? (
                           <span style={{ padding: "3px 8px", borderRadius: "4px", background: "rgba(62,207,142,0.1)", color: "#3ecf8e", fontSize: "12px", fontWeight: "500" }}>
                             {entry.warehouse.name}
@@ -343,7 +343,7 @@ export default function InventoryPage() {
                           {entry.reserved_quantity}
                         </span>
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "var(--text)" }}>
+                      <td style={{ padding: "14px 16px", fontSize: "14px", fontWeight: "600", color: "#141413" }}>
                         {total}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
@@ -365,7 +365,7 @@ export default function InventoryPage() {
                           entry.reserved_quantity,
                           entry.low_stock_threshold
                         )}
-                          style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "12px", cursor: "pointer" }}>
+                          style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>
                           Update
                         </button>
                       </td>
@@ -382,21 +382,21 @@ export default function InventoryPage() {
       {showAddModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowAddModal(false)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>Add Inventory Entry</h2>
-              <button onClick={() => setShowAddModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Add Inventory Entry</h2>
+              <button onClick={() => setShowAddModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Product *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Product *</label>
                 <select value={newEntry.product_id} onChange={e => setNewEntry(prev => ({ ...prev, product_id: e.target.value }))} style={inputStyle}>
                   <option value="">Select Product</option>
                   {products.map(p => <option key={p.id} value={p.id}>{p.name} {p.sku ? `(${p.sku})` : ""}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Warehouse *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Warehouse *</label>
                 <select value={newEntry.warehouse_id} onChange={e => setNewEntry(prev => ({ ...prev, warehouse_id: e.target.value }))} style={inputStyle}>
                   <option value="">Select Warehouse</option>
                   {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}{w.location ? ` — ${w.location}` : ""}</option>)}
@@ -404,15 +404,15 @@ export default function InventoryPage() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Available Qty</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Available Qty</label>
                   <input type="number" min="0" value={newEntry.available_quantity} onChange={e => setNewEntry(prev => ({ ...prev, available_quantity: e.target.value }))} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Reserved Qty</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Reserved Qty</label>
                   <input type="number" min="0" value={newEntry.reserved_quantity} onChange={e => setNewEntry(prev => ({ ...prev, reserved_quantity: e.target.value }))} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Low Stock Alert</label>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Low Stock Alert</label>
                   <input type="number" min="0" value={newEntry.low_stock_threshold} onChange={e => setNewEntry(prev => ({ ...prev, low_stock_threshold: e.target.value }))} style={inputStyle} />
                 </div>
               </div>
@@ -421,7 +421,7 @@ export default function InventoryPage() {
               <button onClick={handleAddEntry} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Saving..." : "Save Entry"}
               </button>
-              <button onClick={() => setShowAddModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setShowAddModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -431,29 +431,29 @@ export default function InventoryPage() {
       {showUpdateModal && selectedEntry && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowUpdateModal(false)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "420px", padding: "28px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "420px", padding: "28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>Update Stock</h2>
-              <button onClick={() => { setShowUpdateModal(false); setSelectedEntry(null); }} style={{ padding: "8px", border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Update Stock</h2>
+              <button onClick={() => { setShowUpdateModal(false); setSelectedEntry(null); }} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ padding: "14px", borderRadius: "8px", background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
-                <div style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "4px" }}>Product</div>
-                <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>{productMap[selectedEntry.productId]?.name || "—"}</div>
+              <div style={{ padding: "14px", borderRadius: "8px", background: "#F4F4F1", border: "1px solid #E5E5E0" }}>
+                <div style={{ fontSize: "13px", color: "#6B6B67", marginBottom: "4px" }}>Product</div>
+                <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{productMap[selectedEntry.productId]?.name || "—"}</div>
                 {warehouseMap[selectedEntry.warehouseId] && (
-                  <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "2px" }}>Warehouse: {warehouseMap[selectedEntry.warehouseId]?.name}</div>
+                  <div style={{ fontSize: "12px", color: "#6B6B67", marginTop: "2px" }}>Warehouse: {warehouseMap[selectedEntry.warehouseId]?.name}</div>
                 )}
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Available Quantity</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Available Quantity</label>
                 <input type="number" min="0" value={updateQty.available} onChange={e => setUpdateQty(prev => ({ ...prev, available: e.target.value }))} style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Reserved Quantity</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Reserved Quantity</label>
                 <input type="number" min="0" value={updateQty.reserved} onChange={e => setUpdateQty(prev => ({ ...prev, reserved: e.target.value }))} style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Low Stock Threshold</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Low Stock Threshold</label>
                 <input type="number" min="0" value={updateQty.threshold} onChange={e => setUpdateQty(prev => ({ ...prev, threshold: e.target.value }))} style={inputStyle} />
               </div>
             </div>
@@ -461,7 +461,7 @@ export default function InventoryPage() {
               <button onClick={handleUpdateStock} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Saving..." : "Update Stock"}
               </button>
-              <button onClick={() => { setShowUpdateModal(false); setSelectedEntry(null); }} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => { setShowUpdateModal(false); setSelectedEntry(null); }} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -471,28 +471,28 @@ export default function InventoryPage() {
       {showTransferModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowTransferModal(false)}>
-          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>Transfer Stock</h2>
-              <button onClick={() => setShowTransferModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Transfer Stock</h2>
+              <button onClick={() => setShowTransferModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Product *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Product *</label>
                 <select value={transfer.product_id} onChange={e => setTransfer(prev => ({ ...prev, product_id: e.target.value }))} style={inputStyle}>
                   <option value="">Select Product</option>
                   {products.map(p => <option key={p.id} value={p.id}>{p.name} {p.sku ? `(${p.sku})` : ""}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>From Warehouse *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>From Warehouse *</label>
                 <select value={transfer.from_warehouse_id} onChange={e => setTransfer(prev => ({ ...prev, from_warehouse_id: e.target.value }))} style={inputStyle}>
                   <option value="">Select Source</option>
                   {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>To Warehouse *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>To Warehouse *</label>
                 <select value={transfer.to_warehouse_id} onChange={e => setTransfer(prev => ({ ...prev, to_warehouse_id: e.target.value }))} style={inputStyle}>
                   <option value="">Select Destination</option>
                   {warehouses.filter(w => w.id !== transfer.from_warehouse_id).map(w => (
@@ -501,7 +501,7 @@ export default function InventoryPage() {
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>Quantity *</label>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Quantity *</label>
                 <input type="number" min="1" value={transfer.quantity} onChange={e => setTransfer(prev => ({ ...prev, quantity: e.target.value }))} style={inputStyle} placeholder="1" />
               </div>
             </div>
@@ -509,7 +509,7 @@ export default function InventoryPage() {
               <button onClick={handleTransfer} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: "#60a5fa", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Transferring..." : "Transfer Stock"}
               </button>
-              <button onClick={() => setShowTransferModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--text)", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setShowTransferModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -530,8 +530,8 @@ export default function InventoryPage() {
 
       <style jsx global>{`
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        input::placeholder, textarea::placeholder { color: var(--text-secondary); }
-        select option { background: var(--bg); color: var(--text); }
+        input::placeholder, textarea::placeholder { color: #6B6B67; }
+        select option { background: #FAFAF8; color: #141413; }
       `}</style>
     </div>
   );
@@ -539,6 +539,6 @@ export default function InventoryPage() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px", borderRadius: "8px",
-  border: "1px solid var(--border)", background: "var(--bg-secondary)",
-  color: "var(--text)", fontSize: "14px", outline: "none", boxSizing: "border-box"
+  border: "1px solid #E5E5E0", background: "#F4F4F1",
+  color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box"
 };

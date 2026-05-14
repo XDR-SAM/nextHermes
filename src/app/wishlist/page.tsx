@@ -30,11 +30,11 @@ interface Product {
 function WishlistSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-[var(--bg-card)] rounded-2xl overflow-hidden border border-[var(--border)]">
-        <div className="aspect-square bg-white/5" />
+      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E5E0]">
+        <div className="aspect-square bg-[#F4F4F1]" />
         <div className="p-4 space-y-3">
-          <div className="h-3 bg-white/5 rounded w-3/4" />
-          <div className="h-4 bg-white/5 rounded w-1/3 mt-4" />
+          <div className="h-3 bg-[#F4F4F1] rounded w-3/4" />
+          <div className="h-4 bg-[#F4F4F1] rounded w-1/3 mt-4" />
         </div>
       </div>
     </div>
@@ -170,15 +170,15 @@ export default function WishlistPage() {
   const isLoading = loading;
 
   return (
-    <main className="min-h-screen bg-[var(--bg)]">
+    <main className="min-h-screen bg-[#FAFAF8]">
       {/* Header */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border)]">
+      <div className="bg-white border-b border-[#E5E5E0]">
         <div className="container mx-auto px-6 py-12">
           <div className="flex items-center gap-3 mb-2">
             <Heart className="w-8 h-8 text-red-500 fill-red-500" />
-            <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)]">My Wishlist</h1>
+            <h1 className="text-4xl sm:text-5xl font-bold text-[#141413]">My Wishlist</h1>
           </div>
-          <p className="text-[var(--text-secondary)]">
+          <p className="text-[#6B6B67]">
             {isLoading
               ? "Loading..."
               : `${wishlistItems.length} item${wishlistItems.length !== 1 ? "s" : ""} saved`}
@@ -199,18 +199,18 @@ export default function WishlistPage() {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-center justify-center py-32 text-center"
           >
-            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
-              <Heart className="w-12 h-12 text-[var(--text-secondary)]" />
+            <div className="w-24 h-24 rounded-full bg-[#F4F4F1] flex items-center justify-center mb-6">
+              <Heart className="w-12 h-12 text-[#6B6B67]" />
             </div>
-            <h2 className="text-2xl font-bold text-[var(--text)] mb-3">
+            <h2 className="text-2xl font-bold text-[#141413] mb-3">
               Your wishlist is empty
             </h2>
-            <p className="text-[var(--text-secondary)] mb-8 max-w-sm">
+            <p className="text-[#6B6B67] mb-8 max-w-sm">
               Save your favorite products here so you can easily find them later.
             </p>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:bg-[var(--accent)]/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#141413] text-[#FAFAF8] px-8 py-4 rounded-full font-semibold hover:bg-[#141413]/90 transition-colors"
             >
               <ShoppingBag className="w-5 h-5" />
               Browse Products
@@ -261,8 +261,8 @@ export default function WishlistPage() {
 
             {/* Products in wishlist that couldn't be loaded */}
             {!isLoading && wishlistItems.length > 0 && (
-              <div className="mt-12 pt-8 border-t border-[var(--border)]">
-                <p className="text-sm text-[var(--text-secondary)] text-center">
+              <div className="mt-12 pt-8 border-t border-[#E5E5E0]">
+                <p className="text-sm text-[#6B6B67] text-center">
                   {products.length} of {wishlistItems.length} items found
                 </p>
               </div>

@@ -87,16 +87,16 @@ function StatCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
-      className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 hover:bg-[var(--bg-card)]/80 transition-colors"
+      className="bg-white border border-[#E5E5E0] rounded-2xl p-5 hover:bg-white/80 transition-colors"
     >
       <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center">
-          <Icon className="w-5 h-5 text-[var(--text-secondary)]" />
+        <div className="w-10 h-10 bg-[#F4F4F1] rounded-xl flex items-center justify-center">
+          <Icon className="w-5 h-5 text-[#6B6B67]" />
         </div>
       </div>
-      <p className="text-2xl font-bold text-[var(--text)] mb-1">{value}</p>
-      <p className="text-xs text-[var(--text-secondary)] uppercase tracking-widest">{label}</p>
-      {subtext && <p className="text-xs text-[var(--text-secondary)] mt-1 opacity-60">{subtext}</p>}
+      <p className="text-2xl font-bold text-[#141413] mb-1">{value}</p>
+      <p className="text-xs text-[#6B6B67] uppercase tracking-widest">{label}</p>
+      {subtext && <p className="text-xs text-[#6B6B67] mt-1 opacity-60">{subtext}</p>}
     </motion.div>
   );
 }
@@ -110,7 +110,7 @@ function StatusBadge({ status }: { status: string }) {
     Pending: "text-amber-400 bg-amber-400/10",
     Cancelled: "text-red-400 bg-red-400/10",
   };
-  const cls = colors[status] || "text-[var(--text-secondary)] bg-white/5";
+  const cls = colors[status] || "text-[#6B6B67] bg-[#F4F4F1]";
   return (
     <span className={cn("text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider", cls)}>
       {status}
@@ -129,20 +129,20 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
     >
       {/* Welcome Header */}
       <div className="flex items-center gap-4">
-        <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/10 shrink-0">
+        <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-[#E5E5E0] shrink-0">
           {profile?.avatar_url ? (
             <Image src={profile.avatar_url} alt="Avatar" fill className="object-cover" sizes="64px" />
           ) : (
-            <div className="w-full h-full bg-white/5 flex items-center justify-center">
-              <User className="w-6 h-6 text-[var(--text-secondary)]" />
+            <div className="w-full h-full bg-[#F4F4F1] flex items-center justify-center">
+              <User className="w-6 h-6 text-[#6B6B67]" />
             </div>
           )}
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text)] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#141413] tracking-tight">
             Welcome back, {profile?.full_name?.split(" ")[0] || "there"}
           </h1>
-          <p className="text-[var(--text-secondary)] text-sm mt-0.5">
+          <p className="text-[#6B6B67] text-sm mt-0.5">
             {profile?.email || "Loading..."}
           </p>
         </div>
@@ -158,8 +158,8 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
       {/* Recent Orders */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-[var(--text)]">Recent Orders</h2>
-          <Link href="/orders" className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors">
+          <h2 className="text-lg font-semibold text-[#141413]">Recent Orders</h2>
+          <Link href="/orders" className="flex items-center gap-1 text-xs text-[#6B6B67] hover:text-[#141413] transition-colors">
             View all
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -171,19 +171,19 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.25 + i * 0.08, duration: 0.4 }}
-              className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 hover:border-white/10 transition-colors"
+              className="bg-white border border-[#E5E5E0] rounded-2xl p-5 hover:border-[#E5E5E0] transition-colors"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <span className="text-sm font-semibold text-[var(--text)]">{order.order_number}</span>
+                    <span className="text-sm font-semibold text-[#141413]">{order.order_number}</span>
                     <StatusBadge status={order.status} />
                   </div>
-                  <p className="text-xs text-[var(--text-secondary)]">{order.date}</p>
+                  <p className="text-xs text-[#6B6B67]">{order.date}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-[var(--text)]">${order.total.toFixed(2)}</span>
-                  <button className="flex items-center gap-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors">
+                  <span className="text-sm font-semibold text-[#141413]">${order.total.toFixed(2)}</span>
+                  <button className="flex items-center gap-1 text-xs text-[#6B6B67] hover:text-[#141413] transition-colors">
                     Track
                     <ExternalLink className="w-3 h-3" />
                   </button>
@@ -192,13 +192,13 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
               {/* Items preview */}
               <div className="flex gap-3 overflow-x-auto">
                 {order.items.map((item, j) => (
-                  <div key={j} className="flex items-center gap-2.5 bg-white/5 rounded-lg p-2 min-w-0">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                  <div key={j} className="flex items-center gap-2.5 bg-[#F4F4F1] rounded-lg p-2 min-w-0">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#F4F4F1] shrink-0">
                       <Image src={item.image} alt={item.name} fill className="object-cover" sizes="48px" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs text-[var(--text-secondary)] line-clamp-1">{item.name}</p>
-                      <p className="text-xs text-[var(--text-secondary)] opacity-60">Qty: {item.qty}</p>
+                      <p className="text-xs text-[#6B6B67] line-clamp-1">{item.name}</p>
+                      <p className="text-xs text-[#6B6B67] opacity-60">Qty: {item.qty}</p>
                     </div>
                   </div>
                 ))}
@@ -210,7 +210,7 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-lg font-semibold text-[var(--text)] mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-[#141413] mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { label: "Track Order", desc: "Check order status", icon: Package, href: "/orders" },
@@ -224,12 +224,12 @@ function OverviewTab({ profile }: { profile: { id: string; full_name?: string | 
               transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
             >
               <Link href={href}>
-                <div className="group bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 hover:bg-white/5 hover:border-white/10 transition-all duration-200">
-                  <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/10 transition-colors">
-                    <Icon className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-[var(--text)] transition-colors" />
+                <div className="group bg-white border border-[#E5E5E0] rounded-2xl p-5 hover:bg-[#F4F4F1] hover:border-[#E5E5E0] transition-all duration-200">
+                  <div className="w-10 h-10 bg-[#F4F4F1] rounded-xl flex items-center justify-center mb-3 group-hover:bg-[#E5E5E0] transition-colors">
+                    <Icon className="w-5 h-5 text-[#6B6B67] group-hover:text-[#141413] transition-colors" />
                   </div>
-                  <p className="text-sm font-medium text-[var(--text)] mb-1">{label}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">{desc}</p>
+                  <p className="text-sm font-medium text-[#141413] mb-1">{label}</p>
+                  <p className="text-xs text-[#6B6B67]">{desc}</p>
                 </div>
               </Link>
             </motion.div>
@@ -249,22 +249,22 @@ function OrdersTab() {
       transition={{ duration: 0.4 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text)]">Orders</h1>
-        <Link href="/orders" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors">
+        <h1 className="text-2xl font-bold text-[#141413]">Orders</h1>
+        <Link href="/orders" className="text-sm text-[#6B6B67] hover:text-[#141413] transition-colors">
           View all
         </Link>
       </div>
       <div className="space-y-3">
         {MOCK_ORDERS.map((order) => (
-          <div key={order.id} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
+          <div key={order.id} className="bg-white border border-[#E5E5E0] rounded-2xl p-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-[var(--text)]">{order.order_number}</span>
+              <span className="text-sm font-semibold text-[#141413]">{order.order_number}</span>
               <StatusBadge status={order.status} />
             </div>
-            <p className="text-xs text-[var(--text-secondary)] mb-3">{order.date}</p>
+            <p className="text-xs text-[#6B6B67] mb-3">{order.date}</p>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-[var(--text)]">${order.total.toFixed(2)}</span>
-              <Link href="/orders" className="text-xs text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors flex items-center gap-1">
+              <span className="text-sm font-bold text-[#141413]">${order.total.toFixed(2)}</span>
+              <Link href="/orders" className="text-xs text-[#6B6B67] hover:text-[#141413] transition-colors flex items-center gap-1">
                 Details <ExternalLink className="w-3 h-3" />
               </Link>
             </div>
@@ -284,17 +284,17 @@ function WishlistTab() {
       transition={{ duration: 0.4 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[var(--text)]">Wishlist</h1>
-        <Link href="/wishlist" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors">
+        <h1 className="text-2xl font-bold text-[#141413]">Wishlist</h1>
+        <Link href="/wishlist" className="text-sm text-[#6B6B67] hover:text-[#141413] transition-colors">
           View all
         </Link>
       </div>
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 text-center">
-        <Heart className="w-12 h-12 mx-auto mb-4 text-[var(--text-secondary)]" />
-        <p className="text-[var(--text-secondary)] mb-4">You have 7 items in your wishlist</p>
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-8 text-center">
+        <Heart className="w-12 h-12 mx-auto mb-4 text-[#6B6B67]" />
+        <p className="text-[#6B6B67] mb-4">You have 7 items in your wishlist</p>
         <Link
           href="/wishlist"
-          className="inline-flex items-center gap-2 bg-[var(--accent)] text-[var(--bg)] px-6 py-3 rounded-full font-semibold text-sm hover:bg-[var(--accent)]/90 transition-colors"
+          className="inline-flex items-center gap-2 bg-[#141413] text-[#FAFAF8] px-6 py-3 rounded-full font-semibold text-sm hover:bg-[#141413]/90 transition-colors"
         >
           View Wishlist
         </Link>
@@ -333,21 +333,21 @@ function ProfileTab({ profile }: { profile: { id: string; full_name?: string | n
       transition={{ duration: 0.4 }}
       className="max-w-lg space-y-6"
     >
-      <h1 className="text-2xl font-bold text-[var(--text)]">Profile</h1>
+      <h1 className="text-2xl font-bold text-[#141413]">Profile</h1>
 
       {/* Avatar */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-5">
         <div className="flex items-center gap-4">
-          <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-white/10">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-[#E5E5E0]">
             {profile?.avatar_url ? (
               <Image src={profile.avatar_url} alt="Avatar" fill className="object-cover" sizes="64px" />
             ) : (
-              <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                <User className="w-6 h-6 text-[var(--text-secondary)]" />
+              <div className="w-full h-full bg-[#F4F4F1] flex items-center justify-center">
+                <User className="w-6 h-6 text-[#6B6B67]" />
               </div>
             )}
           </div>
-          <button className="flex items-center gap-2 bg-white/5 border border-[var(--border)] text-[var(--text)] px-4 py-2 rounded-full text-sm hover:bg-white/10 transition-colors">
+          <button className="flex items-center gap-2 bg-[#F4F4F1] border border-[#E5E5E0] text-[#141413] px-4 py-2 rounded-full text-sm hover:bg-[#E5E5E0] transition-colors">
             <Camera className="w-4 h-4" />
             Change Photo
           </button>
@@ -355,43 +355,43 @@ function ProfileTab({ profile }: { profile: { id: string; full_name?: string | n
       </div>
 
       {/* Form */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5 space-y-4">
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-5 space-y-4">
         <div>
-          <label className="block text-sm text-[var(--text-secondary)] mb-2">Full Name</label>
+          <label className="block text-sm text-[#6B6B67] mb-2">Full Name</label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+              className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#6B6B67] transition-colors"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-[var(--text-secondary)] mb-2">Email</label>
+          <label className="block text-sm text-[#6B6B67] mb-2">Email</label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
             <input
               type="email"
               value={profile?.email || ""}
               readOnly
-              className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text-secondary)] cursor-not-allowed opacity-60"
+              className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#6B6B67] cursor-not-allowed opacity-60"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-[var(--text-secondary)] mb-2">Phone</label>
+          <label className="block text-sm text-[#6B6B67] mb-2">Phone</label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 (555) 000-0000"
-              className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+              className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#6B6B67] transition-colors"
             />
           </div>
         </div>
@@ -401,7 +401,7 @@ function ProfileTab({ profile }: { profile: { id: string; full_name?: string | n
           disabled={saving}
           className={cn(
             "flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all",
-            saved ? "bg-emerald-500 text-white" : "bg-[var(--accent)] text-[var(--bg)] hover:bg-[var(--accent)]/90",
+            saved ? "bg-emerald-500 text-white" : "bg-[#141413] text-[#FAFAF8] hover:bg-[#141413]/90",
             saving && "opacity-70 cursor-not-allowed"
           )}
         >
@@ -411,10 +411,10 @@ function ProfileTab({ profile }: { profile: { id: string; full_name?: string | n
       </div>
 
       {/* Change Password */}
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-5">
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Lock className="w-4 h-4 text-[var(--text-secondary)]" />
-          <h3 className="text-sm font-semibold text-[var(--text)]">Change Password</h3>
+          <Lock className="w-4 h-4 text-[#6B6B67]" />
+          <h3 className="text-sm font-semibold text-[#141413]">Change Password</h3>
         </div>
         <div className="space-y-3">
           {["Current Password", "New Password", "Confirm Password"].map((label, i) => (
@@ -422,10 +422,10 @@ function ProfileTab({ profile }: { profile: { id: string; full_name?: string | n
               key={label}
               type="password"
               placeholder={label}
-              className="w-full bg-white/5 border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+              className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl px-4 py-3 text-sm text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#6B6B67] transition-colors"
             />
           ))}
-          <button className="px-6 py-3 rounded-full font-semibold bg-white/10 border border-[var(--border)] text-[var(--text)] hover:bg-white/20 transition-colors text-sm">
+          <button className="px-6 py-3 rounded-full font-semibold bg-[#F4F4F1] border border-[#E5E5E0] text-[#141413] hover:bg-[#E5E5E0] transition-colors text-sm">
             Update Password
           </button>
         </div>
@@ -442,9 +442,9 @@ function SettingsTab() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <h1 className="text-2xl font-bold text-[var(--text)] mb-6">Settings</h1>
-      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 text-center">
-        <p className="text-[var(--text-secondary)]">Account settings coming soon.</p>
+      <h1 className="text-2xl font-bold text-[#141413] mb-6">Settings</h1>
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl p-8 text-center">
+        <p className="text-[#6B6B67]">Account settings coming soon.</p>
       </div>
     </motion.div>
   );
@@ -489,10 +489,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-[var(--text-secondary)] animate-spin" />
-          <p className="text-[var(--text-secondary)] text-sm">Loading...</p>
+          <Loader2 className="w-8 h-8 text-[#6B6B67] animate-spin" />
+          <p className="text-[#6B6B67] text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -501,7 +501,7 @@ export default function DashboardPage() {
   if (!profile) return null;
 
   return (
-    <main className="min-h-screen bg-[var(--bg)]">
+    <main className="min-h-screen bg-[#FAFAF8]">
       <div className="container mx-auto px-6 py-8">
         {/* Mobile Tab Nav */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-8 lg:hidden scrollbar-hide">
@@ -512,8 +512,8 @@ export default function DashboardPage() {
               className={cn(
                 "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors shrink-0",
                 activeTab === tab
-                  ? "bg-[var(--accent)] text-[var(--bg)]"
-                  : "bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text)]"
+                  ? "bg-[#141413] text-[#FAFAF8]"
+                  : "bg-white border border-[#E5E5E0] text-[#6B6B67] hover:text-[#141413]"
               )}
             >
               <Icon className="w-4 h-4" />
@@ -533,8 +533,8 @@ export default function DashboardPage() {
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left",
                     activeTab === tab
-                      ? "bg-white text-black"
-                      : "text-[var(--text-secondary)] hover:text-[var(--text)] hover:bg-white/5"
+                      ? "bg-white text-[#141413]"
+                      : "text-[#6B6B67] hover:text-[#141413] hover:bg-[#F4F4F1]"
                   )}
                 >
                   <Icon className="w-4 h-4 shrink-0" />

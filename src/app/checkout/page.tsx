@@ -39,20 +39,20 @@ function StepIndicator({ current }: { current: Step }) {
                 current > s.n
                   ? "bg-emerald-500 text-white"
                   : current === s.n
-                  ? "bg-[var(--accent)] text-[var(--bg)]"
-                  : "bg-white/5 text-white/30 border border-white/10"
+                  ? "bg-[#141413] text-[#FAFAF8]"
+                  : "bg-[#F4F4F1] text-[#6B6B67] border border-[#E5E5E0]"
               }`}
             >
               {current > s.n ? <Check className="w-4 h-4" /> : s.n}
             </div>
-            <span className={`text-xs ${current >= s.n ? "text-[var(--text)]" : "text-white/30"}`}>
+            <span className={`text-xs ${current >= s.n ? "text-[#141413]" : "text-white/30"}`}>
               {s.label}
             </span>
           </div>
           {i < steps.length - 1 && (
             <div
               className={`w-16 h-px mb-5 mx-2 transition-colors ${
-                current > s.n ? "bg-emerald-500" : "bg-white/10"
+                current > s.n ? "bg-green-500" : "bg-[#E5E5E0]"
               }`}
             />
           )}
@@ -79,44 +79,44 @@ function AddressFormFields({
     <div className="space-y-4">
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Full Name *</label>
+          <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Full Name *</label>
           <Input value={form.name} onChange={update("name")} placeholder="Jane Doe" required disabled={disabled} />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Email *</label>
+          <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Email *</label>
           <Input type="email" value={form.email} onChange={update("email")} placeholder="jane@example.com" required disabled={disabled} />
         </div>
       </div>
       <div>
-        <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Phone</label>
+        <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Phone</label>
         <Input value={form.phone} onChange={update("phone")} placeholder="+1 (555) 000-0000" disabled={disabled} />
       </div>
       <div>
-        <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Address *</label>
+        <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Address *</label>
         <Input value={form.address} onChange={update("address")} placeholder="123 Main Street, Apt 4B" required disabled={disabled} />
       </div>
       <div className="grid sm:grid-cols-3 gap-4">
         <div>
-          <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">City *</label>
+          <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">City *</label>
           <Input value={form.city} onChange={update("city")} placeholder="San Francisco" required disabled={disabled} />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">State / Province</label>
+          <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">State / Province</label>
           <Input value={form.state} onChange={update("state")} placeholder="CA" disabled={disabled} />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">ZIP / Postal Code *</label>
+          <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">ZIP / Postal Code *</label>
           <Input value={form.zip} onChange={update("zip")} placeholder="94102" required disabled={disabled} />
         </div>
       </div>
       <div>
-        <label className="block text-xs uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Country *</label>
+        <label className="block text-xs uppercase tracking-wider text-[#6B6B67] mb-1.5">Country *</label>
         <select
           value={form.country}
           onChange={update("country")}
           required
           disabled={disabled}
-          className="w-full px-4 py-3 bg-transparent border border-[var(--border)] rounded-xl text-sm text-[var(--text)] focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 appearance-none"
+          className="w-full px-4 py-3 bg-transparent border border-[#E5E5E0] rounded-xl text-sm text-[#141413] focus:outline-none focus:border-white/30 transition-colors disabled:opacity-50 appearance-none"
         >
           <option value="" disabled>Select country</option>
           {COUNTRIES.map((c) => (
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
 
   if (orderPlaced) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#FAFAF8] text-[#141413] flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -188,9 +188,9 @@ export default function CheckoutPage() {
             <Check className="w-8 h-8 text-emerald-500" />
           </div>
           <h2 className="text-2xl font-bold mb-3">Order Placed!</h2>
-          <p className="text-[var(--text-secondary)] mb-8">
+          <p className="text-[#6B6B67] mb-8">
             Thank you for your order. We&apos;ll send a confirmation to{" "}
-            <span className="text-[var(--text)]">{address.email}</span> shortly.
+            <span className="text-[#141413]">{address.email}</span> shortly.
           </p>
           <Button onClick={() => router.push("/products")} className="w-full">
             Continue Shopping
@@ -203,9 +203,9 @@ export default function CheckoutPage() {
   if (items.length === 0) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen bg-[#FAFAF8] text-[#141413]">
       {/* Header */}
-      <div className="border-b border-[var(--border)] px-4 py-5">
+      <div className="border-b border-[#E5E5E0] px-4 py-5">
         <div className="max-w-5xl mx-auto flex items-center gap-4">
           <button onClick={() => router.back()} className="text-white/40 hover:text-white transition-colors">
             <ChevronLeft className="w-5 h-5" />
@@ -232,7 +232,7 @@ export default function CheckoutPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8"
+                  className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
                 >
                   <h2 className="text-xl font-semibold mb-6">Shipping Address</h2>
                   <AddressFormFields form={address} setForm={setAddress} disabled={false} />
@@ -254,14 +254,14 @@ export default function CheckoutPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8"
+                  className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
                 >
                   <h2 className="text-xl font-semibold mb-6">Payment</h2>
 
                   {/* Stripe placeholder */}
-                  <div className="border border-[var(--border)] rounded-xl p-6 mb-6 bg-white/2">
+                  <div className="border border-[#E5E5E0] rounded-xl p-6 mb-6 bg-white/2">
                     <div className="flex items-center gap-2 mb-4">
-                      <CreditCard className="w-4 h-4 text-[var(--text-secondary)]" />
+                      <CreditCard className="w-4 h-4 text-[#6B6B67]" />
                       <span className="text-sm font-medium">Card Details</span>
                       <div className="ml-auto flex gap-1">
                         {["visa", "mc", "amex", "discover"].map((c) => (
@@ -309,27 +309,27 @@ export default function CheckoutPage() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8"
+                  className="bg-white border border-[#E5E5E0] rounded-2xl p-8"
                 >
                   <h2 className="text-xl font-semibold mb-6">Review Your Order</h2>
 
                   {/* Shipping summary */}
-                  <div className="border border-[var(--border)] rounded-xl p-5 mb-4">
+                  <div className="border border-[#E5E5E0] rounded-xl p-5 mb-4">
                     <div className="flex justify-between items-start mb-3">
-                      <span className="text-xs uppercase tracking-wider text-[var(--text-secondary)]">Ship to</span>
-                      <button onClick={() => setStep(1)} className="text-xs text-[var(--accent)] hover:underline">
+                      <span className="text-xs uppercase tracking-wider text-[#6B6B67]">Ship to</span>
+                      <button onClick={() => setStep(1)} className="text-xs text-[#141413] hover:underline">
                         Edit
                       </button>
                     </div>
                     <p className="text-sm font-medium">{address.name}</p>
-                    <p className="text-sm text-[var(--text-secondary)]">
+                    <p className="text-sm text-[#6B6B67]">
                       {address.address}, {address.city}, {address.state} {address.zip}
                     </p>
-                    <p className="text-sm text-[var(--text-secondary)]">{address.country}</p>
+                    <p className="text-sm text-[#6B6B67]">{address.country}</p>
                   </div>
 
                   {/* Items */}
-                  <div className="border border-[var(--border)] rounded-xl divide-y divide-[var(--border)] mb-4">
+                  <div className="border border-[#E5E5E0] rounded-xl divide-y divide-[#E5E5E0] mb-4">
                     {items.map((item) => (
                       <div key={item.id} className="p-4 flex gap-4 items-center">
                         <div className="w-14 h-14 rounded-lg bg-white/5 overflow-hidden flex-shrink-0">
@@ -338,7 +338,7 @@ export default function CheckoutPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{item.name}</p>
-                          <p className="text-xs text-[var(--text-secondary)]">Qty: {item.quantity}</p>
+                          <p className="text-xs text-[#6B6B67]">Qty: {item.quantity}</p>
                         </div>
                         <p className="text-sm font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
                       </div>
@@ -379,7 +379,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-2">
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 sticky top-6">
+            <div className="bg-white border border-[#E5E5E0] rounded-2xl p-6 sticky top-6">
               <h3 className="font-semibold mb-5 flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4" />
                 Order Summary
@@ -394,34 +394,34 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{item.name}</p>
-                      <p className="text-xs text-[var(--text-secondary)]">Qty: {item.quantity}</p>
+                      <p className="text-xs text-[#6B6B67]">Qty: {item.quantity}</p>
                     </div>
                     <p className="text-xs font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[var(--border)] pt-4 space-y-2">
+              <div className="border-t border-[#E5E5E0] pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">Subtotal</span>
+                  <span className="text-[#6B6B67]">Subtotal</span>
                   <span>${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">Shipping</span>
+                  <span className="text-[#6B6B67]">Shipping</span>
                   <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">Tax (8.75%)</span>
+                  <span className="text-[#6B6B67]">Tax (8.75%)</span>
                   <span>${tax.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-base font-semibold pt-2 border-t border-[var(--border)]">
+                <div className="flex justify-between text-base font-semibold pt-2 border-t border-[#E5E5E0]">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
               </div>
 
               {subtotal < 100 && (
-                <p className="text-xs text-[var(--text-secondary)] mt-3 text-center">
+                <p className="text-xs text-[#6B6B67] mt-3 text-center">
                   Add ${(100 - subtotal).toFixed(2)} more for free shipping
                 </p>
               )}

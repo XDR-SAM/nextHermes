@@ -5,34 +5,60 @@
    No .dark class, no data-theme. Pure light always.
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Lovable-Inspired Warm Minimal
+   - Warm whites, not cold
+   - Tight type hierarchy
+   - Generous section spacing
+   - Consistent border-radius tokens
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Lovable-inspired warm palette ─── */
 @theme {
   /* Core semantic colors */
-  --color-background: #ffffff;
-  --color-foreground: #111111;
-  --color-muted: #f4f4f5;
-  --color-muted-foreground: #71717a;
-  --color-border: #e4e4e7;
-  --color-input: #e4e4e7;
-  --color-ring: #71717a;
-  --color-primary: #111111;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f4f4f5;
-  --color-secondary-foreground: #111111;
-  --color-accent: #f4f4f5;
-  --color-accent-foreground: #111111;
-  --color-destructive: oklch(0.58 0.21 25);
-  --color-destructive-foreground: oklch(0.98 0 100);
-  --color-success: oklch(0.65 0.19 145);
-  --color-success-foreground: oklch(0.98 0 100);
-  --color-warning: oklch(0.75 0.18 85);
-  --color-warning-foreground: oklch(0.2 0 0);
-  --color-card: #ffffff;
-  --color-card-foreground: #111111;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #111111;
+  --color-background: #FAFAF8;
+  --color-foreground: #141413;
+  --color-muted: #F4F4F1;
+  --color-muted-foreground: #6B6B67;
+  --color-border: #E5E5E0;
+  --color-input: #E5E5E0;
+  --color-ring: #141413;
+  --color-primary: #141413;
+  --color-primary-foreground: #FAFAF8;
+  --color-secondary: #F4F4F1;
+  --color-secondary-foreground: #141413;
+  --color-accent: #F4F4F1;
+  --color-accent-foreground: #141413;
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FAFAF8;
+  --color-success: #16A34A;
+  --color-success-foreground: #FAFAF8;
+  --color-warning: #CA8A04;
+  --color-warning-foreground: #141413;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #141413;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #141413;
 
   /* Fonts */
   --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* Spacing scale (8px base) */
+  --spacing-section: 96px;
+  --spacing-section-sm: 64px;
+
+  /* Border radius scale */
+  --radius-micro: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows — subtle, warm */
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+  --shadow-dropdown: 0 8px 32px 0 rgba(0, 0, 0, 0.10);
 }
 
 /* ─── Global resets ─── */
@@ -65,27 +91,27 @@ body {
   color: var(--color-background);
 }
 
-/* ─── Custom scrollbar ─── */
+/* ─── Custom scrollbar (warm, subtle) ─── */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d8;
+  background: #D4D4CC;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1aa;
+  background: #A8A89E;
 }
 
-/* ─── Focus visible ─── */
+/* ─── Focus visible (visible but not jarring) ─── */
 :focus-visible {
-  outline: 2px solid var(--color-ring);
+  outline: 1.5px solid var(--color-ring);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-micro, 4px);
 }
 
 /* ─── Skeleton shimmer ─── */

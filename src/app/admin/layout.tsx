@@ -50,12 +50,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (loading) return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "center",
-      height: "100vh", background: "var(--bg)", color: "var(--text)",
+      height: "100vh", background: "#FAFAF8", color: "#141413",
       fontFamily: "system-ui, sans-serif"
     }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: "32px", marginBottom: "12px" }}>🛒</div>
-        <div style={{ color: "var(--text-secondary)" }}>Loading...</div>
+        <div style={{ color: "#6B6B67" }}>Loading...</div>
       </div>
     </div>
   );
@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div style={{
       display: "flex",
       minHeight: "100vh",
-      background: "var(--bg)",
+      background: "#FAFAF8",
     }}>
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside style={{
         width: "256px",
         background: "#0a0a0a",
-        borderRight: "1px solid var(--border)",
+        borderRight: "1px solid #E5E5E0",
         display: "flex",
         flexDirection: "column",
         position: "fixed",
@@ -95,7 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Logo */}
         <div style={{
           padding: "24px 20px",
-          borderBottom: "1px solid var(--border)"
+          borderBottom: "1px solid #E5E5E0"
         }}>
           <Link href="/admin" style={{
             display: "flex", alignItems: "center", gap: "10px",
@@ -133,11 +133,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* User Section */}
-        <div style={{ padding: "16px", borderTop: "1px solid var(--border)" }}>
+        <div style={{ padding: "16px", borderTop: "1px solid #E5E5E0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
             <div style={{
               width: "36px", height: "36px", borderRadius: "50%",
-              background: "var(--bg-card)", display: "flex",
+              background: "white", display: "flex",
               alignItems: "center", justifyContent: "center",
               fontSize: "16px", color: "#fafafa", fontWeight: "600"
             }}>
@@ -156,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <button onClick={handleSignOut} style={{
             width: "100%", padding: "8px", borderRadius: "6px",
-            border: "1px solid var(--border)", background: "transparent",
+            border: "1px solid #E5E5E0", background: "transparent",
             color: "#898989", fontSize: "13px", cursor: "pointer",
             transition: "all 0.15s ease",
           }}
@@ -165,7 +165,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             e.currentTarget.style.color = "#ef4444";
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.borderColor = "#E5E5E0";
             e.currentTarget.style.color = "#898989";
           }}>
             Sign Out
@@ -184,8 +184,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Top Bar */}
         <header style={{
           height: "64px",
-          background: "var(--bg)",
-          borderBottom: "1px solid var(--border)",
+          background: "#FAFAF8",
+          borderBottom: "1px solid #E5E5E0",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -202,7 +202,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               padding: "8px",
               border: "none",
               background: "transparent",
-              color: "var(--text)",
+              color: "#141413",
               cursor: "pointer",
             }}
             className="mobile-menu-btn"
@@ -217,11 +217,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <h1 style={{
             fontSize: "20px",
             fontWeight: "600",
-            color: "var(--text)",
+            color: "#141413",
           }}>{getPageTitle()}</h1>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>
+            <span style={{ fontSize: "13px", color: "#6B6B67" }}>
               {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </span>
           </div>
@@ -231,7 +231,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main style={{
           flex: "1",
           padding: "32px",
-          background: "var(--bg)",
+          background: "#FAFAF8",
         }}>
           {children}
         </main>

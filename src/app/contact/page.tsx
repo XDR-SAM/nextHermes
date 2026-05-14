@@ -58,18 +58,18 @@ export default function ContactPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#FAFAF8] flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-md w-full text-center"
         >
-          <div className="w-16 h-16 rounded-full border border-[var(--border)] flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 rounded-full border border-[#E5E5E0] flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-emerald-500" />
           </div>
           <h2 className="text-2xl font-bold mb-3">Message Sent!</h2>
-          <p className="text-[var(--text-secondary)] mb-8">
+          <p className="text-[#6B6B67] mb-8">
             Thanks for reaching out. We&apos;ll get back to you within 24 hours.
           </p>
           <Button
@@ -85,7 +85,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen bg-[#FAFAF8] text-[#141413]">
       {/* Hero */}
       <section className="relative py-24 px-4 text-center overflow-hidden">
         <div
@@ -98,7 +98,7 @@ export default function ContactPage() {
         />
         <div className="max-w-3xl mx-auto relative">
           <FadeSection>
-            <p className="text-sm uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-4">
+            <p className="text-sm uppercase tracking-[0.3em] text-[#6B6B67] mb-4">
               Get in Touch
             </p>
           </FadeSection>
@@ -108,7 +108,7 @@ export default function ContactPage() {
             </h1>
           </FadeSection>
           <FadeSection delay={0.2}>
-            <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto">
+            <p className="text-[#6B6B67] text-lg max-w-xl mx-auto">
               Whether you have a question, need help with an order, or just want
               to say hello — we&apos;re always here for you.
             </p>
@@ -121,7 +121,7 @@ export default function ContactPage() {
           {/* Form */}
           <div className="lg:col-span-3">
             <FadeSection>
-              <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8">
+              <div className="bg-[white] border border-[#E5E5E0] rounded-2xl p-8">
                 <h2 className="text-xl font-semibold mb-6">Send us a message</h2>
 
                 {error && (
@@ -133,7 +133,7 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid sm:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-medium text-[#6B6B67] uppercase tracking-wider mb-2">
                         Full Name
                       </label>
                       <Input
@@ -145,7 +145,7 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-medium text-[#6B6B67] uppercase tracking-wider mb-2">
                         Email
                       </label>
                       <Input
@@ -160,7 +160,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-[#6B6B67] uppercase tracking-wider mb-2">
                       Subject
                     </label>
                     <Input
@@ -173,7 +173,7 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-medium text-[#6B6B67] uppercase tracking-wider mb-2">
                       Message
                     </label>
                     <textarea
@@ -183,7 +183,7 @@ export default function ContactPage() {
                       required
                       disabled={loading}
                       rows={5}
-                      className="w-full px-4 py-3 bg-transparent border border-[var(--border)] rounded-xl text-sm text-[var(--text)] placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none disabled:opacity-50"
+                      className="w-full px-4 py-3 bg-transparent border border-[#E5E5E0] rounded-xl text-sm text-[#141413] placeholder:text-white/20 focus:outline-none focus:border-white/30 transition-colors resize-none disabled:opacity-50"
                     />
                   </div>
 
@@ -211,51 +211,51 @@ export default function ContactPage() {
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-6">
             <FadeSection delay={0.1}>
-              <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 space-y-5">
+              <div className="bg-[white] border border-[#E5E5E0] rounded-2xl p-6 space-y-5">
                 <h3 className="font-semibold mb-2">Contact Information</h3>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#141413]/10 text-[#141413] flex items-center justify-center flex-shrink-0">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-0.5">Email</p>
-                    <a href="mailto:hello@hermes.store" className="text-sm hover:text-[var(--accent)] transition-colors">
+                    <p className="text-xs text-[#6B6B67] mb-0.5">Email</p>
+                    <a href="mailto:hello@hermes.store" className="text-sm hover:text-[#141413] transition-colors">
                       hello@hermes.store
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#141413]/10 text-[#141413] flex items-center justify-center flex-shrink-0">
                     <Phone className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-0.5">Phone</p>
-                    <a href="tel:+18005551234" className="text-sm hover:text-[var(--accent)] transition-colors">
+                    <p className="text-xs text-[#6B6B67] mb-0.5">Phone</p>
+                    <a href="tel:+18005551234" className="text-sm hover:text-[#141413] transition-colors">
                       +1 (800) 555-1234
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#141413]/10 text-[#141413] flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-0.5">Address</p>
+                    <p className="text-xs text-[#6B6B67] mb-0.5">Address</p>
                     <p className="text-sm">123 Commerce Street<br />San Francisco, CA 94102</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#141413]/10 text-[#141413] flex items-center justify-center flex-shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xs text-[var(--text-secondary)] mb-0.5">Hours</p>
+                    <p className="text-xs text-[#6B6B67] mb-0.5">Hours</p>
                     <p className="text-sm">Mon – Fri: 9am – 6pm PST</p>
-                    <p className="text-sm text-[var(--text-secondary)]">Sat – Sun: 10am – 4pm PST</p>
+                    <p className="text-sm text-[#6B6B67]">Sat – Sun: 10am – 4pm PST</p>
                   </div>
                 </div>
               </div>
@@ -263,11 +263,11 @@ export default function ContactPage() {
 
             {/* Map placeholder */}
             <FadeSection delay={0.2}>
-              <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden">
-                <div className="h-48 bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg)] flex items-center justify-center">
+              <div className="bg-[white] border border-[#E5E5E0] rounded-2xl overflow-hidden">
+                <div className="h-48 bg-gradient-to-br from-[#F4F4F1] to-[#FAFAF8] flex items-center justify-center">
                   <div className="text-center">
-                    <MapPin className="w-8 h-8 text-[var(--text-secondary)] mx-auto mb-2" />
-                    <p className="text-xs text-[var(--text-secondary)]">San Francisco, CA</p>
+                    <MapPin className="w-8 h-8 text-[#6B6B67] mx-auto mb-2" />
+                    <p className="text-xs text-[#6B6B67]">San Francisco, CA</p>
                   </div>
                 </div>
               </div>
@@ -275,15 +275,15 @@ export default function ContactPage() {
 
             {/* FAQ link */}
             <FadeSection delay={0.3}>
-              <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-[white] border border-[#E5E5E0] rounded-2xl p-6">
                 <h3 className="font-semibold mb-2">Looking for quick answers?</h3>
-                <p className="text-sm text-[var(--text-secondary)] mb-4">
+                <p className="text-sm text-[#6B6B67] mb-4">
                   Check our FAQ page for answers to common questions about orders,
                   shipping, and returns.
                 </p>
                 <a
                   href="/faq"
-                  className="text-sm text-[var(--accent)] hover:underline transition-colors"
+                  className="text-sm text-[#141413] hover:underline transition-colors"
                 >
                   Visit FAQ →
                 </a>

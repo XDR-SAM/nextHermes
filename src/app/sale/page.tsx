@@ -21,13 +21,13 @@ interface Product {
 function ProductSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-[var(--bg-card)] rounded-2xl overflow-hidden border border-[var(--border)]">
-        <div className="aspect-square bg-white/5" />
+      <div className="bg-white rounded-2xl overflow-hidden border border-[#E5E5E0]">
+        <div className="aspect-square bg-[#F4F4F1]" />
         <div className="p-4 space-y-2">
-          <div className="h-3 bg-white/5 rounded w-1/3" />
-          <div className="h-4 bg-white/5 rounded w-3/4" />
-          <div className="h-3 bg-white/5 rounded w-1/4" />
-          <div className="h-8 bg-white/5 rounded w-1/2 mt-4" />
+          <div className="h-3 bg-[#F4F4F1] rounded w-1/3" />
+          <div className="h-4 bg-[#F4F4F1] rounded w-3/4" />
+          <div className="h-3 bg-[#F4F4F1] rounded w-1/4" />
+          <div className="h-8 bg-[#F4F4F1] rounded w-1/2 mt-4" />
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@ export default function SalePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen bg-[#FAFAF8] text-[#141413]">
       {/* Hero */}
       <section className="relative py-24 px-4 text-center overflow-hidden">
         <div
@@ -93,7 +93,7 @@ export default function SalePage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-[var(--text-secondary)]"
+            className="text-lg text-[#6B6B67]"
           >
             Up to 40% off on selected items. Grab them before they&apos;re gone.
           </motion.p>
@@ -110,7 +110,7 @@ export default function SalePage() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-[var(--text-secondary)]">
+            <p className="text-[#6B6B67]">
               No sale items available right now. Check back soon!
             </p>
           </div>

@@ -21,7 +21,7 @@ interface Product {
 function ProductSkeleton() {
   return (
     <div className="animate-pulse">
-      <div className="bg-[var(--bg-card)] rounded-2xl overflow-hidden border border-[var(--border)]">
+      <div className="bg-white border border-[#E5E5E0] rounded-2xl overflow-hidden">
         <div className="aspect-square bg-white/5" />
         <div className="p-4 space-y-2">
           <div className="h-3 bg-white/5 rounded w-1/3" />
@@ -54,7 +54,7 @@ export default function NewArrivalsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen bg-[#FAFAF8] text-[#141413]">
       {/* Hero */}
       <section className="relative py-24 px-4 text-center overflow-hidden">
         <div
@@ -70,7 +70,7 @@ export default function NewArrivalsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-sm uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-4"
+            className="text-sm uppercase tracking-[0.3em] text-[#6B6B67] mb-4"
           >
             Just Dropped
           </motion.p>
@@ -86,7 +86,7 @@ export default function NewArrivalsPage() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg text-[var(--text-secondary)]"
+            className="text-lg text-[#6B6B67]"
           >
             The latest additions to our collection — fresh styles, new ideas,
             and products worth the wait.
@@ -104,7 +104,7 @@ export default function NewArrivalsPage() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-[var(--text-secondary)]">No new arrivals found.</p>
+            <p className="text-[#6B6B67]">No new arrivals found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">

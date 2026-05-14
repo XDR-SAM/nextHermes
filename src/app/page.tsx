@@ -138,104 +138,103 @@ function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null;
 
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={heroSectionStyle}
+      className="relative min-h-[92vh] flex items-center overflow-hidden bg-[#F4F4F1]"
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      {/* Warm gradient overlay — not dark */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#FAFAF8]/80 via-[#FAFAF8]/40 to-transparent" />
 
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-screen py-20">
+      <div className="container mx-auto px-6 lg:px-8 relative z-10 py-24">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-7xl mx-auto">
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
             <motion.div variants={itemVariants}>
-              <span className="inline-block text-xs uppercase tracking-[0.3em] text-white/70 border border-white/20 rounded-full px-4 py-1.5">
+              <span className="inline-block text-[11px] uppercase tracking-[0.25em] text-[#6B6B67] border border-[#E5E5E0] rounded-full px-4 py-1.5 bg-white/70 backdrop-blur-sm">
                 {activeHero?.subtitle || "New Collection 2025"}
               </span>
             </motion.div>
 
-            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[0.9] tracking-tight">
+            <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-[#141413] leading-[0.92] tracking-tight">
               {activeHero?.title || settings?.hero_title || "Redefine"}{" "}
               <span className="block mt-2">
                 Your{" "}
-                <span className="relative">
+                <span className="relative inline-block">
                   Style
-                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-white" />
+                  <span className="absolute -bottom-2 left-0 w-full h-[3px] bg-[#141413] rounded-full" />
                 </span>
               </span>
             </motion.h1>
 
             {activeHero?.description && (
-              <motion.p variants={itemVariants} className="text-lg text-white/70 max-w-md leading-relaxed">
+              <motion.p variants={itemVariants} className="text-base text-[#6B6B67] max-w-sm leading-relaxed">
                 {activeHero.description}
               </motion.p>
             )}
 
-            <motion.div variants={itemVariants} className="flex flex-wrap gap-4 pt-4">
+            <motion.div variants={itemVariants} className="flex flex-wrap gap-3 pt-2">
               <Link
                 href={activeHero?.cta_link || settings?.hero_cta_link || "/products"}
-                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 bg-[#141413] text-[#FAFAF8] px-7 py-3.5 rounded-[10px] font-semibold text-sm hover:opacity-85 transition-all duration-200 active:scale-[0.98]"
               >
                 {activeHero?.cta_text || settings?.hero_cta_text || "Shop Now"}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" strokeWidth={1.8} />
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-300"
+                className="inline-flex items-center gap-2 border border-[#E5E5E0] text-[#141413] bg-white px-7 py-3.5 rounded-[10px] font-semibold text-sm hover:border-[#141413] hover:bg-[#141413] hover:text-[#FAFAF8] transition-all duration-200 active:scale-[0.98]"
               >
                 Explore Collection
               </Link>
             </motion.div>
 
             <motion.div variants={itemVariants} className="flex items-center gap-8 pt-6">
-              <div>
-                <p className="text-3xl font-bold text-white">50K+</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Happy Customers</p>
-              </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div>
-                <p className="text-3xl font-bold text-white">4.9</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Average Rating</p>
-              </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div>
-                <p className="text-3xl font-bold text-white">200+</p>
-                <p className="text-xs text-white/40 uppercase tracking-wider">Premium Brands</p>
-              </div>
+              {[
+                { num: "50K+", label: "Happy Customers" },
+                { num: "4.9", label: "Average Rating" },
+                { num: "200+", label: "Premium Brands" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-bold text-[#141413]">{stat.num}</p>
+                  <p className="text-[10px] text-[#6B6B67] uppercase tracking-wider mt-0.5">{stat.label}</p>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
 
+          {/* Hero visual — clean geometric */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative hidden lg:block"
+            transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="relative hidden lg:flex justify-center items-center"
           >
-            <div className="relative aspect-[3/4] rounded-3xl overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border border-white/10 rounded-full flex items-center justify-center">
-                  <div className="w-32 h-32 border border-white/5 rounded-full flex items-center justify-center">
-                    <span className="text-6xl font-light text-white/20">H</span>
+            <div className="relative w-full max-w-[420px] aspect-[3/4]">
+              {/* Background shapes */}
+              <div className="absolute inset-0 rounded-[28px] bg-[#E5E5E0]/50" />
+              <div className="absolute top-6 right-6 bottom-6 left-6 rounded-[22px] bg-[#F4F4F1] border border-[#E5E5E0] flex items-center justify-center overflow-hidden">
+                <div className="w-40 h-40 rounded-full border-2 border-[#E5E5E0] flex items-center justify-center">
+                  <div className="w-28 h-28 rounded-full border border-[#E5E5E0] flex items-center justify-center">
+                    <span className="text-6xl font-light text-[#D4D4CC] font-bold">H</span>
                   </div>
                 </div>
               </div>
+              {/* Floating badge top-right */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 right-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-3 -right-3 bg-white border border-[#E5E5E0] rounded-[14px] px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
               >
-                <p className="text-xs text-white/60">Featured</p>
-                <p className="text-sm font-semibold text-white">Leather Jacket</p>
+                <p className="text-[10px] text-[#6B6B67] mb-0.5">Featured</p>
+                <p className="text-[13px] font-semibold text-[#141413]">Leather Jacket</p>
               </motion.div>
+              {/* Floating rating bottom-left */}
               <motion.div
-                animate={{ y: [0, 10, 0] }}
+                animate={{ y: [0, 8, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 left-8 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4"
+                className="absolute -bottom-2 -left-3 bg-white border border-[#E5E5E0] rounded-[14px] px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
               >
-                <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  <span className="text-sm font-semibold text-white">4.9</span>
+                <div className="flex items-center gap-1.5">
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" strokeWidth={0} />
+                  <span className="text-[13px] font-semibold text-[#141413]">4.9</span>
+                  <span className="text-[10px] text-[#6B6B67] ml-0.5">(2.4k)</span>
                 </div>
               </motion.div>
             </div>
@@ -243,19 +242,20 @@ function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null;
         </div>
       </div>
 
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        transition={{ delay: 1.2 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5"
       >
-        <span className="text-[10px] uppercase tracking-widest text-white/30">Scroll</span>
+        <span className="text-[9px] uppercase tracking-[0.2em] text-[#A8A89E]">Scroll</span>
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-5 h-8 border border-white/20 rounded-full flex items-start justify-center p-1.5"
+          className="w-[22px] h-[34px] border border-[#D4D4CC] rounded-full flex items-start justify-center p-1.5"
         >
-          <div className="w-1 h-2 bg-white/40 rounded-full" />
+          <div className="w-[3px] h-[10px] bg-[#A8A89E] rounded-full" />
         </motion.div>
       </motion.div>
     </section>
@@ -282,33 +282,30 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
     );
   }
 
-  return (
-    <section className="py-24 bg-secondary/30">
-      <div className="container mx-auto px-6">
-        <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Browse By</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">Featured Categories</h2>
+return (
+    <section className="py-20 lg:py-28 bg-[#F4F4F1]">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <AnimatedSection className="text-center mb-12 lg:mb-16">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#6B6B67]">Browse By</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141413] mt-3">Featured Categories</h2>
         </AnimatedSection>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
           {categories.slice(0, 4).map((category, index) => {
             const Icon = getCategoryIcon(category.name);
             return (
               <AnimatedSection key={category.id} delay={index * 0.1}>
                 <Link
                   href={`/products?category=${category.slug}`}
-                  className="group relative bg-card border border-border rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-foreground hover:translate-y-[-4px] hover:shadow-xl"
+                  className="group relative bg-white border border-[#E5E5E0] rounded-[16px] p-5 lg:p-7 overflow-hidden transition-all duration-400 hover:border-[#D4D4CC] hover:shadow-[0_4px_20px_rgba(0,0,0,0.07)] hover:-translate-y-1"
                 >
-                  <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative z-10">
-                    <div className="w-14 h-14 rounded-2xl bg-muted border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <Icon className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-1">{category.name}</h3>
-                    <p className="text-sm text-muted-foreground">{category.product_count || 0} items</p>
+                  <div className="w-12 h-12 rounded-[12px] bg-[#F4F4F1] border border-[#E5E5E0] flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                    <Icon className="w-5 h-5 text-[#6B6B67]" strokeWidth={1.8} />
                   </div>
-                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
-                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-[14px] font-semibold text-[#141413] mb-1">{category.name}</h3>
+                  <p className="text-[12px] text-[#6B6B67]">{category.product_count || 0} items</p>
+                  <div className="absolute bottom-4 right-4 w-7 h-7 rounded-full bg-[#F4F4F1] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <ArrowRight className="w-3.5 h-3.5 text-[#6B6B67]" strokeWidth={1.8} />
                   </div>
                 </Link>
               </AnimatedSection>
@@ -324,17 +321,17 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
 function TrendingSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-6">
-          <div className="flex items-end justify-between mb-12">
+      <section className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10 lg:mb-14">
             <div>
-              <Skeleton className="h-4 w-24 mb-4" />
-              <Skeleton className="h-12 w-48" />
+              <Skeleton className="h-3 w-20 mb-3" />
+              <Skeleton className="h-8 w-36" />
             </div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 lg:gap-5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-80 rounded-2xl" />
+              <Skeleton key={i} className="h-72 lg:h-80 rounded-[16px]" />
             ))}
           </div>
         </div>
@@ -345,23 +342,23 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-6">
-        <AnimatedSection className="flex items-end justify-between mb-12">
+    <section className="py-20 lg:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <AnimatedSection className="flex items-end justify-between mb-10 lg:mb-14">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Hot Right Now</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">Trending Now</h2>
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#6B6B67]">Hot Right Now</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141413] mt-3">Trending Now</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-[#6B6B67] hover:text-[#141413] transition-colors group"
           >
-            View All
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <span className="text-[13px] font-medium">View All</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={1.8} />
           </Link>
         </AnimatedSection>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-5">
           {products.slice(0, 6).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.08}>
               <ProductCard product={product} />
@@ -370,9 +367,9 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
         </div>
 
         <AnimatedSection className="mt-10 text-center sm:hidden">
-          <Link href="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/products" className="inline-flex items-center gap-2 text-[#6B6B67] hover:text-[#141413] transition-colors text-sm font-medium">
             View All Products
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" strokeWidth={1.8} />
           </Link>
         </AnimatedSection>
       </div>
@@ -382,27 +379,14 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
 
 // PROMO BANNER
 function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean }) {
-  // promo_banners: image banners = hero, color-only = promo
   const activeBanners = banners.filter((b) => b.is_active);
   const activeBanner = activeBanners[0];
 
-  const bannerSectionStyle = activeBanner?.background_image
-    ? { backgroundImage: `url(${activeBanner.background_image})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : activeBanner?.background_color
-    ? { backgroundColor: activeBanner.background_color }
-    : undefined;
-
-  const bannerCardStyle = activeBanner?.background_image
-    ? { background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }
-    : activeBanner?.background_color
-    ? { background: `${activeBanner.background_color}cc` }
-    : undefined;
-
   if (loading) {
     return (
-      <section className="py-20 bg-secondary/30 relative overflow-hidden">
-        <div className="container mx-auto px-6 relative z-10">
-          <Skeleton className="h-64 rounded-3xl" />
+      <section className="py-20 bg-[#F4F4F1] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+          <Skeleton className="h-56 lg:h-72 rounded-[20px]" />
         </div>
       </section>
     );
@@ -410,16 +394,24 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
 
   if (!activeBanner) return null;
 
+  const hasBgImage = !!activeBanner.background_image;
+
   return (
     <section
-      className="py-20 relative overflow-hidden"
-      style={bannerSectionStyle}
+      className="py-20 lg:py-28 relative overflow-hidden"
+      style={hasBgImage
+        ? { backgroundImage: `url(${activeBanner.background_image})`, backgroundSize: "cover", backgroundPosition: "center" }
+        : { backgroundColor: activeBanner.background_color || "#141413" }
+      }
     >
-      <div className="absolute inset-0 bg-black/70" />
+      {!hasBgImage && <div className="absolute inset-0 bg-black/30" />}
 
-      <AnimatedSection className="container mx-auto px-6 relative z-10">
-        <div className="relative border border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden"
-          style={bannerCardStyle}
+      <AnimatedSection className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div className="relative border border-white/10 rounded-[20px] p-10 lg:p-16 overflow-hidden"
+          style={hasBgImage
+            ? { background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }
+            : {}
+          }
         >
           <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 border border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -430,7 +422,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="inline-block text-xs uppercase tracking-[0.3em] text-white/70 border border-white/20 rounded-full px-4 py-1.5 mb-6"
+                className="inline-block text-[11px] uppercase tracking-[0.25em] text-white/70 border border-white/20 rounded-full px-4 py-1.5 mb-6"
               >
                 {activeBanner.subtitle}
               </motion.span>
@@ -441,7 +433,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-4 leading-tight"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight"
             >
               {activeBanner.title}
             </motion.h2>
@@ -452,7 +444,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="text-lg text-white/60 mb-8"
+                className="text-base text-white/60 mb-8 max-w-sm"
               >
                 {activeBanner.description}
               </motion.p>
@@ -466,10 +458,10 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
             >
               <Link
                 href={activeBanner.cta_link || "/products"}
-                className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 bg-white text-[#141413] px-7 py-3.5 rounded-[10px] font-semibold text-sm hover:opacity-90 transition-opacity active:scale-[0.98]"
               >
                 {activeBanner.cta_text || "Shop Now"}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4" strokeWidth={1.8} />
               </Link>
             </motion.div>
           </div>
@@ -483,15 +475,15 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
 function NewArrivalsSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-6">
-          <div className="flex items-end justify-between mb-12">
-            <Skeleton className="h-4 w-24 mb-4" />
-            <Skeleton className="h-12 w-48" />
+      <section className="py-20 lg:py-28 bg-[#F4F4F1]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10 lg:mb-14">
+            <Skeleton className="h-3 w-20 mb-3" />
+            <Skeleton className="h-8 w-36" />
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-80 rounded-2xl" />
+              <Skeleton key={i} className="h-72 lg:h-80 rounded-[16px]" />
             ))}
           </div>
         </div>
@@ -502,23 +494,23 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-6">
-        <AnimatedSection className="flex items-end justify-between mb-12">
+    <section className="py-20 lg:py-28 bg-[#F4F4F1]">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <AnimatedSection className="flex items-end justify-between mb-10 lg:mb-14">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Just Dropped</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">New Arrivals</h2>
+            <span className="text-[11px] uppercase tracking-[0.2em] text-[#6B6B67]">Just Dropped</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141413] mt-3">New Arrivals</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-[#6B6B67] hover:text-[#141413] transition-colors group"
           >
-            View All
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <span className="text-[13px] font-medium">View All</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={1.8} />
           </Link>
         </AnimatedSection>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
           {products.slice(0, 4).map((product, index) => (
             <AnimatedSection key={product.id} delay={index * 0.1}>
               <ProductCard product={product} />
@@ -534,15 +526,15 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
 function TestimonialsSection({ testimonials, loading }: { testimonials: Testimonial[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-secondary/30">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <Skeleton className="h-4 w-24 mx-auto mb-4" />
-            <Skeleton className="h-12 w-64 mx-auto" />
+      <section className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-12 lg:mb-16">
+            <Skeleton className="h-3 w-20 mx-auto mb-3" />
+            <Skeleton className="h-8 w-52 mx-auto" />
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
             {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-64 rounded-2xl" />
+              <Skeleton key={i} className="h-56 rounded-[16px]" />
             ))}
           </div>
         </div>
@@ -553,49 +545,49 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="py-24 bg-secondary/30">
-      <div className="container mx-auto px-6">
-        <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Reviews</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">What Our Customers Say</h2>
+    <section className="py-20 lg:py-28 bg-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <AnimatedSection className="text-center mb-12 lg:mb-16">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#6B6B67]">Reviews</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141413] mt-3">What Our Customers Say</h2>
         </AnimatedSection>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
           {testimonials.slice(0, 3).map((testimonial, index) => (
             <AnimatedSection key={testimonial.id} delay={index * 0.15}>
-              <div className="relative bg-card border border-border rounded-2xl p-8 h-full hover:border-foreground transition-colors">
-                <Quote className="w-10 h-10 text-foreground/10 mb-6" />
+              <div className="relative bg-[#FAFAF8] border border-[#E5E5E0] rounded-[16px] p-7 lg:p-8 h-full hover:border-[#D4D4CC] transition-colors">
+                <Quote className="w-8 h-8 text-[#D4D4CC] mb-5" strokeWidth={1.5} />
 
-                <div className="flex items-center gap-1 mb-6">
+                <div className="flex items-center gap-0.5 mb-5">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" strokeWidth={0} />
                   ))}
                 </div>
 
-                <p className="text-muted-foreground leading-relaxed mb-8 text-sm lg:text-base">
+                <p className="text-[#6B6B67] leading-relaxed mb-8 text-[13px] lg:text-[14px]">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                  <div className="w-9 h-9 rounded-full bg-[#F4F4F1] border border-[#E5E5E0] flex items-center justify-center overflow-hidden">
                     {testimonial.avatar ? (
-                      <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="w-full h-full object-cover" />
+                      <Image src={testimonial.avatar} alt={testimonial.name} width={36} height={36} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-sm font-semibold text-foreground">
+                      <span className="text-[13px] font-bold text-[#6B6B67]">
                         {testimonial.name.split(" ").map((n) => n[0]).join("")}
                       </span>
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <p className="text-[13px] font-semibold text-[#141413] flex items-center gap-1.5">
                       {testimonial.name}
                       {testimonial.verified && (
-                        <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                        <span className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center">
+                          <Check className="w-2.5 h-2.5 text-green-500" strokeWidth={2.5} />
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground">Verified Customer</p>
+                    <p className="text-[11px] text-[#6B6B67]">Verified Customer</p>
                   </div>
                 </div>
               </div>
@@ -616,13 +608,11 @@ function NewsletterSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-
     setLoading(true);
     try {
-      // In a real app, you would save this to Supabase
-      // await supabase.from('newsletter_subscribers').insert({ email });
       setSubmitted(true);
       setEmail("");
+      setTimeout(() => setSubmitted(false), 4000);
     } catch (error) {
       console.error('Newsletter subscription error:', error);
     } finally {
@@ -631,31 +621,31 @@ function NewsletterSection() {
   };
 
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-6">
-        <AnimatedSection className="max-w-2xl mx-auto text-center">
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Stay Updated</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3 mb-4">
+    <section className="py-20 lg:py-28 bg-[#F4F4F1]">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <AnimatedSection className="max-w-xl mx-auto text-center">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#6B6B67]">Stay Updated</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#141413] mt-3 mb-4">
             Join the Hermes Community
           </h2>
-          <p className="text-foreground/50 mb-10 max-w-md mx-auto">
+          <p className="text-[#6B6B67] mb-10 text-sm lg:text-base leading-relaxed">
             Subscribe to receive exclusive offers, early access to new arrivals, and style inspiration delivered to your inbox.
           </p>
 
           {!submitted ? (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 max-w-sm mx-auto">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="your@email.com"
                 required
-                className="flex-1 bg-muted border border-border rounded-full px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors"
+                className="flex-1 border border-[#E5E5E0] rounded-[10px] px-5 py-3 text-sm bg-white text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#141413] transition-colors"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-foreground text-background px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
+                className="bg-[#141413] text-[#FAFAF8] px-7 py-3 rounded-[10px] font-semibold text-sm hover:opacity-85 transition-opacity whitespace-nowrap disabled:opacity-50"
               >
                 {loading ? "Subscribing..." : "Subscribe"}
               </button>
@@ -664,14 +654,14 @@ function NewsletterSection() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-6 py-4 rounded-full"
+              className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-600 px-5 py-3 rounded-[10px] text-sm font-medium"
             >
-              <Check className="w-5 h-5" />
-              <span>Welcome to the community! Check your inbox for a special offer.</span>
+              <Check className="w-4 h-4" strokeWidth={2.5} />
+              Welcome! Check your inbox for a special offer.
             </motion.div>
           )}
 
-          <p className="text-xs text-foreground/30 mt-6">
+          <p className="text-[11px] text-[#A8A89E] mt-5">
             By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
           </p>
         </AnimatedSection>
@@ -696,13 +686,13 @@ export default function HomePage() {
     setError(null);
 
     try {
-      // Fetch categories
+      // Categories
       const { data: categoriesData } = await supabase
         .from("categories")
         .select("*")
         .order("name");
 
-      // Fetch trending products (no FK join — flat columns)
+      // Trending products
       const { data: trendingData } = await supabase
         .from("products")
         .select("*")
@@ -710,7 +700,7 @@ export default function HomePage() {
         .eq("is_active", true)
         .limit(6);
 
-      // Fetch featured products (new arrivals)
+      // Featured products
       const { data: featuredData } = await supabase
         .from("products")
         .select("*")
@@ -718,7 +708,7 @@ export default function HomePage() {
         .eq("is_active", true)
         .limit(4);
 
-      // Fetch testimonials
+      // Testimonials
       const { data: testimonialsData } = await supabase
         .from("testimonials")
         .select("*")
@@ -726,7 +716,7 @@ export default function HomePage() {
         .order("created_at", { ascending: false })
         .limit(3);
 
-      // Fetch banners via API route (uses service role key, bypasses RLS)
+      // Banners via API
       let bannersData: any[] = [];
       try {
         const bannersRes = await fetch("/api/banners", { cache: "no-store" });
@@ -734,30 +724,17 @@ export default function HomePage() {
           const bannersJson = await bannersRes.json();
           bannersData = bannersJson.banners || [];
         }
-      } catch {
-        bannersData = [];
-      }
+      } catch { bannersData = []; }
 
-      // Transform data
+      // Site settings
       const { data: settingsData } = await supabase
         .from("site_settings")
         .select("*")
         .single();
 
-      // Transform data
-      const transformedTrending = (trendingData || []).map((p: any) => ({
-        ...p,
-        images: p.images || [],
-      }));
-
-      const transformedFeatured = (featuredData || []).map((p: any) => ({
-        ...p,
-        images: p.images || [],
-      }));
-
       setCategories(categoriesData || []);
-      setTrendingProducts(transformedTrending);
-      setFeaturedProducts(transformedFeatured);
+      setTrendingProducts((trendingData || []).map((p: any) => ({ ...p, images: p.images || [] })));
+      setFeaturedProducts((featuredData || []).map((p: any) => ({ ...p, images: p.images || [] })));
       setTestimonials(testimonialsData || []);
       setBanners(bannersData);
       setSiteSettings(settingsData);
@@ -769,19 +746,16 @@ export default function HomePage() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   if (error) {
     return <ErrorFallback message={error} onRetry={fetchData} />;
   }
 
-  // promo_banners: has background_image → hero; color-only → promo
   const heroBanners = banners.filter((b) => b.background_image);
 
   return (
-    <main className="bg-background min-h-screen">
+    <main className="bg-[#FAFAF8] min-h-screen">
       <HeroSection settings={siteSettings} heroBanners={heroBanners} />
       <CategoriesSection categories={categories} loading={loading} />
       <TrendingSection products={trendingProducts} loading={loading} />

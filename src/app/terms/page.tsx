@@ -103,7 +103,7 @@ We aim to respond to all inquiries within 30 business days.`,
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+    <div className="min-h-screen bg-[#FAFAF8] text-[#141413]">
       {/* Hero */}
       <section className="relative py-24 px-4 text-center overflow-hidden">
         <div
@@ -116,7 +116,7 @@ export default function TermsPage() {
         />
         <div className="max-w-3xl mx-auto relative">
           <FadeSection>
-            <p className="text-sm uppercase tracking-[0.3em] text-[var(--text-secondary)] mb-4">
+            <p className="text-sm uppercase tracking-[0.3em] text-[#6B6B67] mb-4">
               Legal
             </p>
           </FadeSection>
@@ -124,7 +124,7 @@ export default function TermsPage() {
             <h1 className="text-5xl font-bold tracking-tight mb-6">Terms of Service</h1>
           </FadeSection>
           <FadeSection delay={0.2}>
-            <p className="text-[var(--text-secondary)]">
+            <p className="text-[#6B6B67]">
               Last updated: May 12, 2026
             </p>
           </FadeSection>
@@ -134,7 +134,7 @@ export default function TermsPage() {
       {/* Content */}
       <div className="max-w-3xl mx-auto px-4 pb-24">
         <FadeSection>
-          <p className="text-[var(--text-secondary)] leading-relaxed mb-8 border-b border-[var(--border)] pb-8">
+          <p className="text-[#6B6B67] leading-relaxed mb-8 border-b border-[#E5E5E0] pb-8">
             Please read these Terms of Service carefully before using the Hermes
             platform. These terms govern your access to and use of our website,
             services, and applications. By using Hermes, you agree to be bound by
@@ -147,7 +147,7 @@ export default function TermsPage() {
             <div className="mb-10">
               <h2 className="text-lg font-semibold mb-4">{section.title}</h2>
               {section.content.split("\n\n").map((para, j) => (
-                <p key={j} className="text-[var(--text-secondary)] text-sm leading-relaxed mb-3 whitespace-pre-line">
+                <p key={j} className="text-[#6B6B67] text-sm leading-relaxed mb-3 whitespace-pre-line">
                   {para}
                 </p>
               ))}

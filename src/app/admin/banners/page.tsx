@@ -180,18 +180,18 @@ export default function AdminBannersPage() {
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   const bgStyle = {
-    background: "var(--bg-card)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
+    background: "white",
+    border: "1px solid #E5E5E0",
+    color: "#141413",
   };
 
   const inputStyle = {
     width: "100%",
     padding: "10px 14px",
     borderRadius: "8px",
-    border: "1px solid var(--border)",
-    background: "var(--bg)",
-    color: "var(--text)",
+    border: "1px solid #E5E5E0",
+    background: "#FAFAF8",
+    color: "#141413",
     fontSize: "14px",
     outline: "none",
   };
@@ -214,8 +214,8 @@ export default function AdminBannersPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <div>
-          <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--text)", margin: 0 }}>Banners</h2>
-          <p style={{ color: "var(--text-secondary)", marginTop: "4px", fontSize: "14px" }}>
+          <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#141413", margin: 0 }}>Banners</h2>
+          <p style={{ color: "#6B6B67", marginTop: "4px", fontSize: "14px" }}>
             Manage hero banners and promotional banners — controlled from <strong>promo_banners</strong> table
           </p>
         </div>
@@ -224,7 +224,7 @@ export default function AdminBannersPage() {
           style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "10px 20px", borderRadius: "8px",
-            background: "var(--accent)", color: "var(--bg)", fontWeight: 600, fontSize: "14px",
+            background: "#141413", color: "#FAFAF8", fontWeight: 600, fontSize: "14px",
             border: "none", cursor: "pointer",
           }}
         >
@@ -243,33 +243,33 @@ export default function AdminBannersPage() {
           <div key={stat.label} style={{
             padding: "20px", borderRadius: "12px", ...bgStyle,
           }}>
-            <p style={{ color: "var(--text-secondary)", fontSize: "12px", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</p>
-            <p style={{ color: "var(--text)", fontSize: "28px", fontWeight: 700, margin: 0 }}>{stat.value}</p>
+            <p style={{ color: "#6B6B67", fontSize: "12px", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</p>
+            <p style={{ color: "#141413", fontSize: "28px", fontWeight: 700, margin: 0 }}>{stat.value}</p>
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div style={{ background: "var(--bg-card)", borderRadius: "12px", border: "1px solid var(--border)", overflow: "hidden" }}>
+      <div style={{ background: "white", borderRadius: "12px", border: "1px solid #E5E5E0", overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading...</div>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>Loading...</div>
         ) : banners.length === 0 ? (
           <div style={{ padding: "48px", textAlign: "center" }}>
-            <p style={{ color: "var(--text-secondary)", marginBottom: "16px" }}>No banners yet</p>
+            <p style={{ color: "#6B6B67", marginBottom: "16px" }}>No banners yet</p>
             <button onClick={openCreate} style={{
               padding: "10px 20px", borderRadius: "8px",
-              background: "var(--accent)", color: "var(--bg)", fontWeight: 600, border: "none", cursor: "pointer",
+              background: "#141413", color: "#FAFAF8", fontWeight: 600, border: "none", cursor: "pointer",
             }}>Create your first banner</button>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["Status", "Title / Subtitle", "CTA", "Style", "Order", "Created", "Actions"].map((h) => (
                     <th key={h} style={{
                       padding: "12px 16px", textAlign: "left",
-                      fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)",
+                      fontSize: "12px", fontWeight: 600, color: "#6B6B67",
                       textTransform: "uppercase", letterSpacing: "0.5px",
                     }}>{h}</th>
                   ))}
@@ -277,7 +277,7 @@ export default function AdminBannersPage() {
               </thead>
               <tbody>
                 {banners.map((banner) => (
-                  <tr key={banner.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr key={banner.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                     {/* Status */}
                     <td style={{ padding: "12px 16px" }}>
                       <button
@@ -287,8 +287,8 @@ export default function AdminBannersPage() {
                           padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
                           border: "1px solid",
                           background: banner.is_active ? "rgba(34,197,94,0.15)" : "transparent",
-                          borderColor: banner.is_active ? "#22c55e" : "var(--border)",
-                          color: banner.is_active ? "#22c55e" : "var(--text-secondary)",
+                          borderColor: banner.is_active ? "#22c55e" : "#E5E5E0",
+                          color: banner.is_active ? "#22c55e" : "#6B6B67",
                           cursor: "pointer",
                         }}
                       >
@@ -297,30 +297,30 @@ export default function AdminBannersPage() {
                     </td>
                     {/* Title / Subtitle */}
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: "2px" }}>{banner.title}</div>
+                      <div style={{ fontWeight: 600, color: "#141413", marginBottom: "2px" }}>{banner.title}</div>
                       {banner.subtitle && (
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <div style={{ fontSize: "12px", color: "#6B6B67", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {banner.subtitle}
                         </div>
                       )}
                     </td>
                     {/* CTA */}
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: "13px", color: "var(--text)" }}>{banner.link_text || "Shop Now"}</span>
+                      <span style={{ fontSize: "13px", color: "#141413" }}>{banner.link_text || "Shop Now"}</span>
                       <br />
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>{banner.link || "/products"}</span>
+                      <span style={{ fontSize: "12px", color: "#6B6B67", opacity: 0.6 }}>{banner.link || "/products"}</span>
                     </td>
                     {/* Style Preview */}
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         {banner.background_image ? (
-                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", overflow: "hidden", border: "1px solid var(--border)" }}>
+                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", overflow: "hidden", border: "1px solid #E5E5E0" }}>
                             <img src={banner.background_image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           </div>
                         ) : (
-                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", background: banner.background_color || "#0a0a0a", border: "1px solid var(--border)" }} />
+                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", background: banner.background_color || "#0a0a0a", border: "1px solid #E5E5E0" }} />
                         )}
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                        <div style={{ fontSize: "12px", color: "#6B6B67" }}>
                           <span style={{ color: banner.text_color || "#fff" }}>■</span> {banner.background_image ? "Image" : "Color"}
                         </div>
                       </div>
@@ -328,19 +328,19 @@ export default function AdminBannersPage() {
                     {/* Order */}
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <span style={{ fontSize: "14px", color: "var(--text-secondary)", minWidth: "20px" }}>{banner.sort_order ?? 0}</span>
-                        <button onClick={() => moveOrder(banner, "up")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "2px" }}><ArrowUp size={14} /></button>
-                        <button onClick={() => moveOrder(banner, "down")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "2px" }}><ArrowDown size={14} /></button>
+                        <span style={{ fontSize: "14px", color: "#6B6B67", minWidth: "20px" }}>{banner.sort_order ?? 0}</span>
+                        <button onClick={() => moveOrder(banner, "up")} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B6B67", padding: "2px" }}><ArrowUp size={14} /></button>
+                        <button onClick={() => moveOrder(banner, "down")} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B6B67", padding: "2px" }}><ArrowDown size={14} /></button>
                       </div>
                     </td>
                     {/* Created */}
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{formatDate(banner.created_at)}</span>
+                      <span style={{ fontSize: "12px", color: "#6B6B67" }}>{formatDate(banner.created_at)}</span>
                     </td>
                     {/* Actions */}
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => openEdit(banner)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "4px" }}><Edit2 size={16} /></button>
+                        <button onClick={() => openEdit(banner)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B6B67", padding: "4px" }}><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(banner.id)} disabled={deletingId === banner.id} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", padding: "4px", opacity: deletingId === banner.id ? 0.5 : 1 }}><Trash2 size={16} /></button>
                       </div>
                     </td>
@@ -361,15 +361,15 @@ export default function AdminBannersPage() {
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
           <div style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "16px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto",
           }}>
             {/* Modal Header */}
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "var(--text)", margin: 0 }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: "18px", fontWeight: 700, color: "#141413", margin: 0 }}>
                 {editingId ? "Edit Banner" : "Create Banner"}
               </h3>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "4px" }}><X size={20} /></button>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B6B67", padding: "4px" }}><X size={20} /></button>
             </div>
 
             {/* Modal Form */}
@@ -377,7 +377,7 @@ export default function AdminBannersPage() {
 
               {/* Title */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>
                   Title <span style={{ color: "#ef4444" }}>*</span>
                 </label>
                 <input type="text" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Summer Sale" style={inputStyle} required />
@@ -385,42 +385,42 @@ export default function AdminBannersPage() {
 
               {/* Subtitle */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Subtitle / Description</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Subtitle / Description</label>
                 <textarea value={form.subtitle || ""} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="e.g. Up to 40% off on premium items" rows={2} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
 
               {/* CTA */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>CTA Text</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>CTA Text</label>
                   <input type="text" value={form.link_text || ""} onChange={(e) => setForm({ ...form, link_text: e.target.value })} placeholder="Shop Now" style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>CTA Link</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>CTA Link</label>
                   <input type="text" value={form.link || ""} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="/products" style={inputStyle} />
                 </div>
               </div>
 
               {/* Background */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Background Image URL (optional — leave empty for color banner)</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Background Image URL (optional — leave empty for color banner)</label>
                 <input type="url" value={form.background_image || ""} onChange={(e) => setForm({ ...form, background_image: e.target.value || null })} placeholder="https://..." style={inputStyle} />
                 {form.background_image && (
-                  <img src={form.background_image} alt="Preview" style={{ marginTop: "8px", width: "100%", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid var(--border)" }} />
+                  <img src={form.background_image} alt="Preview" style={{ marginTop: "8px", width: "100%", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid #E5E5E0" }} />
                 )}
               </div>
 
               {/* Colors */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Background Color</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Background Color</label>
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <input type="color" value={form.background_color || "#0a0a0a"} onChange={(e) => setForm({ ...form, background_color: e.target.value })} style={{ width: "44px", height: "38px", border: "none", background: "none", cursor: "pointer", borderRadius: "6px" }} />
                     <input type="text" value={form.background_color || ""} onChange={(e) => setForm({ ...form, background_color: e.target.value })} placeholder="#0a0a0a" style={inputStyle} />
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Text Color</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Text Color</label>
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <input type="color" value={form.text_color || "#ffffff"} onChange={(e) => setForm({ ...form, text_color: e.target.value })} style={{ width: "44px", height: "38px", border: "none", background: "none", cursor: "pointer", borderRadius: "6px" }} />
                     <input type="text" value={form.text_color || ""} onChange={(e) => setForm({ ...form, text_color: e.target.value })} placeholder="#ffffff" style={inputStyle} />
@@ -430,30 +430,30 @@ export default function AdminBannersPage() {
 
               {/* Sort Order */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Sort Order</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Sort Order</label>
                 <input type="number" value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} style={{ ...inputStyle, maxWidth: "160px" }} />
               </div>
 
               {/* Schedule */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Show From</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Show From</label>
                   <input type="datetime-local" value={form.starts_at?.slice(0, 16) || ""} onChange={(e) => setForm({ ...form, starts_at: e.target.value ? new Date(e.target.value).toISOString() : null })} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Show Until</label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#141413", marginBottom: "6px" }}>Show Until</label>
                   <input type="datetime-local" value={form.ends_at?.slice(0, 16) || ""} onChange={(e) => setForm({ ...form, ends_at: e.target.value ? new Date(e.target.value).toISOString() : null })} style={inputStyle} />
                 </div>
               </div>
 
               {/* Active Toggle */}
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "8px", border: "1px solid #E5E5E0" }}>
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, is_active: !form.is_active })}
                   style={{
                     width: "44px", height: "24px", borderRadius: "12px", position: "relative",
-                    background: form.is_active ? "#22c55e" : "var(--border)", border: "none", cursor: "pointer",
+                    background: form.is_active ? "#22c55e" : "#E5E5E0", border: "none", cursor: "pointer",
                     transition: "background 0.2s",
                   }}
                 >
@@ -464,7 +464,7 @@ export default function AdminBannersPage() {
                     background: "#fff", transition: "left 0.2s",
                   }} />
                 </button>
-                <span style={{ fontSize: "14px", color: "var(--text)", fontWeight: 500 }}>
+                <span style={{ fontSize: "14px", color: "#141413", fontWeight: 500 }}>
                   {form.is_active ? "✅ Active (visible on site)" : "Draft (hidden from site)"}
                 </span>
               </div>
@@ -473,12 +473,12 @@ export default function AdminBannersPage() {
               <div style={{ display: "flex", gap: "12px", marginTop: "8px", justifyContent: "flex-end" }}>
                 <button type="button" onClick={() => setShowModal(false)} style={{
                   padding: "10px 20px", borderRadius: "8px",
-                  border: "1px solid var(--border)", background: "transparent",
-                  color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer",
+                  border: "1px solid #E5E5E0", background: "transparent",
+                  color: "#6B6B67", fontSize: "14px", fontWeight: 600, cursor: "pointer",
                 }}>Cancel</button>
                 <button type="submit" disabled={saving} style={{
                   padding: "10px 24px", borderRadius: "8px",
-                  background: "var(--accent)", color: "var(--bg)", fontSize: "14px", fontWeight: 600,
+                  background: "#141413", color: "#FAFAF8", fontSize: "14px", fontWeight: 600,
                   border: "none", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1,
                 }}>
                   {saving ? "Saving..." : editingId ? "Update Banner" : "Create Banner"}

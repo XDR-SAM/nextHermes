@@ -117,21 +117,21 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <main className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[var(--text-secondary)] animate-spin" />
+      <main className="min-h-screen bg-[#FAFAF8] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#6B6B67] animate-spin" />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[var(--bg)]">
+    <main className="min-h-screen bg-[#FAFAF8]">
       {/* Header */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border)]">
+      <div className="bg-white border-b border-[#E5E5E0]">
         <div className="container mx-auto px-6 py-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--text)] mb-2">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[#141413] mb-2">
             My Profile
           </h1>
-          <p className="text-[var(--text-secondary)]">
+          <p className="text-[#6B6B67]">
             Manage your personal information
           </p>
         </div>
@@ -144,13 +144,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6"
+            className="bg-white border border-[#E5E5E0] rounded-2xl p-6"
           >
-            <h2 className="text-lg font-semibold text-[var(--text)] mb-6">
+            <h2 className="text-lg font-semibold text-[#141413] mb-6">
               Profile Photo
             </h2>
             <div className="flex items-center gap-6">
-              <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 shrink-0">
+              <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-[#E5E5E0] shrink-0">
                 {profile?.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
@@ -160,17 +160,17 @@ export default function ProfilePage() {
                     sizes="80px"
                   />
                 ) : (
-                  <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                    <User className="w-8 h-8 text-[var(--text-secondary)]" />
+                  <div className="w-full h-full bg-[#F4F4F1] flex items-center justify-center">
+                    <User className="w-8 h-8 text-[#6B6B67]" />
                   </div>
                 )}
               </div>
               <div>
-                <button className="flex items-center gap-2 bg-white/5 border border-[var(--border)] text-[var(--text)] px-4 py-2 rounded-full text-sm hover:bg-white/10 transition-colors">
+                <button className="flex items-center gap-2 bg-[#F4F4F1] border border-[#E5E5E0] text-[#141413] px-4 py-2 rounded-full text-sm hover:bg-[#F4F4F1]/80 transition-colors">
                   <Camera className="w-4 h-4" />
                   Change Photo
                 </button>
-                <p className="text-xs text-[var(--text-secondary)] mt-2">
+                <p className="text-xs text-[#6B6B67] mt-2">
                   JPG, PNG or WEBP. Max 2MB.
                 </p>
               </div>
@@ -182,62 +182,62 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
-            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6"
+            className="bg-white border border-[#E5E5E0] rounded-2xl p-6"
           >
-            <h2 className="text-lg font-semibold text-[var(--text)] mb-6">
+            <h2 className="text-lg font-semibold text-[#141413] mb-6">
               Personal Information
             </h2>
 
             <div className="space-y-4">
               {/* Full Name */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Your full name"
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#D4D4CC] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Email (readonly) */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="email"
                     value={email}
                     readOnly
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text-secondary)] cursor-not-allowed opacity-60"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#6B6B67] cursor-not-allowed opacity-60"
                   />
                 </div>
-                <p className="text-xs text-[var(--text-secondary)] mt-1.5">
+                <p className="text-xs text-[#6B6B67] mt-1.5">
                   Contact support to change your email address.
                 </p>
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   Phone Number
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+1 (555) 000-0000"
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#D4D4CC] transition-colors"
                   />
                 </div>
               </div>
@@ -276,63 +276,63 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6"
+            className="bg-white border border-[#E5E5E0] rounded-2xl p-6"
           >
-            <h2 className="text-lg font-semibold text-[var(--text)] mb-1">
+            <h2 className="text-lg font-semibold text-[#141413] mb-1">
               Change Password
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">
+            <p className="text-sm text-[#6B6B67] mb-6">
               Leave blank if you don't want to change your password.
             </p>
 
             <div className="space-y-4">
               {/* Current Password */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   Current Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#D4D4CC] transition-colors"
                   />
                 </div>
               </div>
 
               {/* New Password */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   New Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 8 characters"
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#D4D4CC] transition-colors"
                   />
                 </div>
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm text-[var(--text-secondary)] mb-2">
+                <label className="block text-sm text-[#6B6B67] mb-2">
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-secondary)]" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B6B67]" />
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Re-enter new password"
-                    className="w-full bg-white/5 border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:border-[var(--text-secondary)] transition-colors"
+                    className="w-full bg-[#F4F4F1] border border-[#E5E5E0] rounded-xl pl-10 pr-4 py-3 text-[#141413] placeholder:text-[#6B6B67] focus:outline-none focus:border-[#D4D4CC] transition-colors"
                   />
                 </div>
               </div>
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                     "flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all",
                     passwordSaved
                       ? "bg-emerald-500 text-white"
-                      : "bg-white/10 border border-[var(--border)] text-[var(--text)] hover:bg-white/20"
+                      : "bg-white/10 border border-[#E5E5E0] text-[#141413] hover:bg-white/20"
                   )}
                 >
                   {passwordSaved ? (
@@ -370,7 +370,7 @@ export default function ProfilePage() {
           <div className="flex justify-start">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text)] transition-colors"
+              className="flex items-center gap-2 text-sm text-[#6B6B67] hover:text-[#141413] transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               Back to Dashboard

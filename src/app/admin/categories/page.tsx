@@ -188,8 +188,8 @@ export default function CategoriesPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "var(--text)", margin: "0 0 4px" }}>Categories</h1>
-          <p style={{ color: "var(--text-secondary)", margin: 0 }}>{categories.length} total categories</p>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Categories</h1>
+          <p style={{ color: "#6B6B67", margin: 0 }}>{categories.length} total categories</p>
         </div>
         <button onClick={openAddModal} style={{
           display: "flex", alignItems: "center", gap: "8px",
@@ -205,26 +205,26 @@ export default function CategoriesPage() {
 
       {/* Table */}
       <div style={{
-        background: "var(--bg-card)", border: "1px solid var(--border)",
+        background: "white", border: "1px solid #E5E5E0",
         borderRadius: "12px", overflow: "hidden"
       }}>
         {loading ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             Loading categories...
           </div>
         ) : categories.length === 0 ? (
-          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+          <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
             No categories yet. Add your first category!
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   {["Category", "Slug", "Products", "Status", "Actions"].map(h => (
                     <th key={h} style={{
                       padding: "14px 16px", textAlign: "left", fontSize: "12px",
-                      color: "var(--text-secondary)", fontWeight: "600",
+                      color: "#6B6B67", fontWeight: "600",
                       textTransform: "uppercase", letterSpacing: "0.5px"
                     }}>{h}</th>
                   ))}
@@ -232,7 +232,7 @@ export default function CategoriesPage() {
               </thead>
               <tbody>
                 {categories.map(category => (
-                  <tr key={category.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                  <tr key={category.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {category.image_url ? (
@@ -246,18 +246,18 @@ export default function CategoriesPage() {
                         ) : null}
                         <div style={{
                           width: "40px", height: "40px", borderRadius: "8px",
-                          background: "var(--bg-secondary)", display: category.image_url ? "none" : "flex",
+                          background: "#F4F4F1", display: category.image_url ? "none" : "flex",
                           alignItems: "center", justifyContent: "center",
                           fontSize: category.icon ? "20px" : "16px"
                         }}>
                           {category.icon || "🏷️"}
                         </div>
                         <div>
-                          <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--text)" }}>
+                          <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>
                             {category.name}
                           </div>
                           {category.description && (
-                            <div style={{ fontSize: "12px", color: "var(--text-secondary)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            <div style={{ fontSize: "12px", color: "#6B6B67", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                               {category.description}
                             </div>
                           )}
@@ -267,7 +267,7 @@ export default function CategoriesPage() {
                     <td style={{ padding: "14px 16px" }}>
                       <code style={{
                         fontSize: "12px", padding: "4px 8px", borderRadius: "4px",
-                        background: "var(--bg-secondary)", color: "var(--text-secondary)"
+                        background: "#F4F4F1", color: "#6B6B67"
                       }}>
                         {category.slug}
                       </code>
@@ -276,7 +276,7 @@ export default function CategoriesPage() {
                       <span style={{
                         padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600",
                         background: category.product_count && category.product_count > 0 ? "rgba(59,130,246,0.1)" : "rgba(137,137,137,0.1)",
-                        color: category.product_count && category.product_count > 0 ? "#3b82f6" : "var(--text-secondary)"
+                        color: category.product_count && category.product_count > 0 ? "#3b82f6" : "#6B6B67"
                       }}>
                         {category.product_count || 0} products
                       </span>
@@ -295,8 +295,8 @@ export default function CategoriesPage() {
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button onClick={() => openEditModal(category)} style={{
-                          padding: "6px 12px", borderRadius: "6px", border: "1px solid var(--border)",
-                          background: "transparent", color: "var(--text)", fontSize: "12px",
+                          padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                          background: "transparent", color: "#141413", fontSize: "12px",
                           cursor: "pointer", transition: "all 0.15s ease"
                         }}>
                           Edit
@@ -310,8 +310,8 @@ export default function CategoriesPage() {
                               Delete
                             </button>
                             <button onClick={() => setDeleteConfirm(null)} style={{
-                              padding: "6px 10px", borderRadius: "6px", border: "1px solid var(--border)",
-                              background: "transparent", color: "var(--text)", fontSize: "12px", cursor: "pointer"
+                              padding: "6px 10px", borderRadius: "6px", border: "1px solid #E5E5E0",
+                              background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer"
                             }}>
                               Cancel
                             </button>
@@ -344,25 +344,25 @@ export default function CategoriesPage() {
         }}
         onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div style={{
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            background: "white", border: "1px solid #E5E5E0",
             borderRadius: "12px", width: "100%", maxWidth: "500px"
           }}>
             <div style={{
-              padding: "20px 24px", borderBottom: "1px solid var(--border)",
+              padding: "20px 24px", borderBottom: "1px solid #E5E5E0",
               display: "flex", justifyContent: "space-between", alignItems: "center"
             }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "var(--text)", margin: 0 }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>
                 {editingCategory ? "Edit Category" : "Add Category"}
               </h2>
               <button onClick={() => setShowModal(false)} style={{
                 padding: "8px", border: "none", background: "transparent",
-                color: "var(--text-secondary)", cursor: "pointer", fontSize: "18px"
+                color: "#6B6B67", cursor: "pointer", fontSize: "18px"
               }}>✕</button>
             </div>
             <form onSubmit={handleSubmit} style={{ padding: "24px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>
                     Name *
                   </label>
                   <input
@@ -375,7 +375,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>
                     Slug
                   </label>
                   <input
@@ -389,7 +389,7 @@ export default function CategoriesPage() {
               </div>
 
               <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>
                   Description
                 </label>
                 <textarea
@@ -403,7 +403,7 @@ export default function CategoriesPage() {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>
                     Icon (emoji)
                   </label>
                   <input
@@ -416,7 +416,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary)", marginBottom: "6px" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>
                     Image URL
                   </label>
                   <input
@@ -437,7 +437,7 @@ export default function CategoriesPage() {
                     onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
                     style={{ width: "16px", height: "16px", accentColor: "#a855f7" }}
                   />
-                  <span style={{ fontSize: "14px", color: "var(--text)" }}>Active</span>
+                  <span style={{ fontSize: "14px", color: "#141413" }}>Active</span>
                 </label>
               </div>
 
@@ -458,8 +458,8 @@ export default function CategoriesPage() {
                   type="button"
                   onClick={() => setShowModal(false)}
                   style={{
-                    padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--border)",
-                    background: "transparent", color: "var(--text)", fontSize: "14px",
+                    padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0",
+                    background: "transparent", color: "#141413", fontSize: "14px",
                     fontWeight: "500", cursor: "pointer"
                   }}
                 >
@@ -490,7 +490,7 @@ export default function CategoriesPage() {
           to { transform: translateX(0); opacity: 1; }
         }
         input::placeholder, textarea::placeholder {
-          color: var(--text-secondary);
+          color: #6B6B67;
         }
         @media (max-width: 640px) {
           div[style*="gridTemplateColumns: 1fr 1fr"] {
@@ -504,6 +504,6 @@ export default function CategoriesPage() {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px", borderRadius: "8px",
-  border: "1px solid var(--border)", background: "var(--bg-secondary)",
-  color: "var(--text)", fontSize: "14px", outline: "none", boxSizing: "border-box"
+  border: "1px solid #E5E5E0", background: "#F4F4F1",
+  color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box"
 };
