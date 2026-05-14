@@ -30,8 +30,6 @@ export async function POST() {
       is_featured: true,
       is_trending: true,
       is_active: true,
-      is_featured: true,
-      is_trending: false,
     },
     {
       name: "MacBook Air M4 15\"",
