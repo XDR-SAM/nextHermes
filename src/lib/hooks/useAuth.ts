@@ -37,7 +37,7 @@ export function useAuth() {
     // Listen for auth state changes to re-fetch profile on login/logout
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event: string, session: { user?: unknown } | null) => {
       if (session?.user) {
         fetchProfile();
       } else {

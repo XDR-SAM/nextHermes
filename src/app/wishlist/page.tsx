@@ -69,8 +69,8 @@ export default function WishlistPage() {
         .from("wishlists")
         .select("product_id")
         .eq("user_id", userId);
-      
-      const supabaseProductIds = new Set((supabaseWishlist || []).map((w: { product_id: string }) => w.product_id));
+
+      const supabaseProductIds = new Set<string>((supabaseWishlist || []).map((w: { product_id: unknown }) => String(w.product_id)));
       
       // Items in local store but not in Supabase - add them
       for (const productId of wishlistItems) {

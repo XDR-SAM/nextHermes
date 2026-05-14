@@ -59,16 +59,14 @@ export const useWishlistStore = create<WishlistState>()(
         }));
 
         // Sync with Supabase (non-blocking)
-        supabase.auth.getUser().then(({ data: { user } }) => {
+        (async () => {
+          const { data } = await supabase.auth.getUser();
+          const user = data?.user;
           if (user) {
-            supabase
-              .from("wishlists")
-              .delete()
-              .eq("user_id", user.id)
-              .eq("product_id", id);
+            supabase.from("wishlists").delete().eq("user_id", user.id).eq("product_id", id);
           }
-        }).catch((error) => {
-          console.error("Error removing from wishlist:", error);
+        })().catch((e: unknown) => {
+          console.error("Error removing from wishlist:", e);
         });
       },
 
@@ -86,9 +84,9 @@ export const useWishlistStore = create<WishlistState>()(
               .from("wishlists")
               .select("product_id")
               .eq("user_id", user.id);
-            
-            if (wishlists) {
-              const productIds = wishlists.map((w: { product_id: string }) => w.product_id);
+
+            if (wishlists && wishlists.length > 0) {
+              const productIds: string[] = wishlists.map((w: { product_id: unknown }) => String(w.product_id));
               set({ wishlistItems: productIds });
             }
           }

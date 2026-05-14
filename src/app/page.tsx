@@ -77,7 +77,7 @@ const getCategoryIcon = (name: string) => {
 // Skeleton loader
 function Skeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("animate-pulse bg-white/5 rounded-lg", className)} />
+    <div className={cn("animate-pulse bg-muted rounded-lg", className)} />
   );
 }
 
@@ -102,10 +102,10 @@ function AnimatedSection({ children, className, delay = 0 }: { children: React.R
 // Error boundary fallback
 function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div className="min-h-screen bg-[var(--bg)] dark:bg-black flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center p-8">
-        <p className="text-[var(--text-secondary)] dark:text-white/60 mb-4">{message}</p>
-        <button onClick={onRetry} className="bg-[var(--accent)] text-[var(--bg)] px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-colors">
+        <p className="text-muted-foreground mb-4">{message}</p>
+        <button onClick={onRetry} className="bg-foreground text-background px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-colors">
           Try Again
         </button>
       </div>
@@ -266,7 +266,7 @@ function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null;
 function CategoriesSection({ categories, loading }: { categories: Category[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
+      <section className="py-24 bg-secondary/30">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Skeleton className="h-4 w-24 mx-auto mb-4" />
@@ -283,11 +283,11 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
   }
 
   return (
-    <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
+    <section className="py-24 bg-secondary/30">
       <div className="container mx-auto px-6">
         <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Browse By</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">Featured Categories</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Browse By</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">Featured Categories</h2>
         </AnimatedSection>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -297,18 +297,18 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
               <AnimatedSection key={category.id} delay={index * 0.1}>
                 <Link
                   href={`/products?category=${category.slug}`}
-                  className="group relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:to-zinc-950 border border-[var(--border)] dark:border-white/5 rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-[var(--text-secondary)] dark:hover:border-white/15 hover:translate-y-[-4px] hover:shadow-2xl dark:hover:shadow-black/50"
+                  className="group relative bg-card border border-border rounded-2xl p-6 lg:p-8 overflow-hidden transition-all duration-500 hover:border-foreground hover:translate-y-[-4px] hover:shadow-xl"
                 >
-                  <div className="absolute inset-0 bg-[var(--glass-bg)] dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative z-10">
-                    <div className="w-14 h-14 rounded-2xl bg-[var(--glass-bg)] dark:bg-white/5 border border-[var(--border)] dark:border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                      <Icon className="w-6 h-6 text-[var(--text-secondary)] dark:text-white/70" />
+                    <div className="w-14 h-14 rounded-2xl bg-muted border border-border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                      <Icon className="w-6 h-6 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold text-[var(--text)] dark:text-white mb-1">{category.name}</h3>
-                    <p className="text-sm text-[var(--text-secondary)] dark:text-white/40">{category.product_count || 0} items</p>
+                    <h3 className="text-lg font-semibold text-foreground mb-1">{category.name}</h3>
+                    <p className="text-sm text-muted-foreground">{category.product_count || 0} items</p>
                   </div>
-                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-[var(--glass-bg)] dark:bg-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
-                    <ArrowRight className="w-4 h-4 text-[var(--text-secondary)] dark:text-white/70" />
+                  <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-muted flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-[-4px]">
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 </Link>
               </AnimatedSection>
@@ -324,7 +324,7 @@ function CategoriesSection({ categories, loading }: { categories: Category[]; lo
 function TrendingSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-12">
             <div>
@@ -345,16 +345,16 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <AnimatedSection className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Hot Right Now</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">Trending Now</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Hot Right Now</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">Trending Now</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             View All
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -379,7 +379,7 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
         </div>
 
         <AnimatedSection className="mt-10 text-center sm:hidden">
-          <Link href="/products" className="inline-flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors">
+          <Link href="/products" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             View All Products
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -409,7 +409,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
 
   if (loading) {
     return (
-      <section className="py-20 bg-[var(--bg-secondary)] dark:bg-black relative overflow-hidden">
+      <section className="py-20 bg-secondary/30 relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <Skeleton className="h-64 rounded-3xl" />
         </div>
@@ -492,7 +492,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
 function NewArrivalsSection({ products, loading }: { products: Product[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-12">
             <Skeleton className="h-4 w-24 mb-4" />
@@ -511,16 +511,16 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
   if (products.length === 0) return null;
 
   return (
-    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <AnimatedSection className="flex items-end justify-between mb-12">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Just Dropped</span>
-            <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">New Arrivals</h2>
+            <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Just Dropped</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">New Arrivals</h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:flex items-center gap-2 text-[var(--text-secondary)] dark:text-white/60 hover:text-[var(--text)] dark:hover:text-white transition-colors group"
+            className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             View All
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -552,7 +552,7 @@ function NewArrivalsSection({ products, loading }: { products: Product[]; loadin
 function TestimonialsSection({ testimonials, loading }: { testimonials: Testimonial[]; loading: boolean }) {
   if (loading) {
     return (
-      <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
+      <section className="py-24 bg-secondary/30">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <Skeleton className="h-4 w-24 mx-auto mb-4" />
@@ -571,18 +571,18 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="py-24 bg-[var(--bg-secondary)] dark:bg-black">
+    <section className="py-24 bg-secondary/30">
       <div className="container mx-auto px-6">
         <AnimatedSection className="text-center mb-16">
-          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Reviews</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3">What Our Customers Say</h2>
+          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Reviews</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3">What Our Customers Say</h2>
         </AnimatedSection>
 
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.slice(0, 3).map((testimonial, index) => (
             <AnimatedSection key={testimonial.id} delay={index * 0.15}>
-              <div className="relative bg-[var(--bg-card)] dark:bg-gradient-to-br dark:from-zinc-900 dark:to-zinc-950 border border-[var(--border)] dark:border-white/5 rounded-2xl p-8 h-full hover:border-[var(--text-secondary)] dark:hover:border-white/10 transition-colors">
-                <Quote className="w-10 h-10 text-[var(--text-secondary)] dark:text-white/10 mb-6" />
+              <div className="relative bg-card border border-border rounded-2xl p-8 h-full hover:border-foreground transition-colors">
+                <Quote className="w-10 h-10 text-foreground/10 mb-6" />
 
                 <div className="flex items-center gap-1 mb-6">
                   {Array.from({ length: testimonial.rating }).map((_, i) => (
@@ -590,22 +590,22 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
                   ))}
                 </div>
 
-                <p className="text-[var(--text-secondary)] dark:text-white/70 leading-relaxed mb-8 text-sm lg:text-base">
+                <p className="text-muted-foreground leading-relaxed mb-8 text-sm lg:text-base">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
 
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--glass-bg)] dark:bg-gradient-to-br dark:from-white/10 dark:to-white/5 flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                     {testimonial.avatar ? (
                       <Image src={testimonial.avatar} alt={testimonial.name} width={40} height={40} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-sm font-semibold text-[var(--text)] dark:text-white">
+                      <span className="text-sm font-semibold text-foreground">
                         {testimonial.name.split(" ").map((n) => n[0]).join("")}
                       </span>
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[var(--text)] dark:text-white flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground flex items-center gap-2">
                       {testimonial.name}
                       {testimonial.verified && (
                         <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
@@ -613,7 +613,7 @@ function TestimonialsSection({ testimonials, loading }: { testimonials: Testimon
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)] dark:text-white/40">Verified Customer</p>
+                    <p className="text-xs text-muted-foreground">Verified Customer</p>
                   </div>
                 </div>
               </div>
@@ -649,14 +649,14 @@ function NewsletterSection() {
   };
 
   return (
-    <section className="py-24 bg-[var(--bg)] dark:bg-zinc-950">
+    <section className="py-24 bg-background">
       <div className="container mx-auto px-6">
         <AnimatedSection className="max-w-2xl mx-auto text-center">
-          <span className="text-xs uppercase tracking-[0.3em] text-[var(--text-secondary)] dark:text-white/40">Stay Updated</span>
-          <h2 className="text-4xl sm:text-5xl font-bold text-[var(--text)] dark:text-white mt-3 mb-4">
+          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Stay Updated</span>
+          <h2 className="text-4xl sm:text-5xl font-bold text-foreground mt-3 mb-4">
             Join the Hermes Community
           </h2>
-          <p className="text-[var(--text-secondary)] dark:text-white/50 mb-10 max-w-md mx-auto">
+          <p className="text-foreground/50 mb-10 max-w-md mx-auto">
             Subscribe to receive exclusive offers, early access to new arrivals, and style inspiration delivered to your inbox.
           </p>
 
@@ -668,12 +668,12 @@ function NewsletterSection() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="flex-1 bg-[var(--glass-bg)] dark:bg-white/5 border border-[var(--border)] dark:border-white/10 rounded-full px-6 py-4 text-[var(--text)] dark:text-white placeholder:text-[var(--text-secondary)] dark:placeholder:text-white/30 focus:outline-none focus:border-[var(--text-secondary)] dark:focus:border-white/30 transition-colors"
+                className="flex-1 bg-muted border border-border rounded-full px-6 py-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground transition-colors"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-[var(--accent)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
+                className="bg-foreground text-background px-8 py-4 rounded-full font-semibold hover:opacity-90 transition-all duration-300 whitespace-nowrap disabled:opacity-50"
               >
                 {loading ? "Subscribing..." : "Subscribe"}
               </button>
@@ -689,7 +689,7 @@ function NewsletterSection() {
             </motion.div>
           )}
 
-          <p className="text-xs text-[var(--text-secondary)] dark:text-white/30 mt-6">
+          <p className="text-xs text-foreground/30 mt-6">
             By subscribing, you agree to our Privacy Policy. Unsubscribe anytime.
           </p>
         </AnimatedSection>
@@ -799,7 +799,7 @@ export default function HomePage() {
   const heroBanners = banners.filter((b) => b.background_image);
 
   return (
-    <main className="bg-[var(--bg)] dark:bg-black min-h-screen">
+    <main className="bg-background min-h-screen">
       <HeroSection settings={siteSettings} heroBanners={heroBanners} />
       <CategoriesSection categories={categories} loading={loading} />
       <TrendingSection products={trendingProducts} loading={loading} />

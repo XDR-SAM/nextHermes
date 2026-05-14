@@ -17,37 +17,23 @@ export const useThemeStore = create<ThemeState>()(
       theme: "dark",
 
       toggleTheme: () => {
-        const current = get().theme;
-        const next = current === "dark" ? "light" : "dark";
+        const next = get().theme === "dark" ? "light" : "dark";
         set({ theme: next });
-
-        // Apply to <html> element — both class (Tailwind dark:) and attr (CSS vars)
-        if (typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", next === "dark");
-          document.documentElement.setAttribute("data-theme", next);
-        }
       },
 
       setTheme: (theme: Theme) => {
         set({ theme });
-        if (typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", theme === "dark");
-          document.documentElement.setAttribute("data-theme", theme);
-        }
       },
     }),
     {
       name: "hermes-theme",
-      onRehydrateStorage: () => (state) => {
-        // On load, sync BOTH .dark class and data-theme attribute with stored value
-        if (state && typeof document !== "undefined") {
-          document.documentElement.classList.toggle("dark", state.theme === "dark");
-          document.documentElement.setAttribute("data-theme", state.theme);
-        }
-      },
     }
   )
 );
 
-// Export toggleTheme as a standalone function for use outside React components
-export const toggleTheme = () => useThemeStore.getState().toggleTheme();
+// Standalone function — toggles the stored theme and applies .dark class
+export function toggleTheme() {
+  const next = useThemeStore.getState().theme === "dark" ? "light" : "dark";
+  useThemeStore.getState().setTheme(next);
+  document.documentElement.classList.toggle("dark", next === "dark");
+}

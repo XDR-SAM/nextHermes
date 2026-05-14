@@ -96,7 +96,7 @@ export default function OrdersPage() {
 
     // Fetch product names separately
     if (items && items.length > 0) {
-      const productIds = items.map((i) => i.product_id);
+      const productIds = items.map((i: { product_id: string }) => i.product_id);
       const { data: products } = await supabase
         .from("products")
         .select("id, name")
@@ -109,7 +109,7 @@ export default function OrdersPage() {
         }
       }
 
-      const enrichedItems = items.map((item) => ({
+      const enrichedItems = items.map((item: { product_id: string;[key: string]: unknown }) => ({
         ...item,
         product_name: productMap[item.product_id] || "Unknown",
       }));

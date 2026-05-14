@@ -62,9 +62,9 @@ export default function CategoriesPage() {
       .from("products")
       .select("category_id");
 
-    const categoriesWithCount = (categoriesData || []).map(cat => ({
+    const categoriesWithCount = (categoriesData || []).map((cat: { id: string;[key: string]: unknown }) => ({
       ...cat,
-      product_count: (productsData || []).filter(p => p.category_id === cat.id).length
+      product_count: (productsData || []).filter((p: { category_id: string }) => p.category_id === cat.id).length
     })) as Category[];
 
     setCategories(categoriesWithCount);
