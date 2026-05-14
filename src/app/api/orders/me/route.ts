@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, amount, subtotal, tax, shipping_cost, order_number, shipping_address, payment_method, payment_status, created_at, updated_at")
+      .select("id, status, amount, subtotal, tax, shipping_cost, shipping_address, payment_method, payment_status, invoice_number, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     const formatted = (ordersData || []).map((order) => ({
       id: order.id,
-      order_number: order.order_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
+      order_number: order.invoice_number || `ORD-${order.id.slice(0, 8).toUpperCase()}`,
       status: order.status,
       total: order.amount,
       subtotal: order.subtotal,

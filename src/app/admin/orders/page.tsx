@@ -57,7 +57,7 @@ export default function OrdersPage() {
     setLoading(true);
     let query = supabase
       .from("orders")
-      .select("id, user_id, status, amount, subtotal, tax, shipping_cost, order_number, shipping_address, billing_address, payment_status, created_at, updated_at")
+      .select("id, user_id, status, amount, subtotal, tax, shipping_cost, shipping_address, billing_address, payment_status, payment_method, created_at, updated_at")
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {

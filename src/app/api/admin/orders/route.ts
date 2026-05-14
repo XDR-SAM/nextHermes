@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("orders")
-      .select("id, status, amount, subtotal, tax, shipping_cost, order_number, user_id, shipping_address, payment_method, payment_status, created_at, updated_at")
+.select("id, status, amount, subtotal, tax, shipping_cost, user_id, shipping_address, payment_method, payment_status, invoice_number, created_at, updated_at")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -96,15 +96,15 @@ export async function GET(request: NextRequest) {
     const orders = (ordersData || []).map((o) => ({
       id: o.id,
       status: o.status,
-      total: o.amount,
+      amount: o.amount,
       subtotal: o.subtotal,
       tax: o.tax,
       shipping_cost: o.shipping_cost,
-      order_number: o.order_number,
-      user_id: o.user_id,
-      shipping_address: o.shipping_address,
       payment_method: o.payment_method,
       payment_status: o.payment_status,
+      shipping_address: o.shipping_address,
+      invoice_number: o.invoice_number,
+      order_number: o.invoice_number || `ORD-${o.id.slice(0, 8).toUpperCase()}`,
       created_at: o.created_at,
       updated_at: o.updated_at,
       profile: profileMap[o.user_id] || null,
@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
         subtotal: body.subtotal || 0,
         tax: body.tax || 0,
         shipping_cost: body.shipping_cost || 0,
-        total: body.total || 0,
+        amount: body.amount || 0,
         shipping_address: body.shipping_address || null,
         billing_address: body.billing_address || null,
       })
@@ -164,6 +164,8 @@ export async function POST(request: NextRequest) {
       product_id: item.product_id,
       quantity: item.quantity,
       unit_price: item.unit_price,
+      product_name: item.product_name || "Product",
+      total: (item.quantity as number) * (item.unit_price as number),
     }));
 
     const { error: itemsError } = await supabase
