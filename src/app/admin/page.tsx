@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import type { Profile } from "@/lib/types";
+import { Package, Tag, ShoppingCart, Users, Plus, ArrowRight } from "lucide-react";
 
 interface Stats {
   totalProducts: number;
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px" }}>
       {/* Welcome Section */}
       <div style={{ marginBottom: "32px" }}>
         <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>
@@ -111,10 +112,10 @@ export default function AdminDashboard() {
         marginBottom: "32px"
       }}>
         {[
-          { label: "Total Products", value: stats.totalProducts, icon: "📦", color: "#3b82f6" },
-          { label: "Categories", value: stats.totalCategories, icon: "🏷️", color: "#a855f7" },
-          { label: "Total Orders", value: stats.totalOrders, icon: "🛒", color: "#22c55e" },
-          { label: "Total Users", value: stats.totalUsers, icon: "👥", color: "#f59e0b" },
+          { label: "Total Products", value: stats.totalProducts, icon: Package, color: "#3b82f6" },
+          { label: "Categories", value: stats.totalCategories, icon: Tag, color: "#a855f7" },
+          { label: "Total Orders", value: stats.totalOrders, icon: ShoppingCart, color: "#22c55e" },
+          { label: "Total Users", value: stats.totalUsers, icon: Users, color: "#f59e0b" },
         ].map((stat, index) => (
           <div key={index} style={{
             background: "white", border: "1px solid #E5E5E0",
@@ -122,14 +123,16 @@ export default function AdminDashboard() {
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.borderColor = stat.color;
-            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.transform = "translateY(-4px)";
+            e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)";
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.borderColor = "#E5E5E0";
             e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "none";
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-              <span style={{ fontSize: "32px" }}>{stat.icon}</span>
+              <stat.icon size={32} color={stat.color} />
             </div>
             <div style={{ fontSize: "32px", fontWeight: "700", color: stat.color, marginBottom: "4px" }}>
               {stat.value.toLocaleString()}
@@ -148,8 +151,8 @@ export default function AdminDashboard() {
           <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Recent Orders</h2>
           <Link href="/admin/orders" style={{
             fontSize: "13px", color: "#3b82f6", textDecoration: "none",
-            fontWeight: "500"
-          }}>View all →</Link>
+            fontWeight: "500", display: "flex", alignItems: "center", gap: "4px"
+          }}>View all <ArrowRight size={14} /></Link>
         </div>
 
         {recentOrders.length === 0 ? (
@@ -220,10 +223,10 @@ export default function AdminDashboard() {
         <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: "0 0 20px" }}>Quick Actions</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
           {[
-            { label: "Add Product", href: "/admin/products", icon: "➕", color: "#22c55e" },
-            { label: "Add Category", href: "/admin/categories", icon: "🏷️", color: "#a855f7" },
-            { label: "View Orders", href: "/admin/orders", icon: "🛒", color: "#3b82f6" },
-            { label: "Manage Users", href: "/admin/users", icon: "👥", color: "#f59e0b" },
+            { label: "Add Product", href: "/admin/products", icon: Plus, color: "#22c55e" },
+            { label: "Add Category", href: "/admin/categories", icon: Tag, color: "#a855f7" },
+            { label: "View Orders", href: "/admin/orders", icon: ShoppingCart, color: "#3b82f6" },
+            { label: "Manage Users", href: "/admin/users", icon: Users, color: "#f59e0b" },
           ].map(action => (
             <Link key={action.label} href={action.href} style={{
               display: "flex", alignItems: "center", gap: "10px",
@@ -240,7 +243,7 @@ export default function AdminDashboard() {
               e.currentTarget.style.borderColor = "#E5E5E0";
               e.currentTarget.style.background = "#F4F4F1";
             }}>
-              <span>{action.icon}</span> {action.label}
+              <action.icon size={18} color={action.color} /> {action.label}
             </Link>
           ))}
         </div>

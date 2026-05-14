@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { DollarSign, ShoppingCart, BarChart2, Users, Zap, Banknote } from "lucide-react";
 
 type DateRange = 7 | 30 | 90 | 365;
 
@@ -8,7 +9,7 @@ type DateRange = 7 | 30 | 90 | 365;
 interface StatCard {
   label: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   color: string;
   change?: number;
   prefix?: string;
@@ -259,10 +260,10 @@ export default function AnalyticsDashboard() {
   const fmt = (n: number, prefix = "$") => prefix + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const statCards: StatCard[] = [
-    { label: "Total Revenue", value: fmt(summary.totalRevenue), icon: "💰", color: "#22c55e", change: revenueChange },
-    { label: "Total Orders", value: summary.totalOrders.toLocaleString(), icon: "🛒", color: "#3b82f6", change: orderData.pctChange },
-    { label: "Avg Order Value", value: fmt(summary.avgOrderValue), icon: "📊", color: "#a855f7" },
-    { label: "Total Customers", value: summary.totalCustomers.toLocaleString(), icon: "👥", color: "#f59e0b", change: customerChange },
+    { label: "Total Revenue", value: fmt(summary.totalRevenue), icon: <Banknote size={28} />, color: "#22c55e", change: revenueChange },
+    { label: "Total Orders", value: summary.totalOrders.toLocaleString(), icon: <ShoppingCart size={28} />, color: "#3b82f6", change: orderData.pctChange },
+    { label: "Avg Order Value", value: fmt(summary.avgOrderValue), icon: <BarChart2 size={28} />, color: "#a855f7" },
+    { label: "Total Customers", value: summary.totalCustomers.toLocaleString(), icon: <Users size={28} />, color: "#f59e0b", change: customerChange },
   ];
 
   if (loading) return (
@@ -325,15 +326,15 @@ export default function AnalyticsDashboard() {
       {/* Real-time metrics */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "24px" }}>
         {[
-          { label: "Orders (24h)", value: realtime.ordersToday.toLocaleString(), icon: "⚡", color: "#f59e0b" },
-          { label: "Revenue Today", value: fmt(realtime.revenueToday), icon: "💵", color: "#22c55e" },
+          { label: "Orders (24h)", value: realtime.ordersToday.toLocaleString(), icon: <Zap size={18} color="#f59e0b" />, color: "#f59e0b" },
+          { label: "Revenue Today", value: fmt(realtime.revenueToday), icon: <DollarSign size={18} color="#22c55e" />, color: "#22c55e" },
         ].map((m, i) => (
           <div key={i} style={{
             background: "white", border: "1px solid #E5E5E0",
             borderRadius: "10px", padding: "16px 20px",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <span>{m.icon}</span>
+              {m.icon}
               <span style={{ fontSize: "12px", color: "#6B6B67", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: "600" }}>Live</span>
             </div>
             <div style={{ fontSize: "22px", fontWeight: "700", color: m.color }}>{m.value}</div>

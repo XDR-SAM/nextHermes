@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import OrderInvoice from "@/components/admin/OrderInvoice";
+import { FileText, Package } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -388,9 +389,10 @@ export default function OrdersPage() {
                 <button onClick={() => openInvoice(selectedOrder)} style={{
                   padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0",
                   background: "transparent", color: "#141413", fontSize: "12px",
-                  cursor: "pointer", transition: "all 0.15s ease"
+                  cursor: "pointer", transition: "all 0.15s ease",
+                  display: "flex", alignItems: "center", gap: "6px"
                 }}>
-                  📄 Invoice
+                  <FileText size={14} /> Invoice
                 </button>
                 <button onClick={() => setSelectedOrder(null)} style={{
                 padding: "8px", border: "none", background: "transparent",
@@ -470,8 +472,8 @@ export default function OrdersPage() {
                         <div style={{
                           width: "48px", height: "48px", borderRadius: "6px",
                           background: "#F4F4F1", display: "flex",
-                          alignItems: "center", justifyContent: "center", fontSize: "18px"
-                        }}>📦</div>
+                          alignItems: "center", justifyContent: "center"
+                        }}><Package size={20} /></div>
                         <div style={{ flex: "1" }}>
                           <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>
                             {item.product_name || "Unknown Product"}

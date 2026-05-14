@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { Plus, Package, AlertTriangle, Ban, Star, Flame } from "lucide-react";
 
 interface Category { id: string; name: string; slug: string; }
 interface Warehouse { id: string; name: string; location: string | null; }
@@ -274,8 +275,8 @@ export default function ProductsPage() {
           <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Products</h1>
           <p style={{ color: "#6B6B67", margin: 0, fontSize: "13px" }}>
             {products.length} total
-            {lowStockCount > 0 && <span style={{ color: "#eab308", marginLeft: "12px" }}>⚠️ {lowStockCount} low stock</span>}
-            {outOfStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "8px" }}>⛔ {outOfStockCount} out of stock</span>}
+            {lowStockCount > 0 && <span style={{ color: "#eab308", marginLeft: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}><AlertTriangle size={14} /> {lowStockCount} low stock</span>}
+            {outOfStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "8px", display: "inline-flex", alignItems: "center", gap: "4px" }}><Ban size={14} /> {outOfStockCount} out of stock</span>}
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
@@ -301,7 +302,7 @@ export default function ProductsPage() {
             background: "#22c55e", color: "#fff", fontSize: "14px",
             fontWeight: "600", cursor: "pointer",
           }}>
-            ➕ Add Product
+            <Plus size={16} /> Add Product
           </button>
         </div>
       </div>
@@ -351,13 +352,13 @@ export default function ProductsPage() {
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px" }}
                           onError={e => { e.currentTarget.style.display = "none"; (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex"; }} />
                       ) : null}
-                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: product.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>📦</div>
+                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: product.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center" }}><Package size={20} /></div>
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{product.name}</div>
                       <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                        {product.featured && <span style={{ color: "#f59e0b" }}>⭐</span>}
-                        {product.trending && <span style={{ color: "#ef4444" }}>🔥</span>}
+                        {product.featured && <span style={{ color: "#f59e0b", display: "inline-flex", alignItems: "center" }}><Star size={12} /></span>}
+                        {product.trending && <span style={{ color: "#ef4444", display: "inline-flex", alignItems: "center" }}><Flame size={12} /></span>}
                         {product.sku && `SKU: ${product.sku}`}
                       </div>
                     </td>
@@ -374,7 +375,7 @@ export default function ProductsPage() {
                       {product.stock_quantity === 0 ? (
                         <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>Out</span>
                       ) : product.stock_quantity < 10 ? (
-                        <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(234,179,8,0.1)", color: "#eab308" }}>{product.stock_quantity} ⚠️</span>
+                        <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(234,179,8,0.1)", color: "#eab308", display: "inline-flex", alignItems: "center", gap: "4px" }}><AlertTriangle size={12} /> {product.stock_quantity}</span>
                       ) : (
                         <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>{product.stock_quantity}</span>
                       )}

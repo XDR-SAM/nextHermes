@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
 import type { Profile, UserRole } from "@/lib/types";
 import { ROLE_LABELS, ROLE_COLORS } from "@/lib/types";
+import { X, Search, Eye, Edit, UserX, UserCheck, Trash2 } from "lucide-react";
 
 const PAGE_SIZE = 20;
 
@@ -35,7 +36,6 @@ export default function UsersPage() {
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
   const loadUserStats = useCallback(async (userId: string) => {
-    // Separate queries - no FK joins
     const ordersRes = await supabase.from("orders").select("id, total_amount").eq("user_id", userId);
     const count = (ordersRes.data || []).length;
     const total = (ordersRes.data || []).reduce((sum: number, o: { total_amount?: number }) => sum + (o.total_amount || 0), 0);
@@ -112,53 +112,56 @@ export default function UsersPage() {
   const canChangeRole = (role: UserRole) => role !== "super_admin";
 
   return (
-    <div style={{ padding: "32px", maxWidth: "1200px" }}>
+    <div style={{ padding: "32px", maxWidth: "1200px", background: "#FAFAF8", minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#fafafa", margin: "0" }}>Users</h1>
-          <p style={{ color: "#898989", margin: "4px 0 0" }}>{users.length} total users</p>
+          <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0" }}>Users</h1>
+          <p style={{ color: "#6B6B67", margin: "4px 0 0" }}>{users.length} total users</p>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
-            style={{ padding: "8px 14px", borderRadius: "8px", border: "1px solid #363636", background: "#1e1e1e", color: "#fafafa", fontSize: "13px", outline: "none" }}
-          />
+          <div style={{ position: "relative" }}>
+            <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#6B6B67" }} />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
+              style={{ padding: "8px 14px 8px 36px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "13px", outline: "none" }}
+            />
+          </div>
           {["all", "super_admin", "admin", "moderator", "user"].map(f => (
             <button key={f} onClick={() => { setFilter(f); setPage(1); }}
-              style={{ padding: "6px 14px", borderRadius: "6px", border: "1px solid", borderColor: filter === f ? "#3ecf8e" : "#363636", background: filter === f ? "rgba(62,207,142,0.1)" : "transparent", color: filter === f ? "#3ecf8e" : "#898989", fontSize: "13px", cursor: "pointer", textTransform: "capitalize" }}>
+              style={{ padding: "6px 14px", borderRadius: "6px", border: "1px solid", borderColor: filter === f ? "#3ecf8e" : "#E5E5E0", background: filter === f ? "rgba(62,207,142,0.1)" : "white", color: filter === f ? "#3ecf8e" : "#6B6B67", fontSize: "13px", cursor: "pointer", textTransform: "capitalize" }}>
               {f.replace("_", " ")}
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ background: "#1e1e1e", border: "1px solid #2e2e2e", borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid #2e2e2e" }}>
+            <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
               {["User", "Role", "Status", "Joined", "Actions"].map(h => (
-                <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: "12px", color: "#898989", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+                <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: "12px", color: "#6B6B67", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} style={{ padding: "48px", textAlign: "center", color: "#898989" }}>Loading...</td></tr>
+              <tr><td colSpan={5} style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>Loading...</td></tr>
             ) : paginated.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: "48px", textAlign: "center", color: "#898989" }}>No users found</td></tr>
+              <tr><td colSpan={5} style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>No users found</td></tr>
             ) : paginated.map(u => (
-              <tr key={u.id} style={{ borderBottom: "1px solid #242424" }}>
+              <tr key={u.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                 <td style={{ padding: "14px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#363636", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#fafafa", fontWeight: "600" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#E5E5E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#141413", fontWeight: "600" }}>
                       {u.full_name?.[0]?.toUpperCase() || u.email[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontSize: "14px", color: "#fafafa", fontWeight: "500" }}>{u.full_name || "—"}</div>
-                      <div style={{ fontSize: "12px", color: "#898989" }}>{u.email}</div>
+                      <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>{u.full_name || "—"}</div>
+                      <div style={{ fontSize: "12px", color: "#6B6B67" }}>{u.email}</div>
                     </div>
                   </div>
                 </td>
@@ -172,30 +175,36 @@ export default function UsersPage() {
                     {u.is_active ? "Active" : "Inactive"}
                   </span>
                 </td>
-                <td style={{ padding: "14px 20px", fontSize: "13px", color: "#898989" }}>{formatDate(u.created_at)}</td>
+                <td style={{ padding: "14px 20px", fontSize: "13px", color: "#6B6B67" }}>{formatDate(u.created_at)}</td>
                 <td style={{ padding: "14px 20px" }}>
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => openDetail(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "12px", cursor: "pointer" }}>View</button>
-                    <button onClick={() => openEditModal(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "12px", cursor: "pointer" }}>Edit</button>
+                    <button onClick={() => openDetail(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <Eye size={14} /> View
+                    </button>
+                    <button onClick={() => openEditModal(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <Edit size={14} /> Edit
+                    </button>
                     {deactivateConfirm === u.id ? (
                       <div style={{ display: "flex", gap: "4px" }}>
                         <button onClick={() => handleToggleActive(u)} style={{ padding: "6px 10px", borderRadius: "6px", border: "none", background: u.is_active ? "#ef4444" : "#22c55e", color: "#fff", fontSize: "12px", cursor: "pointer" }}>
                           {u.is_active ? "Deactivate" : "Activate"}
                         </button>
-                        <button onClick={() => setDeactivateConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
+                        <button onClick={() => setDeactivateConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
                       </div>
                     ) : (
-                      <button onClick={() => setDeactivateConfirm(u.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(168,85,247,0.3)", background: "transparent", color: "#a855f7", fontSize: "12px", cursor: "pointer" }}>
-                        {u.is_active ? "Deactivate" : "Activate"}
+                      <button onClick={() => setDeactivateConfirm(u.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(168,85,247,0.3)", background: "white", color: "#a855f7", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                        {u.is_active ? <><UserX size={14} /> Deactivate</> : <><UserCheck size={14} /> Activate</>}
                       </button>
                     )}
                     {deleteConfirm === u.id ? (
                       <div style={{ display: "flex", gap: "4px" }}>
                         <button onClick={() => handleDelete(u.id)} style={{ padding: "6px 10px", borderRadius: "6px", border: "none", background: "#ef4444", color: "#fff", fontSize: "12px", cursor: "pointer" }}>Delete</button>
-                        <button onClick={() => setDeleteConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
+                        <button onClick={() => setDeleteConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
                       </div>
                     ) : (
-                      <button onClick={() => setDeleteConfirm(u.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
+                      <button onClick={() => setDeleteConfirm(u.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "white", color: "#ef4444", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <Trash2 size={14} /> Delete
+                      </button>
                     )}
                   </div>
                 </td>
@@ -208,60 +217,62 @@ export default function UsersPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "20px", flexWrap: "wrap", gap: "12px" }}>
-          <span style={{ fontSize: "13px", color: "#898989" }}>Page {page} of {totalPages} — {filtered.length} users</span>
+          <span style={{ fontSize: "13px", color: "#6B6B67" }}>Page {page} of {totalPages} — {filtered.length} users</span>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #363636", background: "#1e1e1e", color: page === 1 ? "#898989" : "#fafafa", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>← Prev</button>
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === 1 ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>← Prev</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const p = page <= 3 ? i + 1 : page + i - 2;
               if (p < 1 || p > totalPages) return null;
-              return <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 14px", borderRadius: "6px", border: "1px solid", borderColor: p === page ? "#3ecf8e" : "#363636", background: p === page ? "rgba(62,207,142,0.1)" : "#1e1e1e", color: p === page ? "#3ecf8e" : "#fafafa", fontSize: "13px", cursor: "pointer" }}>{p}</button>;
+              return <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 14px", borderRadius: "6px", border: "1px solid", borderColor: p === page ? "#3ecf8e" : "#E5E5E0", background: p === page ? "rgba(62,207,142,0.1)" : "white", color: p === page ? "#3ecf8e" : "#141413", fontSize: "13px", cursor: "pointer" }}>{p}</button>;
             })}
-            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #363636", background: "#1e1e1e", color: page === totalPages ? "#898989" : "#fafafa", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next →</button>
+            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === totalPages ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next →</button>
           </div>
         </div>
       )}
 
       {/* Edit Modal */}
       {showEditModal && editingUser && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowEditModal(false)}>
-          <div style={{ background: "#1e1e1e", border: "1px solid #2e2e2e", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "480px", padding: "28px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#fafafa", margin: 0 }}>Edit User</h2>
-              <button onClick={() => setShowEditModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#898989", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Edit User</h2>
+              <button onClick={() => setShowEditModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
             </div>
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", color: "#898989", marginBottom: "6px" }}>Email</label>
-              <div style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #363636", background: "#252525", color: "#898989", fontSize: "14px" }}>{editingUser.email}</div>
+              <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Email</label>
+              <div style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "#FAFAF8", color: "#6B6B67", fontSize: "14px" }}>{editingUser.email}</div>
             </div>
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", color: "#898989", marginBottom: "6px" }}>Full Name</label>
+              <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Full Name</label>
               <input type="text" value={editForm.full_name} onChange={e => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #363636", background: "#252525", color: "#fafafa", fontSize: "14px", outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box" }} />
             </div>
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", color: "#898989", marginBottom: "6px" }}>Role</label>
+              <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Role</label>
               <select value={editForm.role} onChange={e => setEditForm(prev => ({ ...prev, role: e.target.value as UserRole }))}
                 disabled={!canChangeRole(editingUser.role)}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #363636", background: "#252525", color: "#fafafa", fontSize: "14px", outline: "none", boxSizing: "border-box", opacity: canChangeRole(editingUser.role) ? 1 : 0.5 }}>
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box", opacity: canChangeRole(editingUser.role) ? 1 : 0.5 }}>
                 {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
                   <option key={r} value={r}>{ROLE_LABELS[r]}</option>
                 ))}
               </select>
-              {editingUser.role === "super_admin" && <p style={{ color: "#898989", fontSize: "11px", marginTop: "4px" }}>Super admin role cannot be changed</p>}
+              {editingUser.role === "super_admin" && <p style={{ color: "#6B6B67", fontSize: "11px", marginTop: "4px" }}>Super admin role cannot be changed</p>}
             </div>
             <div style={{ marginBottom: "24px" }}>
               <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
                 <input type="checkbox" checked={editForm.is_active} onChange={e => setEditForm(prev => ({ ...prev, is_active: e.target.checked }))}
                   style={{ width: "18px", height: "18px", accentColor: "#22c55e" }} />
-                <span style={{ fontSize: "14px", color: "#fafafa" }}>Active</span>
+                <span style={{ fontSize: "14px", color: "#141413" }}>Active</span>
               </label>
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <button onClick={handleEditSave} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
                 {saving ? "Saving..." : "Save Changes"}
               </button>
-              <button onClick={() => setShowEditModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
+              <button onClick={() => setShowEditModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -269,45 +280,47 @@ export default function UsersPage() {
 
       {/* Detail Modal */}
       {showDetailModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowDetailModal(null)}>
-          <div style={{ background: "#1e1e1e", border: "1px solid #2e2e2e", borderRadius: "12px", width: "100%", maxWidth: "520px", padding: "28px" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "520px", padding: "28px" }}>
             {(() => {
               const u = users.find(x => x.id === showDetailModal);
               if (!u) return null;
               return (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-                    <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#fafafa", margin: 0 }}>User Details</h2>
-                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#898989", cursor: "pointer", fontSize: "18px" }}>✕</button>
+                    <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>User Details</h2>
+                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer" }}>
+                      <X size={20} />
+                    </button>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#363636", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#fafafa", fontWeight: "600" }}>
+                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#E5E5E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#141413", fontWeight: "600" }}>
                       {u.full_name?.[0]?.toUpperCase() || u.email[0].toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontSize: "16px", fontWeight: "600", color: "#fafafa" }}>{u.full_name || "—"}</div>
-                      <div style={{ fontSize: "13px", color: "#898989" }}>{u.email}</div>
+                      <div style={{ fontSize: "16px", fontWeight: "600", color: "#141413" }}>{u.full_name || "—"}</div>
+                      <div style={{ fontSize: "13px", color: "#6B6B67" }}>{u.email}</div>
                     </div>
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                     {[
                       { label: "Role", value: <span style={{ padding: "3px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "600", background: ROLE_COLORS[u.role] + "20", color: ROLE_COLORS[u.role], textTransform: "uppercase" }}>{ROLE_LABELS[u.role]}</span> },
                       { label: "Status", value: <span style={{ padding: "3px 10px", borderRadius: "4px", fontSize: "12px", background: u.is_active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: u.is_active ? "#22c55e" : "#ef4444" }}>{u.is_active ? "Active" : "Inactive"}</span> },
-                      { label: "Joined", value: <span style={{ fontSize: "14px", color: "#fafafa" }}>{formatDate(u.created_at)}</span> },
-                      { label: "Tenant ID", value: <span style={{ fontSize: "14px", color: "#898989" }}>{u.tenant_id || "None"}</span> },
-                      { label: "Orders", value: <span style={{ fontSize: "14px", color: "#fafafa", fontWeight: "600" }}>{userStats?.order_count ?? "—"}</span> },
+                      { label: "Joined", value: <span style={{ fontSize: "14px", color: "#141413" }}>{formatDate(u.created_at)}</span> },
+                      { label: "Tenant ID", value: <span style={{ fontSize: "14px", color: "#6B6B67" }}>{u.tenant_id || "None"}</span> },
+                      { label: "Orders", value: <span style={{ fontSize: "14px", color: "#141413", fontWeight: "600" }}>{userStats?.order_count ?? "—"}</span> },
                       { label: "Total Spend", value: <span style={{ fontSize: "14px", color: "#22c55e", fontWeight: "600" }}>{userStats ? formatCurrency(userStats.total_spend) : "—"}</span> },
                     ].map(({ label, value }) => (
-                      <div key={label} style={{ padding: "14px", borderRadius: "8px", background: "#252525", border: "1px solid #363636" }}>
-                        <div style={{ fontSize: "11px", color: "#898989", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{label}</div>
+                      <div key={label} style={{ padding: "14px", borderRadius: "8px", background: "#FAFAF8", border: "1px solid #E5E5E0" }}>
+                        <div style={{ fontSize: "11px", color: "#6B6B67", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{label}</div>
                         <div>{value}</div>
                       </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-                    <button onClick={() => { setShowDetailModal(null); openEditModal(u); }} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #363636", background: "transparent", color: "#fafafa", fontSize: "14px", cursor: "pointer" }}>Edit User</button>
-                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #363636", background: "transparent", color: "#b4b4b4", fontSize: "14px", cursor: "pointer" }}>Close</button>
+                    <button onClick={() => { setShowDetailModal(null); openEditModal(u); }} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Edit User</button>
+                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "14px", cursor: "pointer" }}>Close</button>
                   </div>
                 </>
               );
@@ -331,8 +344,8 @@ export default function UsersPage() {
 
       <style jsx global>{`
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        input::placeholder { color: #898989; }
-        select option { background: #1e1e1e; color: #fafafa; }
+        input::placeholder { color: #6B6B67; }
+        select option { background: white; color: #141413; }
       `}</style>
     </div>
   );

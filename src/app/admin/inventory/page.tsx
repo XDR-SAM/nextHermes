@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { Ban, Plus, AlertTriangle, Package } from "lucide-react";
 
 interface Product {
   id: string;
@@ -233,7 +234,7 @@ export default function InventoryPage() {
           <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Inventory Management</h1>
           <p style={{ color: "#6B6B67", margin: 0, fontSize: "13px" }}>
             {inventory.length} warehouse entries
-            {lowStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "12px" }}>⛔ {lowStockCount} low stock alerts</span>}
+            {lowStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}><Ban size={14} />{lowStockCount} low stock alerts</span>}
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
@@ -242,8 +243,8 @@ export default function InventoryPage() {
             🔄 Transfer Stock
           </button>
           <button onClick={() => { setNewEntry({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0", low_stock_threshold: "10" }); setShowAddModal(true); }}
-            style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.1)", color: "#22c55e", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
-            ➕ Add Inventory
+            style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.1)", color: "#22c55e", fontSize: "13px", fontWeight: "600", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <Plus size={16} /> Add Inventory
           </button>
         </div>
       </div>
@@ -278,9 +279,10 @@ export default function InventoryPage() {
           borderColor: showLowStock ? "#ef4444" : "#E5E5E0",
           background: showLowStock ? "rgba(239,68,68,0.1)" : "white",
           color: showLowStock ? "#ef4444" : "#141413",
-          fontSize: "14px", cursor: "pointer", fontWeight: showLowStock ? "600" : "400"
+          fontSize: "14px", cursor: "pointer", fontWeight: showLowStock ? "600" : "400",
+          display: "inline-flex", alignItems: "center", gap: "6px"
         }}>
-          ⚠️ Low Stock Only
+          <AlertTriangle size={16} /> Low Stock Only
         </button>
       </div>
 
@@ -315,7 +317,7 @@ export default function InventoryPage() {
                               style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "6px" }}
                               onError={e => { e.currentTarget.style.display = "none"; (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex"; }} />
                           ) : null}
-                          <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#F4F4F1", display: entry.product?.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center", fontSize: "16px" }}>📦</div>
+                          <div style={{ width: "36px", height: "36px", borderRadius: "6px", background: "#F4F4F1", display: entry.product?.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center" }}><Package size={18} color="#6B6B67" /></div>
                           <span style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{entry.product?.name || "—"}</span>
                         </div>
                       </td>
@@ -348,8 +350,8 @@ export default function InventoryPage() {
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         {isLow ? (
-                          <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)" }}>
-                            ⚠️ Low Stock
+                          <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <AlertTriangle size={12} /> Low Stock
                           </span>
                         ) : entry.available_quantity === 0 ? (
                           <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>Out of Stock</span>

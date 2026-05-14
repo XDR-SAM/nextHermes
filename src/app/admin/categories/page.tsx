@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { Plus, Tag } from "lucide-react";
 
 interface Category {
   id: string;
@@ -199,7 +200,7 @@ export default function CategoriesPage() {
         }}
         onMouseOver={(e) => e.currentTarget.style.background = "#9333ea"}
         onMouseOut={(e) => e.currentTarget.style.background = "#a855f7"}>
-          <span>➕</span> Add Category
+          <Plus size={16} /> Add Category
         </button>
       </div>
 
@@ -247,10 +248,9 @@ export default function CategoriesPage() {
                         <div style={{
                           width: "40px", height: "40px", borderRadius: "8px",
                           background: "#F4F4F1", display: category.image_url ? "none" : "flex",
-                          alignItems: "center", justifyContent: "center",
-                          fontSize: category.icon ? "20px" : "16px"
+                          alignItems: "center", justifyContent: "center"
                         }}>
-                          {category.icon || "🏷️"}
+                          {category.icon ? <Tag size={20} /> : <Tag size={20} />}
                         </div>
                         <div>
                           <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>
