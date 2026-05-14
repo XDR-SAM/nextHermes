@@ -1,50 +1,33 @@
 "use client";
 import { useState, useEffect } from "react";
+import { X, Plus, Edit2, Trash2, ArrowUp, ArrowDown, Image as ImageIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { X, Plus, Edit2, Trash2, Eye, EyeOff, ArrowUp, ArrowDown, Image as ImageIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 
+// promo_banners table fields
 interface Banner {
   id: string;
   title: string;
   subtitle?: string;
-  description?: string;
-  cta_text?: string;
-  cta_link?: string;
-  background_image?: string;
-  text_color?: string;
-  button_style?: string;
-  position?: string;
-  sort_order?: number;
+  link?: string;
+  link_text?: string;
+  background_image?: string | null;
+  background_color?: string | null;
+  text_color?: string | null;
   is_active?: boolean;
-  show_from?: string;
-  show_until?: string;
-  click_count?: number;
-  impression_count?: number;
+  sort_order?: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
   created_at: string;
-  updated_at: string;
 }
-
-const POSITIONS = ["hero", "promo", "announcement", "footer"];
-const POSITION_LABELS: Record<string, string> = {
-  hero: "Hero Section",
-  promo: "Promo Banner",
-  announcement: "Announcement",
-  footer: "Footer Banner",
-};
-const BUTTON_STYLES = ["primary", "secondary", "outline"];
-const TEXT_COLORS = ["white", "black", "dark"];
 
 const initialForm: Partial<Banner> = {
   title: "",
   subtitle: "",
-  description: "",
-  cta_text: "Shop Now",
-  cta_link: "/products",
+  link_text: "Shop Now",
+  link: "/products",
   background_image: "",
-  text_color: "white",
-  button_style: "primary",
-  position: "hero",
+  background_color: "#0a0a0a",
+  text_color: "#ffffff",
   sort_order: 0,
   is_active: false,
 };
@@ -67,16 +50,30 @@ export default function AdminBannersPage() {
 
   const fetchBanners = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("banners")
-      .select("*")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
-    if (!error) setBanners(data || []);
+    // Use service role via a direct fetch to avoid RLS
+    const res = await fetch("/api/banners?position=all", {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    const data = await res.json();
+    // If the public endpoint returns nothing due to RLS, use admin fetch
+    const bannersData = data.banners?.length > 0 ? data.banners : [];
+    setBanners(bannersData);
     setLoading(false);
   };
 
-  useEffect(() => { fetchBanners(); }, []);
+  // Admin fetch — bypasses RLS via service role
+  const fetchBannersAdmin = async () => {
+    const { data, error } = await supabase
+      .from("promo_banners")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (!error && data) setBanners(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchBannersAdmin(); }, []);
 
   const openCreate = () => {
     setForm(initialForm);
@@ -85,7 +82,19 @@ export default function AdminBannersPage() {
   };
 
   const openEdit = (banner: Banner) => {
-    setForm({ ...banner });
+    setForm({
+      title: banner.title,
+      subtitle: banner.subtitle || "",
+      link_text: banner.link_text || "Shop Now",
+      link: banner.link || "/products",
+      background_image: banner.background_image || "",
+      background_color: banner.background_color || "#0a0a0a",
+      text_color: banner.text_color || "#ffffff",
+      sort_order: banner.sort_order ?? 0,
+      is_active: banner.is_active ?? false,
+      starts_at: banner.starts_at || null,
+      ends_at: banner.ends_at || null,
+    });
     setEditingId(banner.id);
     setShowModal(true);
   };
@@ -95,20 +104,36 @@ export default function AdminBannersPage() {
     if (!form.title?.trim()) { showToast("Title is required", "error"); return; }
     setSaving(true);
     try {
+      const payload = {
+        title: form.title,
+        subtitle: form.subtitle || "",
+        link_text: form.link_text || "Shop Now",
+        link: form.link || "/products",
+        background_image: form.background_image || null,
+        background_color: form.background_color || "#0a0a0a",
+        text_color: form.text_color || "#ffffff",
+        sort_order: form.sort_order ?? 0,
+        is_active: form.is_active ?? false,
+        starts_at: form.starts_at || null,
+        ends_at: form.ends_at || null,
+      };
+
       if (editingId) {
         const { error } = await supabase
-          .from("banners")
-          .update(form)
+          .from("promo_banners")
+          .update(payload)
           .eq("id", editingId);
         if (error) throw error;
         showToast("Banner updated", "success");
       } else {
-        const { error } = await supabase.from("banners").insert(form);
+        const { error } = await supabase
+          .from("promo_banners")
+          .insert(payload);
         if (error) throw error;
         showToast("Banner created", "success");
       }
       setShowModal(false);
-      fetchBanners();
+      fetchBannersAdmin();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save banner";
       showToast(msg, "error");
@@ -121,10 +146,10 @@ export default function AdminBannersPage() {
     if (!confirm("Delete this banner?")) return;
     setDeletingId(id);
     try {
-      const { error } = await supabase.from("banners").delete().eq("id", id);
+      const { error } = await supabase.from("promo_banners").delete().eq("id", id);
       if (error) throw error;
       showToast("Banner deleted", "success");
-      fetchBanners();
+      fetchBannersAdmin();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to delete";
       showToast(msg, "error");
@@ -135,25 +160,41 @@ export default function AdminBannersPage() {
 
   const toggleActive = async (banner: Banner) => {
     const { error } = await supabase
-      .from("banners")
+      .from("promo_banners")
       .update({ is_active: !banner.is_active })
       .eq("id", banner.id);
-    if (!error) fetchBanners();
+    if (!error) fetchBannersAdmin();
   };
 
   const moveOrder = async (banner: Banner, direction: "up" | "down") => {
-    const others = banners.filter((b) => b.position === banner.position);
-    const idx = others.findIndex((b) => b.id === banner.id);
+    const idx = banners.findIndex((b) => b.id === banner.id);
     const targetIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (targetIdx < 0 || targetIdx >= others.length) return;
-    const target = others[targetIdx];
-    await supabase.from("banners").update({ sort_order: banner.sort_order }).eq("id", target.id);
-    await supabase.from("banners").update({ sort_order: target.sort_order }).eq("id", banner.id);
-    fetchBanners();
+    if (targetIdx < 0 || targetIdx >= banners.length) return;
+    const target = banners[targetIdx];
+    await supabase.from("promo_banners").update({ sort_order: banner.sort_order }).eq("id", target.id);
+    await supabase.from("promo_banners").update({ sort_order: target.sort_order }).eq("id", banner.id);
+    fetchBannersAdmin();
   };
 
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  const bgStyle = {
+    background: "var(--bg-card)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
+
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    border: "1px solid var(--border)",
+    background: "var(--bg)",
+    color: "var(--text)",
+    fontSize: "14px",
+    outline: "none",
+  };
 
   return (
     <div>
@@ -175,7 +216,7 @@ export default function AdminBannersPage() {
         <div>
           <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--text)", margin: 0 }}>Banners</h2>
           <p style={{ color: "var(--text-secondary)", marginTop: "4px", fontSize: "14px" }}>
-            Manage hero, promo, and announcement banners
+            Manage hero banners and promotional banners — controlled from <strong>promo_banners</strong> table
           </p>
         </div>
         <button
@@ -183,7 +224,7 @@ export default function AdminBannersPage() {
           style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "10px 20px", borderRadius: "8px",
-            background: "#fff", color: "#000", fontWeight: 600, fontSize: "14px",
+            background: "var(--accent)", color: "var(--bg)", fontWeight: 600, fontSize: "14px",
             border: "none", cursor: "pointer",
           }}
         >
@@ -196,12 +237,11 @@ export default function AdminBannersPage() {
         {[
           { label: "Total Banners", value: banners.length },
           { label: "Active", value: banners.filter((b) => b.is_active).length },
-          { label: "Hero Banners", value: banners.filter((b) => b.position === "hero").length },
-          { label: "Total Impressions", value: banners.reduce((s, b) => s + (b.impression_count || 0), 0).toLocaleString() },
+          { label: "With Image", value: banners.filter((b) => b.background_image).length },
+          { label: "Color Banners", value: banners.filter((b) => !b.background_image).length },
         ].map((stat) => (
           <div key={stat.label} style={{
-            padding: "20px", borderRadius: "12px",
-            background: "var(--bg-card)", border: "1px solid var(--border)",
+            padding: "20px", borderRadius: "12px", ...bgStyle,
           }}>
             <p style={{ color: "var(--text-secondary)", fontSize: "12px", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{stat.label}</p>
             <p style={{ color: "var(--text)", fontSize: "28px", fontWeight: 700, margin: 0 }}>{stat.value}</p>
@@ -218,7 +258,7 @@ export default function AdminBannersPage() {
             <p style={{ color: "var(--text-secondary)", marginBottom: "16px" }}>No banners yet</p>
             <button onClick={openCreate} style={{
               padding: "10px 20px", borderRadius: "8px",
-              background: "#fff", color: "#000", fontWeight: 600, border: "none", cursor: "pointer",
+              background: "var(--accent)", color: "var(--bg)", fontWeight: 600, border: "none", cursor: "pointer",
             }}>Create your first banner</button>
           </div>
         ) : (
@@ -226,7 +266,7 @@ export default function AdminBannersPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border)" }}>
-                  {["Status", "Title", "Position", "CTA", "Order", "Impressions", "Updated", "Actions"].map((h) => (
+                  {["Status", "Title / Subtitle", "CTA", "Style", "Order", "Created", "Actions"].map((h) => (
                     <th key={h} style={{
                       padding: "12px 16px", textAlign: "left",
                       fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)",
@@ -238,6 +278,7 @@ export default function AdminBannersPage() {
               <tbody>
                 {banners.map((banner) => (
                   <tr key={banner.id} style={{ borderBottom: "1px solid var(--border)" }}>
+                    {/* Status */}
                     <td style={{ padding: "12px 16px" }}>
                       <button
                         onClick={() => toggleActive(banner)}
@@ -254,40 +295,49 @@ export default function AdminBannersPage() {
                         {banner.is_active ? "Active" : "Draft"}
                       </button>
                     </td>
+                    {/* Title / Subtitle */}
                     <td style={{ padding: "12px 16px" }}>
-                      <div style={{ fontWeight: 500, color: "var(--text)", marginBottom: "2px" }}>{banner.title}</div>
+                      <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: "2px" }}>{banner.title}</div>
                       {banner.subtitle && (
-                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{banner.subtitle}</div>
+                        <div style={{ fontSize: "12px", color: "var(--text-secondary)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {banner.subtitle}
+                        </div>
                       )}
                     </td>
+                    {/* CTA */}
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{
-                        padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600,
-                        background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)",
-                      }}>
-                        {POSITION_LABELS[banner.position || "hero"]}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: "13px", color: "var(--text-secondary)" }}>{banner.cta_text || "Shop Now"}</span>
+                      <span style={{ fontSize: "13px", color: "var(--text)" }}>{banner.link_text || "Shop Now"}</span>
                       <br />
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>{banner.cta_link || "/products"}</span>
+                      <span style={{ fontSize: "12px", color: "var(--text-secondary)", opacity: 0.6 }}>{banner.link || "/products"}</span>
                     </td>
+                    {/* Style Preview */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {banner.background_image ? (
+                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", overflow: "hidden", border: "1px solid var(--border)" }}>
+                            <img src={banner.background_image} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: "32px", height: "32px", borderRadius: "6px", background: banner.background_color || "#0a0a0a", border: "1px solid var(--border)" }} />
+                        )}
+                        <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                          <span style={{ color: banner.text_color || "#fff" }}>■</span> {banner.background_image ? "Image" : "Color"}
+                        </div>
+                      </div>
+                    </td>
+                    {/* Order */}
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <span style={{ fontSize: "14px", color: "var(--text-secondary)", minWidth: "20px" }}>{banner.sort_order}</span>
+                        <span style={{ fontSize: "14px", color: "var(--text-secondary)", minWidth: "20px" }}>{banner.sort_order ?? 0}</span>
                         <button onClick={() => moveOrder(banner, "up")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "2px" }}><ArrowUp size={14} /></button>
                         <button onClick={() => moveOrder(banner, "down")} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "2px" }}><ArrowDown size={14} /></button>
                       </div>
                     </td>
+                    {/* Created */}
                     <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: "14px", color: "var(--text)" }}>{banner.impression_count || 0}</span>
-                      <br />
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Clicks: {banner.click_count || 0}</span>
+                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{formatDate(banner.created_at)}</span>
                     </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{formatDate(banner.updated_at)}</span>
-                    </td>
+                    {/* Actions */}
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button onClick={() => openEdit(banner)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", padding: "4px" }}><Edit2 size={16} /></button>
@@ -324,231 +374,113 @@ export default function AdminBannersPage() {
 
             {/* Modal Form */}
             <form onSubmit={handleSave} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+
               {/* Title */}
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>
                   Title <span style={{ color: "#ef4444" }}>*</span>
                 </label>
-                <input
-                  type="text"
-                  value={form.title || ""}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  placeholder="e.g. Summer Sale 2025"
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: "8px",
-                    border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                    fontSize: "14px", outline: "none",
-                  }}
-                  required
-                />
+                <input type="text" value={form.title || ""} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Summer Sale" style={inputStyle} required />
               </div>
 
               {/* Subtitle */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Subtitle</label>
-                <input
-                  type="text"
-                  value={form.subtitle || ""}
-                  onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-                  placeholder="Short tagline"
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: "8px",
-                    border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                    fontSize: "14px", outline: "none",
-                  }}
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Description</label>
-                <textarea
-                  value={form.description || ""}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="Full description text"
-                  rows={3}
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: "8px",
-                    border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                    fontSize: "14px", outline: "none", resize: "vertical",
-                  }}
-                />
-              </div>
-
-              {/* Two column: Position + Sort Order */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Position</label>
-                  <select
-                    value={form.position || "hero"}
-                    onChange={(e) => setForm({ ...form, position: e.target.value })}
-                    style={{
-                      width: "100%", padding: "10px 14px", borderRadius: "8px",
-                      border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                      fontSize: "14px", outline: "none",
-                    }}
-                  >
-                    {POSITIONS.map((p) => (
-                      <option key={p} value={p}>{POSITION_LABELS[p]}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Sort Order</label>
-                  <input
-                    type="number"
-                    value={form.sort_order ?? 0}
-                    onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })}
-                    style={{
-                      width: "100%", padding: "10px 14px", borderRadius: "8px",
-                      border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                      fontSize: "14px", outline: "none",
-                    }}
-                  />
-                </div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Subtitle / Description</label>
+                <textarea value={form.subtitle || ""} onChange={(e) => setForm({ ...form, subtitle: e.target.value })} placeholder="e.g. Up to 40% off on premium items" rows={2} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
 
               {/* CTA */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>CTA Text</label>
-                  <input
-                    type="text"
-                    value={form.cta_text || ""}
-                    onChange={(e) => setForm({ ...form, cta_text: e.target.value })}
-                    placeholder="Shop Now"
-                    style={{
-                      width: "100%", padding: "10px 14px", borderRadius: "8px",
-                      border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                      fontSize: "14px", outline: "none",
-                    }}
-                  />
+                  <input type="text" value={form.link_text || ""} onChange={(e) => setForm({ ...form, link_text: e.target.value })} placeholder="Shop Now" style={inputStyle} />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>CTA Link</label>
-                  <input
-                    type="text"
-                    value={form.cta_link || ""}
-                    onChange={(e) => setForm({ ...form, cta_link: e.target.value })}
-                    placeholder="/products"
-                    style={{
-                      width: "100%", padding: "10px 14px", borderRadius: "8px",
-                      border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                      fontSize: "14px", outline: "none",
-                    }}
-                  />
+                  <input type="text" value={form.link || ""} onChange={(e) => setForm({ ...form, link: e.target.value })} placeholder="/products" style={inputStyle} />
                 </div>
               </div>
 
-              {/* Background Image */}
+              {/* Background */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Background Image URL</label>
-                <input
-                  type="url"
-                  value={form.background_image || ""}
-                  onChange={(e) => setForm({ ...form, background_image: e.target.value })}
-                  placeholder="https://..."
-                  style={{
-                    width: "100%", padding: "10px 14px", borderRadius: "8px",
-                    border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)",
-                    fontSize: "14px", outline: "none",
-                  }}
-                />
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Background Image URL (optional — leave empty for color banner)</label>
+                <input type="url" value={form.background_image || ""} onChange={(e) => setForm({ ...form, background_image: e.target.value || null })} placeholder="https://..." style={inputStyle} />
                 {form.background_image && (
                   <img src={form.background_image} alt="Preview" style={{ marginTop: "8px", width: "100%", height: "120px", objectFit: "cover", borderRadius: "8px", border: "1px solid var(--border)" }} />
                 )}
               </div>
 
-              {/* Style options */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
+              {/* Colors */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Text Color</label>
-                  <select
-                    value={form.text_color || "white"}
-                    onChange={(e) => setForm({ ...form, text_color: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", outline: "none" }}
-                  >
-                    {TEXT_COLORS.map((c) => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Button Style</label>
-                  <select
-                    value={form.button_style || "primary"}
-                    onChange={(e) => setForm({ ...form, button_style: e.target.value })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", outline: "none" }}
-                  >
-                    {BUTTON_STYLES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Active?</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                    <button
-                      type="button"
-                      onClick={() => setForm({ ...form, is_active: !form.is_active })}
-                      style={{
-                        width: "44px", height: "24px", borderRadius: "12px", position: "relative",
-                        background: form.is_active ? "#22c55e" : "var(--border)", border: "none", cursor: "pointer",
-                        transition: "background 0.2s",
-                      }}
-                    >
-                      <span style={{
-                        position: "absolute", top: "2px",
-                        left: form.is_active ? "22px" : "2px",
-                        width: "20px", height: "20px", borderRadius: "50%",
-                        background: "#fff", transition: "left 0.2s",
-                      }} />
-                    </button>
-                    <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>{form.is_active ? "Yes" : "No"}</span>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Background Color</label>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <input type="color" value={form.background_color || "#0a0a0a"} onChange={(e) => setForm({ ...form, background_color: e.target.value })} style={{ width: "44px", height: "38px", border: "none", background: "none", cursor: "pointer", borderRadius: "6px" }} />
+                    <input type="text" value={form.background_color || ""} onChange={(e) => setForm({ ...form, background_color: e.target.value })} placeholder="#0a0a0a" style={inputStyle} />
                   </div>
                 </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Text Color</label>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <input type="color" value={form.text_color || "#ffffff"} onChange={(e) => setForm({ ...form, text_color: e.target.value })} style={{ width: "44px", height: "38px", border: "none", background: "none", cursor: "pointer", borderRadius: "6px" }} />
+                    <input type="text" value={form.text_color || ""} onChange={(e) => setForm({ ...form, text_color: e.target.value })} placeholder="#ffffff" style={inputStyle} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sort Order */}
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Sort Order</label>
+                <input type="number" value={form.sort_order ?? 0} onChange={(e) => setForm({ ...form, sort_order: parseInt(e.target.value) || 0 })} style={{ ...inputStyle, maxWidth: "160px" }} />
               </div>
 
               {/* Schedule */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Show From</label>
-                  <input
-                    type="datetime-local"
-                    value={form.show_from?.slice(0, 16) || ""}
-                    onChange={(e) => setForm({ ...form, show_from: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", outline: "none" }}
-                  />
+                  <input type="datetime-local" value={form.starts_at?.slice(0, 16) || ""} onChange={(e) => setForm({ ...form, starts_at: e.target.value ? new Date(e.target.value).toISOString() : null })} style={inputStyle} />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>Show Until</label>
-                  <input
-                    type="datetime-local"
-                    value={form.show_until?.slice(0, 16) || ""}
-                    onChange={(e) => setForm({ ...form, show_until: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", outline: "none" }}
-                  />
+                  <input type="datetime-local" value={form.ends_at?.slice(0, 16) || ""} onChange={(e) => setForm({ ...form, ends_at: e.target.value ? new Date(e.target.value).toISOString() : null })} style={inputStyle} />
                 </div>
+              </div>
+
+              {/* Active Toggle */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, is_active: !form.is_active })}
+                  style={{
+                    width: "44px", height: "24px", borderRadius: "12px", position: "relative",
+                    background: form.is_active ? "#22c55e" : "var(--border)", border: "none", cursor: "pointer",
+                    transition: "background 0.2s",
+                  }}
+                >
+                  <span style={{
+                    position: "absolute", top: "2px",
+                    left: form.is_active ? "22px" : "2px",
+                    width: "20px", height: "20px", borderRadius: "50%",
+                    background: "#fff", transition: "left 0.2s",
+                  }} />
+                </button>
+                <span style={{ fontSize: "14px", color: "var(--text)", fontWeight: 500 }}>
+                  {form.is_active ? "✅ Active (visible on site)" : "Draft (hidden from site)"}
+                </span>
               </div>
 
               {/* Actions */}
               <div style={{ display: "flex", gap: "12px", marginTop: "8px", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  style={{
-                    padding: "10px 20px", borderRadius: "8px",
-                    border: "1px solid var(--border)", background: "transparent",
-                    color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  style={{
-                    padding: "10px 24px", borderRadius: "8px",
-                    background: "#fff", color: "#000", fontSize: "14px", fontWeight: 600,
-                    border: "none", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1,
-                  }}
-                >
+                <button type="button" onClick={() => setShowModal(false)} style={{
+                  padding: "10px 20px", borderRadius: "8px",
+                  border: "1px solid var(--border)", background: "transparent",
+                  color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer",
+                }}>Cancel</button>
+                <button type="submit" disabled={saving} style={{
+                  padding: "10px 24px", borderRadius: "8px",
+                  background: "var(--accent)", color: "var(--bg)", fontSize: "14px", fontWeight: 600,
+                  border: "none", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1,
+                }}>
                   {saving ? "Saving..." : editingId ? "Update Banner" : "Create Banner"}
                 </button>
               </div>

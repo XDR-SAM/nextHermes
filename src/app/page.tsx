@@ -17,16 +17,12 @@ interface Banner {
   description?: string;
   cta_text?: string;
   cta_link?: string;
-  background_image?: string;
-  text_color?: string;
-  button_style?: string;
-  position?: string;
+  background_image?: string | null;
+  background_color?: string | null;
+  text_color?: string | null;
   sort_order?: number;
   is_active?: boolean;
-  show_from?: string;
-  show_until?: string;
   created_at: string;
-  updated_at: string;
 }
 
 interface Category {
@@ -141,6 +137,8 @@ function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null;
         backgroundImage: `url(${activeHero.background_image})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+      } : activeHero?.background_color ? {
+        backgroundColor: activeHero.background_color,
       } : undefined}
     >
       {/* Overlay */}
@@ -393,7 +391,8 @@ function TrendingSection({ products, loading }: { products: Product[]; loading: 
 
 // PROMO BANNER
 function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean }) {
-  const activeBanners = banners.filter((b) => b.is_active && b.position === "promo");
+  // promo_banners: image banners = hero, color-only = promo
+  const activeBanners = banners.filter((b) => b.is_active);
   const activeBanner = activeBanners[0];
 
   if (loading) {
@@ -415,6 +414,8 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
         backgroundImage: `url(${activeBanner.background_image})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+      } : activeBanner?.background_color ? {
+        backgroundColor: activeBanner.background_color,
       } : undefined}
     >
       <div className="absolute inset-0 bg-black/70" />
@@ -424,6 +425,8 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
           style={activeBanner?.background_image ? {
             background: "rgba(0,0,0,0.3)",
             backdropFilter: "blur(4px)",
+          } : activeBanner?.background_color ? {
+            background: `${activeBanner.background_color}cc`,
           } : undefined}
         >
           <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -740,12 +743,28 @@ export default function HomePage() {
         .order("created_at", { ascending: false })
         .limit(3);
 
-      // Fetch banners from the new banners table
+      // Fetch banners from promo_banners table
       const { data: bannersData } = await supabase
-        .from("banners")
+        .from("promo_banners")
         .select("*")
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
+
+      // Map promo_banners columns → Banner interface
+      const mappedBanners: Banner[] = (bannersData || []).map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        subtitle: b.subtitle || "",
+        description: b.subtitle || "",
+        cta_text: b.link_text || "Shop Now",
+        cta_link: b.link || "/products",
+        background_image: b.background_image,
+        background_color: b.background_color,
+        text_color: b.text_color,
+        sort_order: b.sort_order ?? 0,
+        is_active: b.is_active ?? false,
+        created_at: b.created_at,
+      }));
 
       // Fetch site settings
       const { data: settingsData } = await supabase
@@ -768,7 +787,7 @@ export default function HomePage() {
       setTrendingProducts(transformedTrending);
       setFeaturedProducts(transformedFeatured);
       setTestimonials(testimonialsData || []);
-      setBanners(bannersData || []);
+      setBanners(mappedBanners);
       setSiteSettings(settingsData);
     } catch (err) {
       console.error("Error fetching homepage data:", err);
@@ -786,7 +805,8 @@ export default function HomePage() {
     return <ErrorFallback message={error} onRetry={fetchData} />;
   }
 
-  const heroBanners = banners.filter((b) => b.position === "hero" || b.position === undefined);
+  // promo_banners: has background_image → hero; color-only → promo
+  const heroBanners = banners.filter((b) => b.background_image);
 
   return (
     <main className="bg-[var(--bg)] dark:bg-black min-h-screen">

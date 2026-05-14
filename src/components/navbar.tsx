@@ -476,6 +476,9 @@ export function Navbar() {
                       { label: "Profile", href: "/profile" },
                       { label: "Orders", href: "/orders" },
                       { label: "Settings", href: "/settings" },
+                      ...(profile?.role === "admin" || profile?.role === "super_admin"
+                        ? [{ label: "Admin Panel", href: "/admin" }]
+                        : []),
                     ].map((link, i) => (
                       <motion.div
                         key={link.label}
