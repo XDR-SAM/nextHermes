@@ -2,26 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@/utils/supabase/lib";
 import { cookies } from "next/headers";
 
-// Map internal field names to promo_banners column names
-const FIELD_MAP_TO_DB = {
-  title: "title",
-  subtitle: "subtitle",
-  description: "subtitle",
-  cta_text: "link_text",
-  cta_link: "link",
-  background_image: "background_image",
-  text_color: "text_color",
-  sort_order: "sort_order",
-  is_active: "is_active",
-  show_from: "starts_at",
-  show_until: "ends_at",
-};
+interface DbBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  link: string;
+  link_text: string;
+  background_image: string | null;
+  background_color: string | null;
+  text_color: string | null;
+  is_active: boolean;
+  sort_order: number;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+}
 
 // GET — public, returns active promo_banners
 // Uses service role key internally so RLS doesn't block reads
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-
+export async function GET() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest) {
         apikey: serviceKey,
         Authorization: `Bearer ${serviceKey}`,
       },
-      next: { revalidate: 60 },
+      cache: "force-cache",
     }
   );
 
@@ -65,14 +64,7 @@ export async function GET(request: NextRequest) {
     created_at: r.created_at,
   }));
 
-  // Filter by position if requested
-  let filtered = banners;
-  if (position && position !== "all") {
-    const positions = position.split(",");
-    filtered = banners.filter((b) => positions.includes(getPosition(b)));
-  }
-
-  return NextResponse.json({ banners: filtered });
+  return NextResponse.json({ banners });
 }
 
 // POST — admin only, create banner in promo_banners
@@ -91,7 +83,7 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .single();
 
-  if (!["admin", "super_admin"].includes(profile?.role)) {
+  if (!["admin", "super_admin"].includes(profile?.role ?? "")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -155,25 +147,4 @@ export async function POST(request: NextRequest) {
 
   const [data] = await res.json();
   return NextResponse.json({ banner: data }, { status: 201 });
-}
-
-interface DbBanner {
-  id: string;
-  title: string;
-  subtitle: string;
-  link: string;
-  link_text: string;
-  background_image: string | null;
-  background_color: string | null;
-  text_color: string | null;
-  is_active: boolean;
-  sort_order: number;
-  starts_at: string | null;
-  ends_at: string | null;
-  created_at: string;
-}
-
-function getPosition(banner: { background_image?: string | null; background_color?: string | null }): string {
-  // If it has a background image, treat as hero; otherwise promo
-  return banner.background_image ? "hero" : "promo";
 }

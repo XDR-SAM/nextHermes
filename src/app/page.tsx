@@ -117,6 +117,12 @@ function ErrorFallback({ message, onRetry }: { message: string; onRetry: () => v
 function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null; heroBanners: Banner[] }) {
   const activeHero = heroBanners.find((b) => b.is_active) || heroBanners[0];
 
+  const heroSectionStyle = activeHero?.background_image
+    ? { backgroundImage: `url(${activeHero.background_image})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : activeHero?.background_color
+    ? { backgroundColor: activeHero.background_color }
+    : undefined;
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -133,13 +139,7 @@ function HeroSection({ settings, heroBanners }: { settings: SiteSettings | null;
   return (
     <section
       className="relative min-h-screen flex items-center overflow-hidden"
-      style={activeHero?.background_image ? {
-        backgroundImage: `url(${activeHero.background_image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      } : activeHero?.background_color ? {
-        backgroundColor: activeHero.background_color,
-      } : undefined}
+      style={heroSectionStyle}
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/60" />
@@ -395,6 +395,18 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
   const activeBanners = banners.filter((b) => b.is_active);
   const activeBanner = activeBanners[0];
 
+  const bannerSectionStyle = activeBanner?.background_image
+    ? { backgroundImage: `url(${activeBanner.background_image})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : activeBanner?.background_color
+    ? { backgroundColor: activeBanner.background_color }
+    : undefined;
+
+  const bannerCardStyle = activeBanner?.background_image
+    ? { background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }
+    : activeBanner?.background_color
+    ? { background: `${activeBanner.background_color}cc` }
+    : undefined;
+
   if (loading) {
     return (
       <section className="py-20 bg-[var(--bg-secondary)] dark:bg-black relative overflow-hidden">
@@ -410,24 +422,13 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
   return (
     <section
       className="py-20 relative overflow-hidden"
-      style={activeBanner?.background_image ? {
-        backgroundImage: `url(${activeBanner.background_image})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      } : activeBanner?.background_color ? {
-        backgroundColor: activeBanner.background_color,
-      } : undefined}
+      style={bannerSectionStyle}
     >
       <div className="absolute inset-0 bg-black/70" />
 
       <AnimatedSection className="container mx-auto px-6 relative z-10">
         <div className="relative border border-white/10 rounded-3xl p-8 lg:p-16 overflow-hidden"
-          style={activeBanner?.background_image ? {
-            background: "rgba(0,0,0,0.3)",
-            backdropFilter: "blur(4px)",
-          } : activeBanner?.background_color ? {
-            background: `${activeBanner.background_color}cc`,
-          } : undefined}
+          style={bannerCardStyle}
         >
           <div className="absolute top-0 right-0 w-64 h-64 border border-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="absolute bottom-0 left-0 w-48 h-48 border border-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -464,7 +465,7 @@ function PromoBanner({ banners, loading }: { banners: Banner[]; loading: boolean
               >
                 {activeBanner.description}
               </motion.p>
-            )
+            )}
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
