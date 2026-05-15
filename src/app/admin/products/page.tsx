@@ -119,22 +119,27 @@ export default function ProductsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-      supabase
-        .from("products")
-        .select("id, name, slug, description, short_description, price, original_price, sku, stock_quantity, stock_status, category_id, brand_id, is_featured, is_trending, is_active, created_at, updated_at")
-        .order("created_at", { ascending: false }),
-      supabase.from("categories").select("id, name, slug").eq("is_active", true).order("name"),
-      supabase.from("brands").select("id, name, slug").eq("is_active", true).order("name"),
+    const [productsRes, catFetch, brandFetch] = await Promise.all([
+      (async () => {
+        try {
+          const res = await fetch('/api/admin/products');
+          const data = await res.json();
+          return { data, error: res.ok ? null : { message: 'failed' } };
+        } catch (e: unknown) {
+          return { data: null, error: { message: String(e) } };
+        }
+      })(),
+      fetch('/api/admin/categories').then(r => r.json()).catch(() => []),
+      fetch('/api/admin/brands').then(r => r.json()).catch(() => []),
     ]);
 
     if (productsRes.error) {
-      showToast(`Failed to load products: ${productsRes.error.message}`, "error");
+      showToast(`Failed to load products: ${productsRes.error?.message || productsRes.error}`, "error");
     }
 
-    const productsData = (productsRes.data || []) as Product[];
-    const categoriesData = (categoriesRes.data || []) as Category[];
-    const brandsData = (brandsRes.data || []) as Brand[];
+    const productsData = (productsRes?.data || []) as Product[];
+    const categoriesData = (catFetch || []) as Category[];
+    const brandsData = (brandFetch || []) as Brand[];
 
     const productsWithNames = productsData.map(p => ({
       ...p,
@@ -152,22 +157,20 @@ export default function ProductsPage() {
   useEffect(() => { loadData(); }, [loadData]);
 
   const loadVariants = useCallback(async (productId: string): Promise<ProductVariant[]> => {
-    const { data } = await supabase
-      .from("product_variants")
-      .select("*")
-      .eq("product_id", productId)
-      .order("name");
-    return (data || []) as ProductVariant[];
-  }, [supabase]);
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/variants`);
+      const data = await res.json();
+      return data as ProductVariant[];
+    } catch { return []; }
+  }, []);
 
   const loadImages = useCallback(async (productId: string): Promise<ProductImage[]> => {
-    const { data } = await supabase
-      .from("product_images")
-      .select("*")
-      .eq("product_id", productId)
-      .order("sort_order");
-    return (data || []) as ProductImage[];
-  }, [supabase]);
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/images`);
+      const data = await res.json();
+      return data as ProductImage[];
+    } catch { return []; }
+  }, []);
 
   const openVariantModal = async (productId: string) => {
     const vars = await loadVariants(productId);
@@ -254,9 +257,19 @@ export default function ProductsPage() {
 
     let result;
     if (editingProduct) {
-      result = await supabase.from("products").update(productData).eq("id", editingProduct.id).select().single();
+      const res = await fetch(`/api/admin/products/${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     } else {
-      result = await supabase.from("products").insert([productData]).select().single();
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     }
     setSaving(false);
     if (result.error) {
@@ -269,9 +282,13 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) { showToast(`Failed: ${error.message}`, "error"); }
-    else { showToast("Product deleted!", "success"); setDeleteConfirm(null); loadData(); }
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error(await res.text());
+      showToast("Product deleted!", "success");
+      setDeleteConfirm(null);
+      loadData();
+    } catch (e: unknown) { showToast(`Failed: ${String(e)}`, "error"); }
   };
 
   // --- Variants CRUD ---
@@ -289,9 +306,19 @@ export default function ProductsPage() {
     };
     let result;
     if (variantForm.id) {
-      result = await supabase.from("product_variants").update(data).eq("id", variantForm.id).select().single();
+      const res = await fetch(`/api/admin/products/${productId}/variants`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, id: variantForm.id }),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     } else {
-      result = await supabase.from("product_variants").insert([data]).select().single();
+      const res = await fetch(`/api/admin/products/${productId}/variants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     }
     setSaving(false);
     if (result.error) { showToast(`Failed: ${result.error.message}`, "error"); }
@@ -304,13 +331,17 @@ export default function ProductsPage() {
   };
 
   const handleVariantDelete = async (productId: string, variantId: string) => {
-    const { error } = await supabase.from("product_variants").delete().eq("id", variantId);
-    if (error) showToast(`Failed: ${error.message}`, "error");
-    else {
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/variants`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: variantId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
       showToast("Variant deleted!", "success");
       const vars = await loadVariants(productId);
       setVariants(prev => ({ ...prev, [productId]: vars }));
-    }
+    } catch (e: unknown) { showToast(`Failed: ${String(e)}`, "error"); }
   };
 
   // --- Images CRUD ---
@@ -326,9 +357,19 @@ export default function ProductsPage() {
     };
     let result;
     if (imageForm.id) {
-      result = await supabase.from("product_images").update(data).eq("id", imageForm.id).select().single();
+      const res = await fetch(`/api/admin/products/${productId}/images`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, id: imageForm.id }),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     } else {
-      result = await supabase.from("product_images").insert([data]).select().single();
+      const res = await fetch(`/api/admin/products/${productId}/images`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      result = { data: await res.json(), error: res.ok ? null : { message: await res.text() } };
     }
     setSaving(false);
     if (result.error) { showToast(`Failed: ${result.error.message}`, "error"); }
@@ -341,36 +382,36 @@ export default function ProductsPage() {
   };
 
   const handleImageDelete = async (productId: string, imageId: string) => {
-    const { error } = await supabase.from("product_images").delete().eq("id", imageId);
-    if (error) showToast(`Failed: ${error.message}`, "error");
-    else {
+    try {
+      const res = await fetch(`/api/admin/products/${productId}/images`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: imageId }),
+      });
+      if (!res.ok) throw new Error(await res.text());
       showToast("Image deleted!", "success");
       const imgs = await loadImages(productId);
       setProductImages(prev => ({ ...prev, [productId]: imgs }));
-    }
+    } catch (e: unknown) { showToast(`Failed: ${String(e)}`, "error"); }
   };
 
   // --- Bulk Actions ---
   const handleBulkAction = async () => {
     if (selectedIds.size === 0) return;
     setSaving(true);
-    let errorMsg: string | null = null;
-    const ids = Array.from(selectedIds);
-    if (bulkAction === "delete") {
-      const res = await supabase.from("products").delete().in("id", ids);
-      errorMsg = res.error?.message || null;
-    } else {
-      const res = await supabase.from("products").update({ is_active: bulkAction === "activate" }).in("id", ids);
-      errorMsg = res.error?.message || null;
-    }
-    setSaving(false);
-    if (errorMsg) showToast(`Bulk action failed: ${errorMsg}`, "error");
-    else {
+    try {
+      const res = await fetch('/api/admin/products/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds), action: bulkAction }),
+      });
+      if (!res.ok) throw new Error(await res.text());
       showToast(`${selectedIds.size} product(s) ${bulkAction}d!`, "success");
       setSelectedIds(new Set());
       setShowBulkModal(false);
       loadData();
-    }
+    } catch (e: unknown) { showToast(`Bulk action failed: ${String(e)}`, "error"); }
+    setSaving(false);
   };
 
   const filteredProducts = products.filter(p => {

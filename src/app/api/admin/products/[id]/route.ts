@@ -35,12 +35,11 @@ export async function GET(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    // Use service client to bypass RLS
     const svc = await createServiceClient();
 
     const { data: product, error } = await svc
       .from("products")
-      .select("id, name, slug, description, price, original_price, stock_quantity, is_active, created_at, updated_at, category_id, brand_id")
+      .select("id, name, slug, description, short_description, price, original_price, sku, stock_quantity, stock_status, category_id, brand_id, is_featured, is_trending, is_active, created_at, updated_at, metadata")
       .eq("id", id)
       .single();
 
@@ -71,8 +70,9 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = {};
     const allowedFields = [
-      "name", "slug", "description", "price", "original_price",
-      "stock_quantity", "is_active", "category_id", "brand_id",
+      "name", "slug", "description", "short_description", "price", "original_price",
+      "sku", "stock_quantity", "stock_status", "category_id", "brand_id",
+      "is_featured", "is_trending", "is_active", "metadata",
     ];
 
     for (const field of allowedFields) {
@@ -81,7 +81,6 @@ export async function PUT(
       }
     }
 
-    // Use service client to bypass RLS
     const svc = await createServiceClient();
 
     const { data: product, error } = await svc
@@ -118,7 +117,6 @@ export async function DELETE(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    // Use service client to bypass RLS
     const svc = await createServiceClient();
 
     const { error } = await svc
