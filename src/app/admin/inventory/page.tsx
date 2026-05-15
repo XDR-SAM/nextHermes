@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Ban, Plus, AlertTriangle, Package } from "lucide-react";
+import { Ban, Plus, AlertTriangle, Package, ArrowRightLeft } from "lucide-react";
 
 interface Product {
   id: string;
@@ -25,8 +25,13 @@ interface WarehouseInventory {
   warehouse_id: string;
   available_quantity: number;
   reserved_quantity: number;
-  low_stock_threshold: number;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface EnrichedInventoryEntry extends WarehouseInventory {
+  product?: Product;
+  warehouse?: Warehouse | null;
 }
 
 export default function InventoryPage() {
@@ -42,9 +47,9 @@ export default function InventoryPage() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<{ productId: string; warehouseId: string; available: number } | null>(null);
-  const [newEntry, setNewEntry] = useState({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0", low_stock_threshold: "10" });
+  const [newEntry, setNewEntry] = useState({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0" });
   const [transfer, setTransfer] = useState({ product_id: "", from_warehouse_id: "", to_warehouse_id: "", quantity: "1" });
-  const [updateQty, setUpdateQty] = useState({ available: "0", reserved: "0", threshold: "10" });
+  const [updateQty, setUpdateQty] = useState({ available: "0", reserved: "0" });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -80,7 +85,7 @@ export default function InventoryPage() {
   }));
 
   const filteredInventory = enrichedInventory.filter(entry => {
-    if (showLowStock && entry.available_quantity >= entry.low_stock_threshold) return false;
+    if (showLowStock && entry.available_quantity >= 10) return false;
     if (filterWarehouse !== "all" && entry.warehouse_id !== filterWarehouse) return false;
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
@@ -91,7 +96,7 @@ export default function InventoryPage() {
 
   const totalStock = inventory.reduce((sum, i) => sum + i.available_quantity, 0);
   const reservedStock = inventory.reduce((sum, i) => sum + i.reserved_quantity, 0);
-  const lowStockCount = inventory.filter(i => i.available_quantity < i.low_stock_threshold).length;
+  const lowStockCount = inventory.filter(i => i.available_quantity < 10).length;
 
   // Combined view: product-level inventory across warehouses
   const combinedInventory = filteredInventory.length > 0
@@ -102,12 +107,13 @@ export default function InventoryPage() {
         warehouse_id: "all",
         available_quantity: p.stock_quantity,
         reserved_quantity: 0,
-        low_stock_threshold: 10,
+        created_at: "",
         updated_at: "",
         product: p,
         warehouse: null,
-      })).filter(e => {
-        if (showLowStock && e.available_quantity >= e.low_stock_threshold) return false;
+      }))
+      .filter((e: EnrichedInventoryEntry) => {
+        if (showLowStock && (e.available_quantity ?? 0) >= 10) return false;
         if (!searchQuery) return true;
         const q = searchQuery.toLowerCase();
         return (e.product?.name || "").toLowerCase().includes(q) || (e.product?.sku || "").toLowerCase().includes(q);
@@ -130,7 +136,6 @@ export default function InventoryPage() {
       result = await supabase.from("warehouse_inventory").update({
         available_quantity: parseInt(newEntry.available_quantity) || 0,
         reserved_quantity: parseInt(newEntry.reserved_quantity) || 0,
-        low_stock_threshold: parseInt(newEntry.low_stock_threshold) || 10,
       }).eq("id", existing.id).select().single();
     } else {
       result = await supabase.from("warehouse_inventory").insert([{
@@ -138,7 +143,6 @@ export default function InventoryPage() {
         warehouse_id: newEntry.warehouse_id,
         available_quantity: parseInt(newEntry.available_quantity) || 0,
         reserved_quantity: parseInt(newEntry.reserved_quantity) || 0,
-        low_stock_threshold: parseInt(newEntry.low_stock_threshold) || 10,
       }]).select().single();
     }
     setSaving(false);
@@ -146,7 +150,7 @@ export default function InventoryPage() {
     else {
       showToast("Inventory entry saved!", "success");
       setShowAddModal(false);
-      setNewEntry({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0", low_stock_threshold: "10" });
+      setNewEntry({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0" });
       loadData();
     }
   };
@@ -165,7 +169,6 @@ export default function InventoryPage() {
       result = await supabase.from("warehouse_inventory").update({
         available_quantity: parseInt(updateQty.available) || 0,
         reserved_quantity: parseInt(updateQty.reserved) || 0,
-        low_stock_threshold: parseInt(updateQty.threshold) || 10,
       }).eq("id", existing.id).select().single();
     } else {
       result = await supabase.from("warehouse_inventory").insert([{
@@ -173,7 +176,6 @@ export default function InventoryPage() {
         warehouse_id: selectedEntry.warehouseId,
         available_quantity: parseInt(updateQty.available) || 0,
         reserved_quantity: parseInt(updateQty.reserved) || 0,
-        low_stock_threshold: parseInt(updateQty.threshold) || 10,
       }]).select().single();
     }
     setSaving(false);
@@ -183,7 +185,7 @@ export default function InventoryPage() {
 
   const openUpdateModal = (productId: string, warehouseId: string, available: number, reserved: number, threshold: number) => {
     setSelectedEntry({ productId, warehouseId, available });
-    setUpdateQty({ available: available.toString(), reserved: reserved.toString(), threshold: threshold.toString() });
+    setUpdateQty({ available: available.toString(), reserved: reserved.toString() });
     setShowUpdateModal(true);
   };
 
@@ -217,7 +219,7 @@ export default function InventoryPage() {
     if (toEntry) {
       await supabase.from("warehouse_inventory").update({ available_quantity: (toEntry.available_quantity || 0) + qty }).eq("id", toEntry.id);
     } else {
-      await supabase.from("warehouse_inventory").insert([{ product_id: transfer.product_id, warehouse_id: transfer.to_warehouse_id, available_quantity: qty, reserved_quantity: 0, low_stock_threshold: 10 }]);
+      await supabase.from("warehouse_inventory").insert([{ product_id: transfer.product_id, warehouse_id: transfer.to_warehouse_id, available_quantity: qty, reserved_quantity: 0 }]);
     }
     setSaving(false);
     showToast(`Transferred ${qty} units!`, "success");
@@ -239,10 +241,10 @@ export default function InventoryPage() {
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           <button onClick={() => { setTransfer({ product_id: "", from_warehouse_id: "", to_warehouse_id: "", quantity: "1" }); setShowTransferModal(true); }}
-            style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid rgba(96,165,250,0.4)", background: "rgba(96,165,250,0.1)", color: "#60a5fa", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}>
-            🔄 Transfer Stock
+            style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid rgba(96,165,250,0.4)", background: "rgba(96,165,250,0.1)", color: "#60a5fa", fontSize: "13px", fontWeight: "600", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <ArrowRightLeft size={16} /> Transfer Stock
           </button>
-          <button onClick={() => { setNewEntry({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0", low_stock_threshold: "10" }); setShowAddModal(true); }}
+          <button onClick={() => { setNewEntry({ product_id: "", warehouse_id: "", available_quantity: "0", reserved_quantity: "0" }); setShowAddModal(true); }}
             style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.1)", color: "#22c55e", fontSize: "13px", fontWeight: "600", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
             <Plus size={16} /> Add Inventory
           </button>
@@ -307,7 +309,7 @@ export default function InventoryPage() {
               <tbody>
                 {combinedInventory.map(entry => {
                   const total = entry.available_quantity + entry.reserved_quantity;
-                  const isLow = entry.available_quantity < entry.low_stock_threshold;
+                  const isLow = entry.available_quantity < 10;
                   return (
                     <tr key={entry.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                       <td style={{ padding: "12px 16px" }}>
@@ -365,7 +367,7 @@ export default function InventoryPage() {
                           entry.warehouse_id,
                           entry.available_quantity,
                           entry.reserved_quantity,
-                          entry.low_stock_threshold
+                          10
                         )}
                           style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>
                           Update
@@ -413,10 +415,7 @@ export default function InventoryPage() {
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Reserved Qty</label>
                   <input type="number" min="0" value={newEntry.reserved_quantity} onChange={e => setNewEntry(prev => ({ ...prev, reserved_quantity: e.target.value }))} style={inputStyle} />
                 </div>
-                <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Low Stock Alert</label>
-                  <input type="number" min="0" value={newEntry.low_stock_threshold} onChange={e => setNewEntry(prev => ({ ...prev, low_stock_threshold: e.target.value }))} style={inputStyle} />
-                </div>
+                
               </div>
             </div>
             <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
@@ -454,10 +453,7 @@ export default function InventoryPage() {
                 <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Reserved Quantity</label>
                 <input type="number" min="0" value={updateQty.reserved} onChange={e => setUpdateQty(prev => ({ ...prev, reserved: e.target.value }))} style={inputStyle} />
               </div>
-              <div>
-                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Low Stock Threshold</label>
-                <input type="number" min="0" value={updateQty.threshold} onChange={e => setUpdateQty(prev => ({ ...prev, threshold: e.target.value }))} style={inputStyle} />
-              </div>
+              
             </div>
             <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
               <button onClick={handleUpdateStock} disabled={saving} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>

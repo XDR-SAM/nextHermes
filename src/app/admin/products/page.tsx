@@ -1,19 +1,29 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Plus, Package, AlertTriangle, Ban, Star, Flame } from "lucide-react";
+import { Plus, Package, AlertTriangle, Ban, Star, Flame, X, Image as ImageIcon, GripVertical, Trash2 } from "lucide-react";
 
 interface Category { id: string; name: string; slug: string; }
-interface Warehouse { id: string; name: string; location: string | null; }
+interface Brand { id: string; name: string; slug: string; }
 
 interface ProductVariant {
-  id: string;
+  id?: string;
   product_id: string;
-  name: string; // e.g. "Red / Large"
-  sku: string | null;
+  name: string;
+  sku: string;
   price_modifier: number;
   stock_quantity: number;
+  attributes: string;
   is_active: boolean;
+}
+
+interface ProductImage {
+  id?: string;
+  product_id?: string;
+  url: string;
+  alt_text: string;
+  is_primary: boolean;
+  sort_order: number;
 }
 
 interface Product {
@@ -23,46 +33,86 @@ interface Product {
   description: string | null;
   short_description: string | null;
   price: number;
+  compare_price: number | null;
   original_price: number | null;
   sku: string | null;
   stock_quantity: number;
+  stock_status: string;
   image_url: string | null;
   category_id: string | null;
-  featured: boolean;
-  trending: boolean;
+  brand_id: string | null;
+  is_featured: boolean;
+  is_trending: boolean;
   is_active: boolean;
   created_at: string;
+  updated_at: string;
   metadata: Record<string, unknown> | null;
   category_name?: string | null;
+  brand_name?: string | null;
 }
 
 interface ProductFormData {
-  name: string; slug: string; description: string; short_description: string;
-  price: string; original_price: string; sku: string; stock_quantity: string;
-  category_id: string; image_url: string; featured: boolean; trending: boolean; is_active: boolean;
+  name: string;
+  slug: string;
+  description: string;
+  short_description: string;
+  price: string;
+  compare_price: string;
+  sku: string;
+  stock_quantity: string;
+  stock_status: string;
+  category_id: string;
+  brand_id: string;
+  image_url: string;
+  is_featured: boolean;
+  is_trending: boolean;
+  is_active: boolean;
 }
 
 const initialFormData: ProductFormData = {
-  name: "", slug: "", description: "", short_description: "",
-  price: "", original_price: "", sku: "", stock_quantity: "0",
-  category_id: "", image_url: "", featured: false, trending: false, is_active: true,
+  name: "",
+  slug: "",
+  description: "",
+  short_description: "",
+  price: "",
+  compare_price: "",
+  sku: "",
+  stock_quantity: "0",
+  stock_status: "in_stock",
+  category_id: "",
+  brand_id: "",
+  image_url: "",
+  is_featured: false,
+  is_trending: false,
+  is_active: true,
 };
 
 const PAGE_SIZE = 20;
+
+const STOCK_STATUS_OPTIONS = [
+  { value: "in_stock", label: "In Stock" },
+  { value: "low_stock", label: "Low Stock" },
+  { value: "out_of_stock", label: "Out of Stock" },
+  { value: "discontinued", label: "Discontinued" },
+];
 
 export default function ProductsPage() {
   const supabase = createClient();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [variants, setVariants] = useState<Record<string, ProductVariant[]>>({});
+  const [productImages, setProductImages] = useState<Record<string, ProductImage[]>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState<string | null>(null);
+  const [showImagesModal, setShowImagesModal] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [variantForm, setVariantForm] = useState<Partial<ProductVariant>>({});
+  const [imageForm, setImageForm] = useState<Partial<ProductImage>>({ url: "", alt_text: "", is_primary: false, sort_order: 0 });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -73,26 +123,39 @@ export default function ProductsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [productsRes, categoriesRes, warehousesRes] = await Promise.all([
-      supabase.from("products").select("id, name, slug, description, price, compare_at_price, stock_quantity, is_active, is_featured, is_trending, primary_image, category_id, brand_id, created_at, updated_at").order("created_at", { ascending: false }),
+    const [productsRes, categoriesRes, brandsRes] = await Promise.all([
+      supabase
+        .from("products")
+        .select("id, name, slug, description, short_description, price, compare_price, sku, stock_quantity, stock_status, image_url, category_id, brand_id, is_featured, is_trending, is_active, created_at, updated_at")
+        .order("created_at", { ascending: false }),
       supabase.from("categories").select("id, name, slug").eq("is_active", true).order("name"),
-      supabase.from("warehouses").select("id, name, location").eq("is_active", true).order("name"),
+      supabase.from("brands").select("id, name, slug").eq("is_active", true).order("name"),
     ]);
-    if (categoriesRes.error) {
-      showToast(`Failed to load categories`, "error");
+
+    if (productsRes.error) {
+      showToast(`Failed to load products: ${productsRes.error.message}`, "error");
     }
-    setProducts(((productsRes.data || []) as Product[]).map((p) => ({
+
+    const productsData = (productsRes.data || []) as Product[];
+    const categoriesData = (categoriesRes.data || []) as Category[];
+    const brandsData = (brandsRes.data || []) as Brand[];
+
+    const productsWithNames = productsData.map(p => ({
       ...p,
-      category_name: (categoriesRes.data || []).find((c: Category) => c.id === p.category_id)?.name || null,
-    })));
-    setCategories((categoriesRes.data || []) as Category[]);
-    setWarehouses((warehousesRes.data || []) as Warehouse[]);
+      original_price: p.compare_price,
+      category_name: categoriesData.find(c => c.id === p.category_id)?.name || null,
+      brand_name: brandsData.find(b => b.id === p.brand_id)?.name || null,
+    }));
+
+    setProducts(productsWithNames);
+    setCategories(categoriesData);
+    setBrands(brandsData);
     setLoading(false);
   }, [supabase]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const loadVariants = useCallback(async (productId: string) => {
+  const loadVariants = useCallback(async (productId: string): Promise<ProductVariant[]> => {
     const { data } = await supabase
       .from("product_variants")
       .select("*")
@@ -101,11 +164,27 @@ export default function ProductsPage() {
     return (data || []) as ProductVariant[];
   }, [supabase]);
 
+  const loadImages = useCallback(async (productId: string): Promise<ProductImage[]> => {
+    const { data } = await supabase
+      .from("product_images")
+      .select("*")
+      .eq("product_id", productId)
+      .order("sort_order");
+    return (data || []) as ProductImage[];
+  }, [supabase]);
+
   const openVariantModal = async (productId: string) => {
     const vars = await loadVariants(productId);
     setVariants(prev => ({ ...prev, [productId]: vars }));
-    setVariantForm({ name: "", sku: "", price_modifier: 0, stock_quantity: 0, is_active: true });
+    setVariantForm({ product_id: productId, name: "", sku: "", price_modifier: 0, stock_quantity: 0, attributes: "{}", is_active: true });
     setShowVariantModal(productId);
+  };
+
+  const openImagesModal = async (productId: string) => {
+    const imgs = await loadImages(productId);
+    setProductImages(prev => ({ ...prev, [productId]: imgs }));
+    setImageForm({ url: "", alt_text: "", is_primary: false, sort_order: imgs.length });
+    setShowImagesModal(productId);
   };
 
   const generateSlug = (name: string) =>
@@ -124,19 +203,22 @@ export default function ProductsPage() {
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
+    const meta = (product.metadata || {}) as Record<string, unknown>;
     setFormData({
       name: product.name,
       slug: product.slug,
       description: product.description || "",
       short_description: product.short_description || "",
       price: product.price.toString(),
-      original_price: product.original_price?.toString() || "",
+      compare_price: (product.compare_price || product.original_price || "")?.toString() || "",
       sku: product.sku || "",
       stock_quantity: product.stock_quantity.toString(),
+      stock_status: product.stock_status || "in_stock",
       category_id: product.category_id || "",
-      image_url: (product.metadata as Record<string, string>)?.image_url || product.image_url || "",
-      featured: product.featured,
-      trending: product.trending,
+      brand_id: product.brand_id || "",
+      image_url: (meta.image_url as string) || product.image_url || "",
+      is_featured: product.is_featured,
+      is_trending: product.is_trending,
       is_active: product.is_active,
     });
     setShowModal(true);
@@ -144,7 +226,8 @@ export default function ProductsPage() {
 
   const handleNameChange = (name: string) => {
     setFormData(prev => ({
-      ...prev, name,
+      ...prev,
+      name,
       slug: editingProduct ? prev.slug : generateSlug(name),
     }));
   };
@@ -152,26 +235,32 @@ export default function ProductsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price) {
-      showToast("Name and price are required", "error"); return;
+      showToast("Name and price are required", "error");
+      return;
     }
     setSaving(true);
-    const imageUrl = formData.image_url;
+    const meta: Record<string, unknown> = {};
+    if (formData.image_url) meta.image_url = formData.image_url;
+
     const productData = {
       name: formData.name,
       slug: formData.slug || generateSlug(formData.name),
       description: formData.description || null,
       short_description: formData.short_description || null,
       price: parseFloat(formData.price),
-      original_price: formData.original_price ? parseFloat(formData.original_price) : null,
+      compare_price: formData.compare_price ? parseFloat(formData.compare_price) : null,
       sku: formData.sku || null,
       stock_quantity: parseInt(formData.stock_quantity) || 0,
+      stock_status: formData.stock_status || "in_stock",
       category_id: formData.category_id || null,
-      image_url: imageUrl || null,
-      metadata: imageUrl ? { image_url: imageUrl } : null,
-      featured: formData.featured,
-      trending: formData.trending,
+      brand_id: formData.brand_id || null,
+      image_url: formData.image_url || null,
+      is_featured: formData.is_featured,
+      is_trending: formData.is_trending,
       is_active: formData.is_active,
+      metadata: Object.keys(meta).length > 0 ? meta : null,
     };
+
     let result;
     if (editingProduct) {
       result = await supabase.from("products").update(productData).eq("id", editingProduct.id).select().single();
@@ -194,6 +283,7 @@ export default function ProductsPage() {
     else { showToast("Product deleted!", "success"); setDeleteConfirm(null); loadData(); }
   };
 
+  // --- Variants CRUD ---
   const handleVariantSave = async (productId: string) => {
     if (!variantForm.name) { showToast("Variant name is required", "error"); return; }
     setSaving(true);
@@ -203,6 +293,7 @@ export default function ProductsPage() {
       sku: variantForm.sku || null,
       price_modifier: variantForm.price_modifier || 0,
       stock_quantity: variantForm.stock_quantity || 0,
+      attributes: variantForm.attributes || "{}",
       is_active: variantForm.is_active !== false,
     };
     let result;
@@ -217,7 +308,7 @@ export default function ProductsPage() {
       showToast("Variant saved!", "success");
       const vars = await loadVariants(productId);
       setVariants(prev => ({ ...prev, [productId]: vars }));
-      setVariantForm({ name: "", sku: "", price_modifier: 0, stock_quantity: 0, is_active: true });
+      setVariantForm({ product_id: productId, name: "", sku: "", price_modifier: 0, stock_quantity: 0, attributes: "{}", is_active: true });
     }
   };
 
@@ -231,22 +322,58 @@ export default function ProductsPage() {
     }
   };
 
+  // --- Images CRUD ---
+  const handleImageSave = async (productId: string) => {
+    if (!imageForm.url) { showToast("Image URL is required", "error"); return; }
+    setSaving(true);
+    const data = {
+      product_id: productId,
+      url: imageForm.url,
+      alt_text: imageForm.alt_text || null,
+      is_primary: imageForm.is_primary || false,
+      sort_order: imageForm.sort_order || 0,
+    };
+    let result;
+    if (imageForm.id) {
+      result = await supabase.from("product_images").update(data).eq("id", imageForm.id).select().single();
+    } else {
+      result = await supabase.from("product_images").insert([data]).select().single();
+    }
+    setSaving(false);
+    if (result.error) { showToast(`Failed: ${result.error.message}`, "error"); }
+    else {
+      showToast("Image saved!", "success");
+      const imgs = await loadImages(productId);
+      setProductImages(prev => ({ ...prev, [productId]: imgs }));
+      setImageForm({ url: "", alt_text: "", is_primary: false, sort_order: (imgs.length) + 1 });
+    }
+  };
+
+  const handleImageDelete = async (productId: string, imageId: string) => {
+    const { error } = await supabase.from("product_images").delete().eq("id", imageId);
+    if (error) showToast(`Failed: ${error.message}`, "error");
+    else {
+      showToast("Image deleted!", "success");
+      const imgs = await loadImages(productId);
+      setProductImages(prev => ({ ...prev, [productId]: imgs }));
+    }
+  };
+
+  // --- Bulk Actions ---
   const handleBulkAction = async () => {
     if (selectedIds.size === 0) return;
     setSaving(true);
-    let error: string | null = null;
+    let errorMsg: string | null = null;
     const ids = Array.from(selectedIds);
     if (bulkAction === "delete") {
       const res = await supabase.from("products").delete().in("id", ids);
-      error = res.error?.message || null;
+      errorMsg = res.error?.message || null;
     } else {
-      const res = await supabase.from("products")
-        .update({ is_active: bulkAction === "activate" })
-        .in("id", ids);
-      error = res.error?.message || null;
+      const res = await supabase.from("products").update({ is_active: bulkAction === "activate" }).in("id", ids);
+      errorMsg = res.error?.message || null;
     }
     setSaving(false);
-    if (error) showToast(`Bulk action failed: ${error}`, "error");
+    if (errorMsg) showToast(`Bulk action failed: ${errorMsg}`, "error");
     else {
       showToast(`${selectedIds.size} product(s) ${bulkAction}d!`, "success");
       setSelectedIds(new Set());
@@ -256,22 +383,33 @@ export default function ProductsPage() {
   };
 
   const filteredProducts = products.filter(p => {
-    if (!searchQuery) return true;
+    if (!searchQuery && statusFilter === "all") return true;
     const q = searchQuery.toLowerCase();
     const catName = (p.category_name || "").toLowerCase();
-    return p.name.toLowerCase().includes(q) ||
-      (p.sku || "").toLowerCase().includes(q) ||
-      catName.includes(q);
+    const brandName = (p.brand_name || "").toLowerCase();
+    const matchesSearch = !q || p.name.toLowerCase().includes(q) || (p.sku || "").toLowerCase().includes(q) || catName.includes(q) || brandName.includes(q);
+    const matchesStatus = statusFilter === "all" || p.stock_status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const lowStockCount = products.filter(p => p.stock_quantity > 0 && p.stock_quantity < 10).length;
-  const outOfStockCount = products.filter(p => p.stock_quantity === 0).length;
+  const lowStockCount = filteredProducts.filter(p => p.stock_quantity > 0 && p.stock_quantity < 10).length;
+  const outOfStockCount = filteredProducts.filter(p => p.stock_quantity === 0).length;
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const paginated = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const allSelected = paginated.length > 0 && paginated.every(p => selectedIds.has(p.id));
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+
+  const stockStatusBadge = (status: string, qty: number) => {
+    if (qty === 0 || status === "out_of_stock") {
+      return <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>Out</span>;
+    }
+    if (qty < 10 || status === "low_stock") {
+      return <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(234,179,8,0.1)", color: "#eab308", display: "inline-flex", alignItems: "center", gap: "4px" }}><AlertTriangle size={12} /> {qty}</span>;
+    }
+    return <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>{qty}</span>;
+  };
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "24px" }}>
@@ -280,7 +418,7 @@ export default function ProductsPage() {
         <div>
           <h1 style={{ fontSize: "28px", fontWeight: "600", color: "#141413", margin: "0 0 4px" }}>Products</h1>
           <p style={{ color: "#6B6B67", margin: 0, fontSize: "13px" }}>
-            {products.length} total
+            {filteredProducts.length} products
             {lowStockCount > 0 && <span style={{ color: "#eab308", marginLeft: "12px", display: "inline-flex", alignItems: "center", gap: "4px" }}><AlertTriangle size={14} /> {lowStockCount} low stock</span>}
             {outOfStockCount > 0 && <span style={{ color: "#ef4444", marginLeft: "8px", display: "inline-flex", alignItems: "center", gap: "4px" }}><Ban size={14} /> {outOfStockCount} out of stock</span>}
           </p>
@@ -313,11 +451,19 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Search */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
-        <input type="text" placeholder="Search by name, SKU, or category..."
+      {/* Search + Filters */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
+        <input type="text" placeholder="Search by name, SKU, category, or brand..."
           value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setPage(1); }}
-          style={{ flex: 1, maxWidth: "400px", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none" }} />
+          style={{ flex: 1, minWidth: "280px", maxWidth: "400px", padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none" }} />
+        <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+          style={{ padding: "12px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none", cursor: "pointer" }}>
+          <option value="all">All Status</option>
+          <option value="in_stock">In Stock</option>
+          <option value="low_stock">Low Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+          <option value="discontinued">Discontinued</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -326,11 +472,11 @@ export default function ProductsPage() {
           <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>Loading products...</div>
         ) : paginated.length === 0 ? (
           <div style={{ padding: "48px", textAlign: "center", color: "#6B6B67" }}>
-            {searchQuery ? "No products found" : "No products yet. Add your first product!"}
+            {searchQuery || statusFilter !== "all" ? "No products found" : "No products yet. Add your first product!"}
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "900px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "960px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #E5E5E0" }}>
                   <th style={{ padding: "12px 16px", width: "40px" }}>
@@ -339,7 +485,7 @@ export default function ProductsPage() {
                       else setSelectedIds(prev => { const n = new Set(prev); paginated.forEach(p => n.delete(p.id)); return n; });
                     }} style={{ width: "16px", height: "16px", accentColor: "#22c55e", cursor: "pointer" }} />
                   </th>
-                  {["Image", "Name", "Category", "Price", "Stock", "Variants", "Status", "Actions"].map(h => (
+                  {["Image", "Name", "Category", "Brand", "Price", "Stock", "Variants", "Images", "Status", "Actions"].map(h => (
                     <th key={h} style={{ padding: "14px 16px", textAlign: "left", fontSize: "12px", color: "#6B6B67", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
@@ -356,40 +502,40 @@ export default function ProductsPage() {
                       {product.image_url ? (
                         <img src={product.image_url} alt={product.name}
                           style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px" }}
-                          onError={e => { e.currentTarget.style.display = "none"; (e.currentTarget.nextElementSibling as HTMLElement).style.display = "flex"; }} />
-                      ) : null}
-                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: product.image_url ? "none" : "flex", alignItems: "center", justifyContent: "center" }}><Package size={20} /></div>
+                          onError={e => { e.currentTarget.style.display = "none"; }} />
+                      ) : (
+                        <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: "flex", alignItems: "center", justifyContent: "center" }}><Package size={20} /></div>
+                      )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{product.name}</div>
-                      <div style={{ fontSize: "12px", color: "#6B6B67" }}>
-                        {product.featured && <span style={{ color: "#f59e0b", display: "inline-flex", alignItems: "center" }}><Star size={12} /></span>}
-                        {product.trending && <span style={{ color: "#ef4444", display: "inline-flex", alignItems: "center" }}><Flame size={12} /></span>}
+                      <div style={{ fontSize: "12px", color: "#6B6B67", display: "flex", gap: "6px", alignItems: "center" }}>
+                        {product.is_featured && <span style={{ color: "#f59e0b", display: "inline-flex", alignItems: "center" }}><Star size={12} /></span>}
+                        {product.is_trending && <span style={{ color: "#ef4444", display: "inline-flex", alignItems: "center" }}><Flame size={12} /></span>}
                         {product.sku && `SKU: ${product.sku}`}
                       </div>
                     </td>
-                    <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>
-                      {product.category_name || "—"}
-                    </td>
+                    <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>{product.category_name || "—"}</td>
+                    <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>{product.brand_name || "—"}</td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "600" }}>{formatCurrency(product.price)}</div>
-                      {product.original_price && product.original_price > product.price && (
-                        <div style={{ fontSize: "12px", color: "#6B6B67", textDecoration: "line-through" }}>{formatCurrency(product.original_price)}</div>
+                      {(product.compare_price || product.original_price) && (product.compare_price || product.original_price)! > product.price && (
+                        <div style={{ fontSize: "12px", color: "#6B6B67", textDecoration: "line-through" }}>{formatCurrency((product.compare_price || product.original_price)!)}</div>
                       )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
-                      {product.stock_quantity === 0 ? (
-                        <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(239,68,68,0.1)", color: "#ef4444" }}>Out</span>
-                      ) : product.stock_quantity < 10 ? (
-                        <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(234,179,8,0.1)", color: "#eab308", display: "inline-flex", alignItems: "center", gap: "4px" }}><AlertTriangle size={12} /> {product.stock_quantity}</span>
-                      ) : (
-                        <span style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px", fontWeight: "600", background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>{product.stock_quantity}</span>
-                      )}
+                      {stockStatusBadge(product.stock_status || "in_stock", product.stock_quantity)}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <button onClick={() => openVariantModal(product.id)}
                         style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "rgba(167,139,250,0.1)", color: "#a78bfa", fontSize: "12px", cursor: "pointer" }}>
                         Variants
+                      </button>
+                    </td>
+                    <td style={{ padding: "14px 16px" }}>
+                      <button onClick={() => openImagesModal(product.id)}
+                        style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "rgba(59,130,246,0.1)", color: "#3b82f6", fontSize: "12px", cursor: "pointer" }}>
+                        Images
                       </button>
                     </td>
                     <td style={{ padding: "14px 16px" }}>
@@ -425,13 +571,13 @@ export default function ProductsPage() {
             Page {page} of {totalPages} — {filteredProducts.length} products
           </span>
           <div style={{ display: "flex", gap: "8px" }}>
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === 1 ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>← Prev</button>
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === 1 ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.5 : 1 }}>Prev</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const p = page <= 3 ? i + 1 : page + i - 2;
               if (p < 1 || p > totalPages) return null;
               return <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 14px", borderRadius: "6px", border: "1px solid", borderColor: p === page ? "#22c55e" : "#E5E5E0", background: p === page ? "rgba(34,197,94,0.1)" : "white", color: p === page ? "#22c55e" : "#141413", fontSize: "13px", cursor: "pointer" }}>{p}</button>;
             })}
-            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === totalPages ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next →</button>
+            <button disabled={page === totalPages} onClick={() => setPage(p => p + 1)} style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: page === totalPages ? "#6B6B67" : "#141413", fontSize: "13px", cursor: page === totalPages ? "not-allowed" : "pointer", opacity: page === totalPages ? 0.5 : 1 }}>Next</button>
           </div>
         </div>
       )}
@@ -440,14 +586,14 @@ export default function ProductsPage() {
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
           onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "600px", maxHeight: "90vh", overflow: "auto" }}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "680px", maxHeight: "90vh", overflow: "auto" }}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>{editingProduct ? "Edit Product" : "Add Product"}</h2>
-              <button onClick={() => setShowModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button onClick={() => setShowModal(false)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSubmit} style={{ padding: "24px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div>
+                <div style={{ gridColumn: "1 / -1" }}>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Name *</label>
                   <input type="text" value={formData.name} onChange={e => handleNameChange(e.target.value)} required style={inputStyle} />
                 </div>
@@ -455,33 +601,35 @@ export default function ProductsPage() {
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Slug</label>
                   <input type="text" value={formData.slug} onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))} style={inputStyle} />
                 </div>
-              </div>
-              <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Short Description</label>
-                <input type="text" value={formData.short_description} onChange={e => setFormData(prev => ({ ...prev, short_description: e.target.value }))} style={inputStyle} placeholder="Brief tagline" />
-              </div>
-              <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Description</label>
-                <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginTop: "16px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>SKU</label>
+                  <input type="text" value={formData.sku} onChange={e => setFormData(prev => ({ ...prev, sku: e.target.value }))} style={inputStyle} placeholder="Product SKU" />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Short Description</label>
+                  <input type="text" value={formData.short_description} onChange={e => setFormData(prev => ({ ...prev, short_description: e.target.value }))} style={inputStyle} placeholder="Brief tagline" />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Description</label>
+                  <textarea value={formData.description} onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+                </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Price *</label>
                   <input type="number" step="0.01" min="0" value={formData.price} onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))} required style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Original Price</label>
-                  <input type="number" step="0.01" min="0" value={formData.original_price} onChange={e => setFormData(prev => ({ ...prev, original_price: e.target.value }))} style={inputStyle} />
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Compare At Price (Original)</label>
+                  <input type="number" step="0.01" min="0" value={formData.compare_price} onChange={e => setFormData(prev => ({ ...prev, compare_price: e.target.value }))} style={inputStyle} placeholder="Original/sale price" />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Stock Quantity</label>
                   <input type="number" min="0" value={formData.stock_quantity} onChange={e => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))} style={inputStyle} />
                 </div>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>SKU</label>
-                  <input type="text" value={formData.sku} onChange={e => setFormData(prev => ({ ...prev, sku: e.target.value }))} style={inputStyle} placeholder="Product SKU" />
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Stock Status</label>
+                  <select value={formData.stock_status} onChange={e => setFormData(prev => ({ ...prev, stock_status: e.target.value }))} style={inputStyle}>
+                    {STOCK_STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Category</label>
@@ -490,20 +638,34 @@ export default function ProductsPage() {
                     {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
-              </div>
-              <div style={{ marginTop: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Image URL</label>
-                <input type="url" value={formData.image_url} onChange={e => setFormData(prev => ({ ...prev, image_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
-              </div>
-              <div style={{ display: "flex", gap: "24px", marginTop: "20px" }}>
-                {[{ key: "featured", label: "Featured" }, { key: "trending", label: "Trending" }, { key: "is_active", label: "Active" }].map(item => (
-                  <label key={item.key} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                    <input type="checkbox" checked={formData[item.key as keyof ProductFormData] as boolean}
-                      onChange={e => setFormData(prev => ({ ...prev, [item.key]: e.target.checked }))}
-                      style={{ width: "16px", height: "16px", accentColor: "#22c55e" }} />
-                    <span style={{ fontSize: "14px", color: "#141413" }}>{item.label}</span>
-                  </label>
-                ))}
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Brand</label>
+                  <select value={formData.brand_id} onChange={e => setFormData(prev => ({ ...prev, brand_id: e.target.value }))} style={inputStyle}>
+                    <option value="">Select Brand</option>
+                    {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Image URL</label>
+                  <input type="url" value={formData.image_url} onChange={e => setFormData(prev => ({ ...prev, image_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "8px" }}>Flags</label>
+                  <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+                    {[
+                      { key: "is_featured", label: "Featured" },
+                      { key: "is_trending", label: "Trending" },
+                      { key: "is_active", label: "Active" },
+                    ].map(item => (
+                      <label key={item.key} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                        <input type="checkbox" checked={formData[item.key as keyof ProductFormData] as boolean}
+                          onChange={e => setFormData(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                          style={{ width: "16px", height: "16px", accentColor: "#22c55e" }} />
+                        <span style={{ fontSize: "14px", color: "#141413" }}>{item.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
                 <button type="submit" disabled={saving} style={{ flex: "1", padding: "12px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "14px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
@@ -523,13 +685,12 @@ export default function ProductsPage() {
           <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", overflow: "auto" }}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Product Variants</h2>
-              <button onClick={() => setShowVariantModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer", fontSize: "18px" }}>✕</button>
+              <button onClick={() => setShowVariantModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer" }}><X size={20} /></button>
             </div>
             <div style={{ padding: "24px" }}>
-              {/* Existing variants */}
               {(variants[showVariantModal] || []).length > 0 && (
                 <div style={{ marginBottom: "24px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6B6B67", marginBottom: "12px" }}>Existing Variants</h3>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6B6B67", marginBottom: "12px" }}>Existing Variants ({variants[showVariantModal].length})</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {(variants[showVariantModal] || []).map(v => (
                       <div key={v.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0" }}>
@@ -541,13 +702,12 @@ export default function ProductsPage() {
                         </div>
                         <span style={{ padding: "3px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: "600", background: v.is_active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: v.is_active ? "#22c55e" : "#ef4444" }}>{v.is_active ? "Active" : "Inactive"}</span>
                         <button onClick={() => setVariantForm(v)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>Edit</button>
-                        <button onClick={() => handleVariantDelete(showVariantModal, v.id)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
+                        <button onClick={() => handleVariantDelete(showVariantModal, v.id!)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
-              {/* Add / Edit variant form */}
               <div style={{ background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0", padding: "20px" }}>
                 <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", marginBottom: "16px" }}>
                   {variantForm.id ? "Edit Variant" : "Add Variant"}
@@ -569,6 +729,10 @@ export default function ProductsPage() {
                     <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Stock Quantity</label>
                     <input type="number" min="0" value={variantForm.stock_quantity || 0} onChange={e => setVariantForm(prev => ({ ...prev, stock_quantity: parseInt(e.target.value) || 0 }))} style={inputStyle} />
                   </div>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Attributes (JSON)</label>
+                    <input type="text" value={variantForm.attributes || "{}"} onChange={e => setVariantForm(prev => ({ ...prev, attributes: e.target.value }))} style={inputStyle} placeholder='{"color": "red", "size": "L"}' />
+                  </div>
                 </div>
                 <div style={{ marginTop: "12px" }}>
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
@@ -581,7 +745,77 @@ export default function ProductsPage() {
                     {saving ? "Saving..." : (variantForm.id ? "Update Variant" : "Add Variant")}
                   </button>
                   {variantForm.id && (
-                    <button onClick={() => setVariantForm({ name: "", sku: "", price_modifier: 0, stock_quantity: 0, is_active: true })} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "13px", cursor: "pointer" }}>New Variant</button>
+                    <button onClick={() => setVariantForm({ product_id: showVariantModal, name: "", sku: "", price_modifier: 0, stock_quantity: 0, attributes: "{}", is_active: true })} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "13px", cursor: "pointer" }}>New Variant</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Images Modal */}
+      {showImagesModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
+          onClick={e => e.target === e.currentTarget && setShowImagesModal(null)}>
+          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "700px", maxHeight: "90vh", overflow: "auto" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #E5E5E0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>Product Images</h2>
+              <button onClick={() => setShowImagesModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer" }}><X size={20} /></button>
+            </div>
+            <div style={{ padding: "24px" }}>
+              {(productImages[showImagesModal] || []).length > 0 && (
+                <div style={{ marginBottom: "24px" }}>
+                  <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#6B6B67", marginBottom: "12px" }}>Existing Images ({productImages[showImagesModal].length})</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {(productImages[showImagesModal] || []).map(img => (
+                      <div key={img.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px", background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0" }}>
+                        <img src={img.url} alt={img.alt_text || ""} style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "6px" }}
+                          onError={e => { e.currentTarget.style.display = "none"; }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "13px", fontWeight: "500", color: "#141413", wordBreak: "break-all" }}>{img.url}</div>
+                          <div style={{ fontSize: "12px", color: "#6B6B67" }}>{img.alt_text || "No alt text"}</div>
+                        </div>
+                        <span style={{ padding: "3px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: "600", background: img.is_primary ? "rgba(34,197,94,0.1)" : "rgba(107,114,128,0.1)", color: img.is_primary ? "#22c55e" : "#6b7280" }}>
+                          {img.is_primary ? "Primary" : `Order: ${img.sort_order}`}
+                        </span>
+                        <button onClick={() => setImageForm(img)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "12px", cursor: "pointer" }}>Edit</button>
+                        <button onClick={() => handleImageDelete(showImagesModal, img.id!)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", fontSize: "12px", cursor: "pointer" }}>Delete</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ background: "#F4F4F1", borderRadius: "8px", border: "1px solid #E5E5E0", padding: "20px" }}>
+                <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#141413", marginBottom: "16px" }}>
+                  {imageForm.id ? "Edit Image" : "Add Image"}
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Image URL *</label>
+                    <input type="url" value={imageForm.url || ""} onChange={e => setImageForm(prev => ({ ...prev, url: e.target.value }))} style={inputStyle} placeholder="https://example.com/image.jpg" />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Alt Text</label>
+                    <input type="text" value={imageForm.alt_text || ""} onChange={e => setImageForm(prev => ({ ...prev, alt_text: e.target.value }))} style={inputStyle} placeholder="Image description" />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "12px", color: "#6B6B67", marginBottom: "4px" }}>Sort Order</label>
+                    <input type="number" min="0" value={imageForm.sort_order || 0} onChange={e => setImageForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))} style={inputStyle} />
+                  </div>
+                </div>
+                <div style={{ marginTop: "12px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                    <input type="checkbox" checked={imageForm.is_primary || false} onChange={e => setImageForm(prev => ({ ...prev, is_primary: e.target.checked }))} style={{ width: "16px", height: "16px", accentColor: "#22c55e" }} />
+                    <span style={{ fontSize: "13px", color: "#141413" }}>Set as primary image</span>
+                  </label>
+                </div>
+                <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                  <button onClick={() => handleImageSave(showImagesModal)} disabled={saving} style={{ padding: "10px 20px", borderRadius: "8px", border: "none", background: "#22c55e", color: "#fff", fontSize: "13px", fontWeight: "600", cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.6 : 1 }}>
+                    {saving ? "Saving..." : (imageForm.id ? "Update Image" : "Add Image")}
+                  </button>
+                  {imageForm.id && (
+                    <button onClick={() => setImageForm({ url: "", alt_text: "", is_primary: false, sort_order: (productImages[showImagesModal] || []).length + 1 })} style={{ padding: "10px 16px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "transparent", color: "#141413", fontSize: "13px", cursor: "pointer" }}>New Image</button>
                   )}
                 </div>
               </div>
@@ -619,7 +853,8 @@ export default function ProductsPage() {
           padding: "14px 20px", borderRadius: "8px",
           background: toast.type === "success" ? "#22c55e" : "#ef4444",
           color: "#fff", fontSize: "14px", fontWeight: "500",
-          zIndex: 200, animation: "slideIn 0.3s ease"
+          zIndex: 200, animation: "slideIn 0.3s ease",
+          maxWidth: "360px",
         }}>
           {toast.message}
         </div>
@@ -627,7 +862,7 @@ export default function ProductsPage() {
 
       <style jsx global>{`
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        input::placeholder, textarea::placeholder { color: #6B6B67; }
+        input::placeholder, textarea::placeholder { color: #9B9B96; }
         select option { background: #FAFAF8; color: #141413; }
         @media (max-width: 640px) {
           div[style*="gridTemplateColumns: 1fr 1fr"] { grid-template-columns: 1fr !important; }
@@ -641,5 +876,5 @@ export default function ProductsPage() {
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "10px 14px", borderRadius: "8px",
   border: "1px solid #E5E5E0", background: "#F4F4F1",
-  color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box"
+  color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box",
 };

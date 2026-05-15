@@ -28,6 +28,7 @@ const NAV_LINKS = [
   { label: "Shop", href: "/products" },
   { label: "New Arrivals", href: "/new-arrivals" },
   { label: "Best Sellers", href: "/best-sellers" },
+  { label: "Track Order", href: "/orders" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

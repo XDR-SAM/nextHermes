@@ -1,11 +1,27 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/utils/supabase/client";
-import type { Profile, UserRole } from "@/lib/types";
-import { ROLE_LABELS, ROLE_COLORS } from "@/lib/types";
-import { X, Search, Eye, Edit, UserX, UserCheck, Trash2 } from "lucide-react";
+import type { Profile } from "@/lib/types";
+import { X, Search, Edit, Trash2, User } from "lucide-react";
 
 const PAGE_SIZE = 20;
+
+// Map DB role to display labels requested in task
+const DISPLAY_ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  manager: "Manager",
+  user: "User",
+  customer: "Customer",
+};
+
+const DISPLAY_ROLE_COLORS: Record<string, string> = {
+  admin: "#a78bfa",
+  manager: "#60a5fa",
+  user: "#22c55e",
+  customer: "#f59e0b",
+};
+
+type DisplayRole = "admin" | "manager" | "user" | "customer";
 
 export default function UsersPage() {
   const supabase = createClient();
@@ -17,16 +33,16 @@ export default function UsersPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
-  const [editForm, setEditForm] = useState({ full_name: "", role: "user" as UserRole, is_active: true });
-  const [userStats, setUserStats] = useState<{ order_count: number; total_spend: number } | null>(null);
+  const [editForm, setEditForm] = useState({ full_name: "", role: "user" as DisplayRole, is_active: true });
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [deactivateConfirm, setDeactivateConfirm] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
-    let query = supabase.from("profiles").select("*").order("created_at", { ascending: false });
+    let query = supabase.from("profiles")
+      .select("id, email, full_name, avatar_url, role, is_active, created_at")
+      .order("created_at", { ascending: false });
     if (filter !== "all") query = query.eq("role", filter);
     const { data } = await query;
     setUsers((data || []) as Profile[]);
@@ -35,26 +51,14 @@ export default function UsersPage() {
 
   useEffect(() => { loadUsers(); }, [loadUsers]);
 
-  const loadUserStats = useCallback(async (userId: string) => {
-    const ordersRes = await supabase.from("orders").select("id, subtotal").eq("user_id", userId);
-    const count = (ordersRes.data || []).length;
-    const total = (ordersRes.data || []).reduce((sum: number, o: { subtotal?: number }) => sum + (o.subtotal || 0), 0);
-    setUserStats({ order_count: count, total_spend: total });
-  }, [supabase]);
-
   const showToast = (message: string, type: "success" | "error") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const openDetail = async (user: Profile) => {
-    setShowDetailModal(user.id);
-    await loadUserStats(user.id);
-  };
-
   const openEditModal = (user: Profile) => {
     setEditingUser(user);
-    setEditForm({ full_name: user.full_name || "", role: user.role, is_active: user.is_active });
+    setEditForm({ full_name: user.full_name || "", role: (user.role as DisplayRole) || "user", is_active: user.is_active });
     setShowEditModal(true);
   };
 
@@ -77,17 +81,8 @@ export default function UsersPage() {
     }
   };
 
-  const handleToggleActive = async (user: Profile) => {
-    const { error } = await supabase.from("profiles").update({ is_active: !user.is_active }).eq("id", user.id);
-    if (error) showToast(`Failed: ${error.message}`, "error");
-    else {
-      showToast(`User ${user.is_active ? "deactivated" : "activated"}!`, "success");
-      setDeactivateConfirm(null);
-      loadUsers();
-    }
-  };
-
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this user? This action cannot be undone.")) return;
     const { error } = await supabase.from("profiles").delete().eq("id", id);
     if (error) showToast(`Failed: ${error.message}`, "error");
     else {
@@ -98,7 +93,6 @@ export default function UsersPage() {
   };
 
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const formatCurrency = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
   const filtered = users.filter(u => {
     if (!searchQuery) return true;
@@ -108,8 +102,6 @@ export default function UsersPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const canChangeRole = (role: UserRole) => role !== "super_admin";
 
   return (
     <div style={{ padding: "32px", maxWidth: "1200px", background: "#FAFAF8", minHeight: "100vh" }}>
@@ -129,10 +121,10 @@ export default function UsersPage() {
               style={{ padding: "8px 14px 8px 36px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "13px", outline: "none" }}
             />
           </div>
-          {["all", "super_admin", "admin", "moderator", "user"].map(f => (
+          {["all", "admin", "manager", "user", "customer"].map(f => (
             <button key={f} onClick={() => { setFilter(f); setPage(1); }}
               style={{ padding: "6px 14px", borderRadius: "6px", border: "1px solid", borderColor: filter === f ? "#3ecf8e" : "#E5E5E0", background: filter === f ? "rgba(62,207,142,0.1)" : "white", color: filter === f ? "#3ecf8e" : "#6B6B67", fontSize: "13px", cursor: "pointer", textTransform: "capitalize" }}>
-              {f.replace("_", " ")}
+              {f}
             </button>
           ))}
         </div>
@@ -156,8 +148,12 @@ export default function UsersPage() {
               <tr key={u.id} style={{ borderBottom: "1px solid #E5E5E0" }}>
                 <td style={{ padding: "14px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#E5E5E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#141413", fontWeight: "600" }}>
-                      {u.full_name?.[0]?.toUpperCase() || u.email[0].toUpperCase()}
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#E5E5E0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {u.avatar_url ? (
+                        <img src={u.avatar_url} alt="" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        <User size={16} color="#6B6B67" />
+                      )}
                     </div>
                     <div>
                       <div style={{ fontSize: "14px", color: "#141413", fontWeight: "500" }}>{u.full_name || "—"}</div>
@@ -166,8 +162,8 @@ export default function UsersPage() {
                   </div>
                 </td>
                 <td style={{ padding: "14px 20px" }}>
-                  <span style={{ padding: "4px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "600", background: ROLE_COLORS[u.role] + "20", color: ROLE_COLORS[u.role], textTransform: "uppercase" }}>
-                    {ROLE_LABELS[u.role]}
+                  <span style={{ padding: "4px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "600", background: (DISPLAY_ROLE_COLORS[u.role] || "#898989") + "20", color: DISPLAY_ROLE_COLORS[u.role] || "#898989", textTransform: "uppercase" }}>
+                    {(DISPLAY_ROLE_LABELS[u.role] || u.role)}
                   </span>
                 </td>
                 <td style={{ padding: "14px 20px" }}>
@@ -178,24 +174,9 @@ export default function UsersPage() {
                 <td style={{ padding: "14px 20px", fontSize: "13px", color: "#6B6B67" }}>{formatDate(u.created_at)}</td>
                 <td style={{ padding: "14px 20px" }}>
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => openDetail(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
-                      <Eye size={14} /> View
-                    </button>
                     <button onClick={() => openEditModal(u)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
                       <Edit size={14} /> Edit
                     </button>
-                    {deactivateConfirm === u.id ? (
-                      <div style={{ display: "flex", gap: "4px" }}>
-                        <button onClick={() => handleToggleActive(u)} style={{ padding: "6px 10px", borderRadius: "6px", border: "none", background: u.is_active ? "#ef4444" : "#22c55e", color: "#fff", fontSize: "12px", cursor: "pointer" }}>
-                          {u.is_active ? "Deactivate" : "Activate"}
-                        </button>
-                        <button onClick={() => setDeactivateConfirm(null)} style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "12px", cursor: "pointer" }}>Cancel</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setDeactivateConfirm(u.id)} style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(168,85,247,0.3)", background: "white", color: "#a855f7", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
-                        {u.is_active ? <><UserX size={14} /> Deactivate</> : <><UserCheck size={14} /> Activate</>}
-                      </button>
-                    )}
                     {deleteConfirm === u.id ? (
                       <div style={{ display: "flex", gap: "4px" }}>
                         <button onClick={() => handleDelete(u.id)} style={{ padding: "6px 10px", borderRadius: "6px", border: "none", background: "#ef4444", color: "#fff", fontSize: "12px", cursor: "pointer" }}>Delete</button>
@@ -252,14 +233,12 @@ export default function UsersPage() {
             </div>
             <div style={{ marginBottom: "16px" }}>
               <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Role</label>
-              <select value={editForm.role} onChange={e => setEditForm(prev => ({ ...prev, role: e.target.value as UserRole }))}
-                disabled={!canChangeRole(editingUser.role)}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box", opacity: canChangeRole(editingUser.role) ? 1 : 0.5 }}>
-                {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
-                  <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+              <select value={editForm.role} onChange={e => setEditForm(prev => ({ ...prev, role: e.target.value as DisplayRole }))}
+                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", outline: "none", boxSizing: "border-box" }}>
+                {(Object.keys(DISPLAY_ROLE_LABELS) as DisplayRole[]).map(r => (
+                  <option key={r} value={r}>{DISPLAY_ROLE_LABELS[r]}</option>
                 ))}
               </select>
-              {editingUser.role === "super_admin" && <p style={{ color: "#6B6B67", fontSize: "11px", marginTop: "4px" }}>Super admin role cannot be changed</p>}
             </div>
             <div style={{ marginBottom: "24px" }}>
               <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
@@ -274,57 +253,6 @@ export default function UsersPage() {
               </button>
               <button onClick={() => setShowEditModal(false)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "14px", cursor: "pointer" }}>Cancel</button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {showDetailModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}
-          onClick={e => e.target === e.currentTarget && setShowDetailModal(null)}>
-          <div style={{ background: "white", border: "1px solid #E5E5E0", borderRadius: "12px", width: "100%", maxWidth: "520px", padding: "28px" }}>
-            {(() => {
-              const u = users.find(x => x.id === showDetailModal);
-              if (!u) return null;
-              return (
-                <>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-                    <h2 style={{ fontSize: "18px", fontWeight: "600", color: "#141413", margin: 0 }}>User Details</h2>
-                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "8px", border: "none", background: "transparent", color: "#6B6B67", cursor: "pointer" }}>
-                      <X size={20} />
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-                    <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#E5E5E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#141413", fontWeight: "600" }}>
-                      {u.full_name?.[0]?.toUpperCase() || u.email[0].toUpperCase()}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: "16px", fontWeight: "600", color: "#141413" }}>{u.full_name || "—"}</div>
-                      <div style={{ fontSize: "13px", color: "#6B6B67" }}>{u.email}</div>
-                    </div>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                    {[
-                      { label: "Role", value: <span style={{ padding: "3px 10px", borderRadius: "4px", fontSize: "12px", fontWeight: "600", background: ROLE_COLORS[u.role] + "20", color: ROLE_COLORS[u.role], textTransform: "uppercase" }}>{ROLE_LABELS[u.role]}</span> },
-                      { label: "Status", value: <span style={{ padding: "3px 10px", borderRadius: "4px", fontSize: "12px", background: u.is_active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: u.is_active ? "#22c55e" : "#ef4444" }}>{u.is_active ? "Active" : "Inactive"}</span> },
-                      { label: "Joined", value: <span style={{ fontSize: "14px", color: "#141413" }}>{formatDate(u.created_at)}</span> },
-                      { label: "Tenant ID", value: <span style={{ fontSize: "14px", color: "#6B6B67" }}>{u.tenant_id || "None"}</span> },
-                      { label: "Orders", value: <span style={{ fontSize: "14px", color: "#141413", fontWeight: "600" }}>{userStats?.order_count ?? "—"}</span> },
-                      { label: "Total Spend", value: <span style={{ fontSize: "14px", color: "#22c55e", fontWeight: "600" }}>{userStats ? formatCurrency(userStats.total_spend) : "—"}</span> },
-                    ].map(({ label, value }) => (
-                      <div key={label} style={{ padding: "14px", borderRadius: "8px", background: "#FAFAF8", border: "1px solid #E5E5E0" }}>
-                        <div style={{ fontSize: "11px", color: "#6B6B67", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{label}</div>
-                        <div>{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
-                    <button onClick={() => { setShowDetailModal(null); openEditModal(u); }} style={{ flex: 1, padding: "12px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#141413", fontSize: "14px", cursor: "pointer" }}>Edit User</button>
-                    <button onClick={() => setShowDetailModal(null)} style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #E5E5E0", background: "white", color: "#6B6B67", fontSize: "14px", cursor: "pointer" }}>Close</button>
-                  </div>
-                </>
-              );
-            })()}
           </div>
         </div>
       )}
