@@ -2,7 +2,7 @@
 
 A Next.js e-commerce app powered by **Hermes Agent** 🧙‍♂️
 
-Built with: Next.js · Supabase · Vercel · GitHub
+Built with: Next.js 16 · Supabase · Vercel · GitHub
 
 ---
 
