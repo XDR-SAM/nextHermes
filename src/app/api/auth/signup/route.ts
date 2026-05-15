@@ -1,6 +1,6 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@/utils/supabase/lib";
+import { createRouteHandlerClient, createServiceRouteHandlerClient } from "@/utils/supabase/lib";
+import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   const { email, password, fullName } = await request.json();
@@ -37,6 +37,21 @@ export async function POST(request: NextRequest) {
       { error: error.message },
       { status: 400 }
     );
+  }
+
+  // Create profile row using service client to bypass RLS
+  if (data.user) {
+    const svc = createServiceRouteHandlerClient(cookieStore);
+    const { error: profileError } = await svc.from("profiles").upsert({
+      id: data.user.id,
+      email: data.user.email,
+      full_name: fullName,
+      role: "user",
+      is_active: true,
+    });
+    if (profileError) {
+      console.error("Profile creation failed:", profileError.message);
+    }
   }
 
   return NextResponse.json({

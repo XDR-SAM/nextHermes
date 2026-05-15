@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
 import type { UserRole } from "@/lib/types";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -46,7 +46,10 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get("offset") || "0", 10);
     const status = searchParams.get("status");
 
-    let query = supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    let query = svc
       .from("orders")
       .select("id, status, subtotal, user_id, shipping_address, invoice_number, tracking_number, tracking_link, created_at, updated_at")
       .order("created_at", { ascending: false })
@@ -66,7 +69,7 @@ export async function GET(request: NextRequest) {
     const userIds = [...new Set((ordersData || []).map((o) => o.user_id).filter(Boolean))];
     let profileMap: Record<string, { full_name: string | null; email: string }> = {};
     if (userIds.length > 0) {
-      const { data: profiles } = await supabase
+      const { data: profiles } = await svc
         .from("profiles")
         .select("id, full_name, email")
         .in("id", userIds);
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
     const orderIds = (ordersData || []).map((o) => o.id);
     let itemsByOrder: Record<string, { id: string; quantity: number; total: number; product_id?: string }[]> = {};
     if (orderIds.length > 0) {
-      const { data: allItems } = await supabase
+      const { data: allItems } = await svc
         .from("order_items")
         .select("order_id, id, product_id, quantity, total")
         .in("order_id", orderIds);
@@ -133,7 +136,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: order, error: orderError } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { data: order, error: orderError } = await svc
       .from("orders")
       .insert({
         user_id: auth.userId,
@@ -157,12 +163,12 @@ export async function POST(request: NextRequest) {
       total: (item.quantity as number) * (item.unit_price as number),
     }));
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await svc
       .from("order_items")
       .insert(orderItems);
 
     if (itemsError) {
-      await supabase.from("orders").delete().eq("id", order.id);
+      await svc.from("orders").delete().eq("id", order.id);
       return NextResponse.json({ error: itemsError.message }, { status: 400 });
     }
 

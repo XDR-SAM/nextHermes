@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
+
+// Allow GET for edge cases (e.g., direct URL access), but require auth
+export async function GET(request: NextRequest) {
+  return NextResponse.json({ error: "Method not allowed. Use POST to create orders." }, { status: 405 });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,8 +42,11 @@ export async function POST(request: NextRequest) {
     // Build full shipping address from parts
     const shippingAddress = `${address.name}${address.phone ? `, ${address.phone}` : ""}, ${address.address}, ${address.city}${address.state ? `, ${address.state}` : ""} ${address.zip}, ${address.country}`;
 
+    // Use service client to bypass RLS for writes
+    const svc = await createServiceClient();
+
     // Insert order using actual DB columns
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await svc
       .from("orders")
       .insert({
         user_id: user.id,
@@ -77,10 +85,10 @@ export async function POST(request: NextRequest) {
       total: item.price * item.quantity,
     }));
 
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+    const { error: itemsError } = await svc.from("order_items").insert(orderItems);
 
     if (itemsError) {
-      await supabase.from("orders").delete().eq("id", order.id);
+      await svc.from("orders").delete().eq("id", order.id);
       return NextResponse.json({ error: itemsError.message }, { status: 500 });
     }
 

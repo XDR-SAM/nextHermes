@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 /** Shared Supabase client factory for Route Handlers (server-side API routes) */
 export function createRouteHandlerClient(
@@ -82,4 +83,26 @@ export async function verifyAuth(
   }
 
   return { authorized: true, userId: user.id };
+}
+
+/** Service role client factory for Route Handlers — bypasses RLS */
+export function createServiceRouteHandlerClient(
+  cookieStore: Awaited<ReturnType<typeof cookies>>
+) {
+  return createServerClient(supabaseUrl, serviceKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          for (const cookie of cookiesToSet) {
+            cookieStore.set(cookie.name, cookie.value, cookie.options as Record<string, unknown>);
+          }
+        } catch {
+          // Server Component context.
+        }
+      },
+    },
+  });
 }

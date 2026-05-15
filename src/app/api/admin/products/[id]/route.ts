@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
 import type { UserRole } from "@/lib/types";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -35,17 +35,12 @@ export async function GET(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { data: product, error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { data: product, error } = await svc
       .from("products")
-      .select(
-        `id, name, slug, description, price, compare_at_price, stock_quantity, is_active, created_at, updated_at,
-        category(id, name, slug),
-        brand(id, name),
-        primary_image,
-        avg_rating,
-        images(id, url, alt_text, is_primary),
-        variants(id, name, sku, price, stock_quantity, attributes)`
-      )
+      .select("id, name, slug, description, price, original_price, stock_quantity, is_active, created_at, updated_at, category_id, brand_id")
       .eq("id", id)
       .single();
 
@@ -76,8 +71,8 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = {};
     const allowedFields = [
-      "name", "slug", "description", "price", "compare_at_price",
-      "stock_quantity", "is_active", "category_id", "brand_id", "primary_image",
+      "name", "slug", "description", "price", "original_price",
+      "stock_quantity", "is_active", "category_id", "brand_id",
     ];
 
     for (const field of allowedFields) {
@@ -86,7 +81,10 @@ export async function PUT(
       }
     }
 
-    const { data: product, error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { data: product, error } = await svc
       .from("products")
       .update(updateData)
       .eq("id", id)
@@ -120,7 +118,10 @@ export async function DELETE(
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const { error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { error } = await svc
       .from("products")
       .delete()
       .eq("id", id);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
 import type { UserRole } from "@/lib/types";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -35,12 +35,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    const { data: products, error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { data: products, error } = await svc
       .from("products")
-      .select(
-        `id, name, slug, description, price, compare_at_price, stock_quantity, is_active, created_at, updated_at,
-        primary_image, avg_rating, category_id, brand_id, images(id, url, alt_text)`
-      )
+      .select("id, name, slug, description, price, original_price, stock_quantity, is_active, created_at, updated_at")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -75,20 +75,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { data: product, error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
+    const { data: product, error } = await svc
       .from("products")
       .insert({
         name: body.name,
         slug: body.slug,
         description: body.description || null,
         price: body.price,
-        compare_at_price: body.compare_at_price || null,
+        original_price: body.original_price || null,
         stock_quantity: body.stock_quantity || 0,
         is_active: body.is_active ?? true,
         category_id: body.category_id || null,
         brand_id: body.brand_id || null,
-        primary_image: body.primary_image || null,
-        images: body.images || [],
       })
       .select()
       .single();

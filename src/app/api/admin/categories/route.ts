@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createServiceClient } from "@/utils/supabase/server";
 import type { UserRole } from "@/lib/types";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -31,11 +31,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-    const { data: categories, error } = await supabase
+    const { data: categories, error } = await svc
       .from("categories")
       .select(`id, name, slug, description, image_url, is_active, created_at, updated_at`)
       .order("name", { ascending: true })
@@ -72,7 +75,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { data: category, error } = await supabase
+    // Use service client to bypass RLS
+    const svc = await createServiceClient();
+    const { data: category, error } = await svc
       .from("categories")
       .insert({
         name: body.name,
