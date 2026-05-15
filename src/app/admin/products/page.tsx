@@ -33,12 +33,10 @@ interface Product {
   description: string | null;
   short_description: string | null;
   price: number;
-  compare_price: number | null;
   original_price: number | null;
   sku: string | null;
   stock_quantity: number;
   stock_status: string;
-  image_url: string | null;
   category_id: string | null;
   brand_id: string | null;
   is_featured: boolean;
@@ -57,13 +55,12 @@ interface ProductFormData {
   description: string;
   short_description: string;
   price: string;
-  compare_price: string;
+  original_price: string;
   sku: string;
   stock_quantity: string;
   stock_status: string;
   category_id: string;
   brand_id: string;
-  image_url: string;
   is_featured: boolean;
   is_trending: boolean;
   is_active: boolean;
@@ -75,13 +72,12 @@ const initialFormData: ProductFormData = {
   description: "",
   short_description: "",
   price: "",
-  compare_price: "",
+  original_price: "",
   sku: "",
   stock_quantity: "0",
   stock_status: "in_stock",
   category_id: "",
   brand_id: "",
-  image_url: "",
   is_featured: false,
   is_trending: false,
   is_active: true,
@@ -126,7 +122,7 @@ export default function ProductsPage() {
     const [productsRes, categoriesRes, brandsRes] = await Promise.all([
       supabase
         .from("products")
-        .select("id, name, slug, description, short_description, price, compare_price, sku, stock_quantity, stock_status, image_url, category_id, brand_id, is_featured, is_trending, is_active, created_at, updated_at")
+        .select("id, name, slug, description, short_description, price, original_price, sku, stock_quantity, stock_status, category_id, brand_id, is_featured, is_trending, is_active, created_at, updated_at")
         .order("created_at", { ascending: false }),
       supabase.from("categories").select("id, name, slug").eq("is_active", true).order("name"),
       supabase.from("brands").select("id, name, slug").eq("is_active", true).order("name"),
@@ -142,7 +138,7 @@ export default function ProductsPage() {
 
     const productsWithNames = productsData.map(p => ({
       ...p,
-      original_price: p.compare_price,
+      original_price: p.original_price,
       category_name: categoriesData.find(c => c.id === p.category_id)?.name || null,
       brand_name: brandsData.find(b => b.id === p.brand_id)?.name || null,
     }));
@@ -210,13 +206,12 @@ export default function ProductsPage() {
       description: product.description || "",
       short_description: product.short_description || "",
       price: product.price.toString(),
-      compare_price: (product.compare_price || product.original_price || "")?.toString() || "",
+      original_price: product.original_price?.toString() || "",
       sku: product.sku || "",
       stock_quantity: product.stock_quantity.toString(),
       stock_status: product.stock_status || "in_stock",
       category_id: product.category_id || "",
       brand_id: product.brand_id || "",
-      image_url: (meta.image_url as string) || product.image_url || "",
       is_featured: product.is_featured,
       is_trending: product.is_trending,
       is_active: product.is_active,
@@ -239,8 +234,6 @@ export default function ProductsPage() {
       return;
     }
     setSaving(true);
-    const meta: Record<string, unknown> = {};
-    if (formData.image_url) meta.image_url = formData.image_url;
 
     const productData = {
       name: formData.name,
@@ -248,17 +241,15 @@ export default function ProductsPage() {
       description: formData.description || null,
       short_description: formData.short_description || null,
       price: parseFloat(formData.price),
-      compare_price: formData.compare_price ? parseFloat(formData.compare_price) : null,
+      original_price: formData.original_price ? parseFloat(formData.original_price) : null,
       sku: formData.sku || null,
       stock_quantity: parseInt(formData.stock_quantity) || 0,
       stock_status: formData.stock_status || "in_stock",
       category_id: formData.category_id || null,
       brand_id: formData.brand_id || null,
-      image_url: formData.image_url || null,
       is_featured: formData.is_featured,
       is_trending: formData.is_trending,
       is_active: formData.is_active,
-      metadata: Object.keys(meta).length > 0 ? meta : null,
     };
 
     let result;
@@ -499,13 +490,7 @@ export default function ProductsPage() {
                         style={{ width: "16px", height: "16px", accentColor: "#22c55e", cursor: "pointer" }} />
                     </td>
                     <td style={{ padding: "12px 16px" }}>
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name}
-                          style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px" }}
-                          onError={e => { e.currentTarget.style.display = "none"; }} />
-                      ) : (
-                        <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: "flex", alignItems: "center", justifyContent: "center" }}><Package size={20} /></div>
-                      )}
+                      <div style={{ width: "48px", height: "48px", borderRadius: "8px", background: "#F4F4F1", display: "flex", alignItems: "center", justifyContent: "center" }}><Package size={20} /></div>
                     </td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "500", color: "#141413" }}>{product.name}</div>
@@ -519,8 +504,8 @@ export default function ProductsPage() {
                     <td style={{ padding: "14px 16px", fontSize: "14px", color: "#6B6B67" }}>{product.brand_name || "—"}</td>
                     <td style={{ padding: "14px 16px" }}>
                       <div style={{ fontSize: "14px", fontWeight: "600" }}>{formatCurrency(product.price)}</div>
-                      {(product.compare_price || product.original_price) && (product.compare_price || product.original_price)! > product.price && (
-                        <div style={{ fontSize: "12px", color: "#6B6B67", textDecoration: "line-through" }}>{formatCurrency((product.compare_price || product.original_price)!)}</div>
+                      {product.original_price && product.original_price > product.price && (
+                        <div style={{ fontSize: "12px", color: "#6B6B67", textDecoration: "line-through" }}>{formatCurrency(product.original_price)}</div>
                       )}
                     </td>
                     <td style={{ padding: "14px 16px" }}>
@@ -618,8 +603,8 @@ export default function ProductsPage() {
                   <input type="number" step="0.01" min="0" value={formData.price} onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))} required style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Compare At Price (Original)</label>
-                  <input type="number" step="0.01" min="0" value={formData.compare_price} onChange={e => setFormData(prev => ({ ...prev, compare_price: e.target.value }))} style={inputStyle} placeholder="Original/sale price" />
+                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Original Price</label>
+                  <input type="number" step="0.01" min="0" value={formData.original_price} onChange={e => setFormData(prev => ({ ...prev, original_price: e.target.value }))} style={inputStyle} placeholder="Original/sale price" />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Stock Quantity</label>
@@ -644,10 +629,6 @@ export default function ProductsPage() {
                     <option value="">Select Brand</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select>
-                </div>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "6px" }}>Image URL</label>
-                  <input type="url" value={formData.image_url} onChange={e => setFormData(prev => ({ ...prev, image_url: e.target.value }))} style={inputStyle} placeholder="https://..." />
                 </div>
                 <div style={{ gridColumn: "1 / -1" }}>
                   <label style={{ display: "block", fontSize: "13px", color: "#6B6B67", marginBottom: "8px" }}>Flags</label>
